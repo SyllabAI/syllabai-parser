@@ -1,5 +1,5 @@
 {
-  "documentId" : "2163958d-e912-4b11-b3f1-67f78bff5902",
+  "documentId" : "4937f827-4bf9-4fcc-99b7-95bb3831952e",
   "schemaVersion" : "1.0",
   "version" : 1,
   "source" : {
@@ -13714,7 +13714,7 @@
   "provenance" : {
     "engine" : "opendataloader-pdf",
     "engineVersion" : "2.5.7",
-    "extractedAt" : "2026-09-04T07:25:24.685288943Z",
+    "extractedAt" : "2026-09-04T08:06:27.804494521Z",
     "extractionParams" : {
       "mode" : "fast",
       "readingOrder" : "xycut",

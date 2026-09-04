@@ -33,7 +33,7 @@ java -cp ... com.syllabai.parser.ParserCli QP <qp.pdf> <out-dir> [ms.pdf] \
 # syllabus / specification → canonical JSON + curriculum draft
 # (--extractor outline is the default; heuristic keeps the generic v0 path)
 java -cp ... com.syllabai.parser.ParserCli SYLLABUS <pdf> <out-dir> \
-    --curriculumEdexcel|IAL|IAL-CHEM-2018|Edexcel International Advanced Level Chemistry|CH|Chemistry
+    --curriculumEdexcel|IAL|IAL-CHEM-2018|Edexcel International Advanced Level Chemistry|CHM|Chemistry
 ```
 
 `corpus/` holds processed real fixtures:
