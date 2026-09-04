@@ -3,6 +3,7 @@ package com.syllabai.parser;
 import com.syllabai.parser.canonical.CanonicalDocument;
 import com.syllabai.parser.canonical.CanonicalJson;
 import com.syllabai.parser.engine.opendataloader.OpenDataLoaderParser;
+import com.syllabai.parser.structure.EdexcelSyllabusOutlineExtractor;
 import com.syllabai.parser.structure.PastPaperStructureExtractor;
 import com.syllabai.parser.structure.SyllabusStructureExtractor;
 import com.syllabai.parser.structure.dto.CurriculumDraft;
@@ -19,10 +20,12 @@ import java.util.Locale;
  * <pre>
  *   syllabai QP &lt;pdf&gt; &lt;out-dir&gt; [MS-pdf] [--paper board|qual|subject|unit|session|code]
  *   syllabai SYLLABUS &lt;pdf&gt; &lt;out-dir&gt; --curriculum board|qual|code|title|subjectCode|subjectName
+ *                          [--extractor outline|heuristic]
  * </pre>
  *
  * Writes canonical document JSON plus the matching ingestion draft JSON for
- * syllabai-core's ingestion API.
+ * syllabai-core's ingestion API. SYLLABUS default extractor: outline (deterministic
+ * Edexcel-numbered patterns, T-010); heuristic keeps the generic level-based v0.
  */
 public final class ParserCli {
 
@@ -83,6 +86,7 @@ public final class ParserCli {
                 String title = "";
                 String subjectCode = "";
                 String subjectName = "";
+                String extractor = "outline";
                 for (int i = 3; i < args.length; i++) {
                     if (args[i].startsWith("--curriculum")) {
                         String[] parts = args[i].substring(12).split("\\|");
@@ -92,17 +96,28 @@ public final class ParserCli {
                         if (parts.length > 3) title = parts[3];
                         if (parts.length > 4) subjectCode = parts[4];
                         if (parts.length > 5) subjectName = parts[5];
+                    } else if (args[i].startsWith("--extractor=")) {
+                        extractor = args[i].substring("--extractor=".length());
                     }
                 }
                 CanonicalDocument syllabus = parser.parse(Files.readAllBytes(pdf),
                         pdf.getFileName().toString());
                 CanonicalJson.write(syllabus, outDir.resolve("canonical-syllabus.json"));
-                CurriculumDraft draft = new SyllabusStructureExtractor()
-                        .extract(syllabus, board, qualification, code, title,
-                                subjectCode, subjectName);
+                CurriculumDraft draft = switch (extractor) {
+                    case "heuristic" -> new SyllabusStructureExtractor()
+                            .extract(syllabus, board, qualification, code, title,
+                                    subjectCode, subjectName);
+                    case "outline" -> new EdexcelSyllabusOutlineExtractor()
+                            .extract(syllabus, board, qualification, code, title,
+                                    subjectCode, subjectName);
+                    default -> throw new IllegalArgumentException(
+                            "unknown extractor: " + extractor + " (outline|heuristic)");
+                };
                 Files.writeString(outDir.resolve("curriculum-draft.json"),
                         CanonicalJson.mapper().writeValueAsString(draft), StandardCharsets.UTF_8);
-                System.out.println("units: " + draft.units().size());
+                System.out.println("units: " + draft.units().size() + "; topics: "
+                        + draft.units().stream().mapToInt(u -> u.topics().size()).sum()
+                        + " (extractor: " + extractor + ")");
             }
             default -> {
                 System.err.println("unknown mode: " + args[0]);

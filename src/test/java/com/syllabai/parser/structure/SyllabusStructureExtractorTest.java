@@ -68,6 +68,14 @@ class SyllabusStructureExtractorTest {
         assertThat(draft.units().get(0).topics().get(0).subtopics())
                 .extracting(T -> T.title())
                 .containsExactly("Ionic compounds", "Covalent compounds");
+        // subtopic codes use the documented U1-T1-S1 shape (no collision with topics)
+        assertThat(draft.units().get(0).topics().get(0).subtopics())
+                .extracting(T -> T.code())
+                .containsExactly("U1-T1-S1", "U1-T1-S2");
+        // schema 1.1: per-node provenance is carried for downstream §17 traceability
+        assertThat(draft.units().get(0).sourceElementIds()).isEmpty();
+        assertThat(draft.units().get(0).pageNumber()).isEqualTo(1);
+        assertThat(draft.units().get(0).confidence()).isEqualTo(0.5);
     }
 
     private CanonicalDocument syllabus(SectionInfo... sections) {

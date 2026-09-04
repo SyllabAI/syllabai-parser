@@ -12,13 +12,15 @@ SyllabAI content pipeline — **offline, polyglot document processing** that tur
 | `DocumentParser` contract (§27) | ✅ engine-agnostic port |
 | `OpenDataLoaderParser` (T-009) | ✅ `org.opendataloader:opendataloader-pdf-core:2.5.7` in-process, fast mode, XY-Cut++ reading order, bounding boxes, classpath-resolved engine version |
 | QP/MS structural extraction (T-011 parser side) | ✅ v0 regex heuristics — questions, letter/roman parts, marks, command words, mark points (IAL + IGCSE layouts); everything `reviewRequired=true`, confidence < 1.0 |
-| Syllabus structuring (T-010 parser side) | ✅ v0 heading-heuristic → `CurriculumDraft`, always `SUGGESTED` |
+| Syllabus structuring (T-010) | ✅ `EdexcelSyllabusOutlineExtractor` — deterministic `Unit N:`/`Topic N:`/`NC:` pattern match with title cleanup, per-node provenance (section id, element ids, page, confidence), first-match dedup; draft schema 1.1, always `SUGGESTED`. Generic fallback: v0 heading-heuristic (low confidence 0.5) |
+| Real-corpus verification | ✅ Edexcel IAL Chemistry 2018 spec (Pearson, 108 pp): 6 units / 20 topics / 15 subtopics extracted + pinned by tests |
 | MinerU / Surya / anydoc / pdf-inspector adapters | ⏳ deferred — behind the same `DocumentParser` port when OCR/hybrid fidelity is needed |
 
 ## Build & test
 
 ```bash
-mvn verify          # Java 25; 23 unit tests incl. full PDF→canonical→draft chain
+mvn verify          # Java 25; 27 unit tests incl. full PDF→canonical→draft chain
+                    # + real-spec outline extraction pinned against corpus fixtures
 ```
 
 ## Workbench CLI
@@ -29,12 +31,17 @@ java -cp ... com.syllabai.parser.ParserCli QP <qp.pdf> <out-dir> [ms.pdf] \
     --paperEdexcel|IGCSE|Chemistry|Paper 1C|January 2012|4CH0/1C
 
 # syllabus / specification → canonical JSON + curriculum draft
+# (--extractor outline is the default; heuristic keeps the generic v0 path)
 java -cp ... com.syllabai.parser.ParserCli SYLLABUS <pdf> <out-dir> \
-    --curriculumEdexcel|IAL|WCH11|Edexcel IAL Chemistry|CH|Chemistry
+    --curriculumEdexcel|IAL|IAL-CHEM-2018|Edexcel International Advanced Level Chemistry|CH|Chemistry
 ```
 
-`corpus/` holds processed real fixtures from [`SyllabAI/Past-Papers`](https://github.com/SyllabAI/Past-Papers)
-(Edexcel IGCSE Chemistry 4CH0/1C January 2012 QP+MS): canonical documents + drafts with full provenance.
+`corpus/` holds processed real fixtures:
+- **igcse-chemistry-4ch0-1c-jan2012** — Edexcel IGCSE Chemistry 4CH0/1C January 2012 QP+MS
+  (from [`SyllabAI/Past-Papers`](https://github.com/SyllabAI/Past-Papers)): canonical documents + drafts with full provenance.
+- **ial-chemistry-2018-spec** — the published Edexcel IAL Chemistry 2018 specification
+  (Pearson, 108 pages): canonical document + curriculum draft (6 units / 20 topics / 15
+  subtopics, per-node §17 provenance).
 
 ## The contract (canonical document JSON, schema 1.0)
 
