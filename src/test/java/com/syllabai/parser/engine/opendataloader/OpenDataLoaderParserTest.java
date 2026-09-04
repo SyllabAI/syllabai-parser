@@ -118,6 +118,25 @@ class OpenDataLoaderParserTest {
     }
 
     @Test
+    @DisplayName("determinism regression: same PDF bytes twice yield identical document identity")
+    void parsesDeterministically() throws IOException {
+        byte[] pdf = questionPaperPdf();
+
+        CanonicalDocument first = parser.parse(pdf, "fixtures/generated-qp.pdf");
+        CanonicalDocument second = parser.parse(pdf, "fixtures/generated-qp.pdf");
+
+        // CanonicalDocument.of used to mint UUID.randomUUID(); identity is now
+        // derived from source checksum + engine + engine version (Session 9).
+        assertThat(second.documentId()).isEqualTo(first.documentId());
+        List<DocumentElement> a = first.elementsInReadingOrder();
+        List<DocumentElement> b = second.elementsInReadingOrder();
+        assertThat(b).hasSameSizeAs(a);
+        for (int i = 0; i < a.size(); i++) {
+            assertThat(b.get(i).elementId()).isEqualTo(a.get(i).elementId());
+        }
+    }
+
+    @Test
     @DisplayName("engine name/version identity is stable")
     void identity() {
         assertThat(parser.engineName()).isEqualTo("opendataloader-pdf");

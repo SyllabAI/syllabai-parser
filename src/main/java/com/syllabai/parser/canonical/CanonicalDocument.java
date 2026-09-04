@@ -2,7 +2,6 @@ package com.syllabai.parser.canonical;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * The canonical, repository-independent normalized document (Master Spec §8).
@@ -11,7 +10,8 @@ import java.util.UUID;
  * element core. Field naming follows the spec exactly — snake_case element
  * fields, camelCase document-level fields.
  *
- * @param documentId     random UUID identifying this canonical document
+ * @param documentId     deterministic content-derived UUID ({@link CanonicalIdentity}:
+ *                      same source checksum + same engine/version → same id)
  * @param schemaVersion  canonical schema version ("1.0")
  * @param version        document revision (starts at 1; re-ingestion bumps)
  * @param source         origin + checksum
@@ -47,12 +47,24 @@ public record CanonicalDocument(
         equations = equations == null ? List.of() : List.copyOf(equations);
     }
 
+    /**
+     * Canonical factory with deterministic identity (Session 9): the
+     * {@code documentId} is derived from the source checksum plus engine
+     * name and version via {@link CanonicalIdentity} — never
+     * {@code UUID.randomUUID()}, never a timestamp. Re-extracting the same
+     * bytes with the same engine version yields the same id; callers that
+     * need an externally-defined identity (tests, migrations) may still
+     * construct the record directly.
+     */
     public static CanonicalDocument of(SourceInfo source, int pageCount,
                                        List<PageInfo> pages, List<SectionInfo> sections,
                                        List<TextBlockElement> textBlocks, List<TableElement> tables,
                                        List<FigureElement> figures, List<EquationElement> equations,
                                        ExtractionProvenance provenance) {
-        return new CanonicalDocument(UUID.randomUUID().toString(), CanonicalSchema.VERSION,
+        return new CanonicalDocument(
+                CanonicalIdentity.contentDocumentId(source.checksum(),
+                        provenance.engine(), provenance.engineVersion()),
+                CanonicalSchema.VERSION,
                 1, source, pageCount, pages, sections, textBlocks, tables, figures,
                 equations, provenance);
     }

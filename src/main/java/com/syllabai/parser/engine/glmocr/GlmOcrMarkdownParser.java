@@ -2,6 +2,7 @@ package com.syllabai.parser.engine.glmocr;
 
 import com.syllabai.parser.canonical.BoundingBox;
 import com.syllabai.parser.canonical.CanonicalDocument;
+import com.syllabai.parser.canonical.CanonicalIdentity;
 import com.syllabai.parser.canonical.CanonicalSchema;
 import com.syllabai.parser.canonical.CanonicalValidator;
 import com.syllabai.parser.canonical.Checksums;
@@ -16,16 +17,12 @@ import com.syllabai.parser.canonical.TextBlockElement;
 import com.syllabai.parser.canonical.TextRole;
 import com.syllabai.parser.engine.DocumentParser;
 import com.syllabai.parser.engine.ParseFailureException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,12 +43,13 @@ import java.util.regex.Pattern;
  * so {@code pageCount=1} with provenance {@code pageBoundaries=none-in-source}
  * — pages are never invented.</p>
  *
- * <p><strong>Determinism:</strong> the {@code documentId} is derived from the
- * SHA-256 of the exact source bytes (UUID, name-based layout) and element ids
- * are positional ({@code e%06d}) in reading order, so parsing the same bytes
- * twice yields identical ids and ordering. {@code extractedAt} remains a
- * provenance fact of the run; use {@link #parseWithFixedIdentity} for
- * byte-reproducible output.</p>
+ * <p><strong>Determinism:</strong> the {@code documentId} is derived at the
+ * canonical identity layer ({@link CanonicalIdentity}: SHA-256 of source
+ * checksum + engine name + engine version, name-based UUID layout) and
+ * element ids are positional ({@code e%06d}) in reading order, so parsing
+ * the same bytes twice with the same engine version yields identical ids
+ * and ordering. {@code extractedAt} remains a provenance fact of the run;
+ * use {@link #parseWithFixedIdentity} for byte-reproducible output.</p>
  */
 public final class GlmOcrMarkdownParser implements DocumentParser {
 
@@ -101,7 +99,6 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
             throw new ParseFailureException(ENGINE_NAME, e.getMessage(), e);
         }
     }
-
     /** Deterministic-output variant for reproducible pipelines and tests. */
     public CanonicalDocument parseWithFixedIdentity(byte[] source, String sourceUri,
                                                     Instant extractedAt) {
@@ -258,13 +255,12 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
                 : sourceUri.substring(Math.max(sourceUri.lastIndexOf('/'),
                         sourceUri.lastIndexOf('\\')) + 1);
 
-        return new CanonicalDocument(contentDocumentId(source), CanonicalSchema.VERSION, 1,
+        return CanonicalDocument.of(
                 new SourceInfo(sourceUri, Checksums.sha256Hex(source), "SHA-256",
                         MARKDOWN_MIME, fileName),
                 1, List.of(new PageInfo(1)),
                 sectionsFromHeadings(textBlocks),
-                List.copyOf(textBlocks), List.copyOf(tables), List.copyOf(figures),
-                List.copyOf(equations),
+                textBlocks, tables, figures, equations,
                 new ExtractionProvenance(ENGINE_NAME, ENGINE_VERSION, extractedAt, params,
                         ExtractionProvenance.APPLICATION, CanonicalSchema.VERSION));
     }
@@ -292,7 +288,12 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         String path = urlPath(url);
         String format = path == null ? null
                 : path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : null;
-        return new FigureElement(nextId(textBlocks, tables, figures, equations), 1, null,
+        // Full record constructor: text carries the COMPLETE original URL
+        // (the only complete reference for expired signed URLs — Session 9
+        // image-reality rule); the convenience constructor would copy alt
+        // into text and silently drop the URL.
+        return new FigureElement(nextId(textBlocks, tables, figures, equations),
+                com.syllabai.parser.canonical.ElementType.FIGURE, 1, null, url,
                 nextOrder(textBlocks, tables, figures, equations), 1.0, format, path, alt,
                 ENGINE_NAME, ENGINE_VERSION);
     }
@@ -435,22 +436,11 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
     // ── deterministic identity ─────────────────────────────────────────────────
 
     /**
-     * Content-derived document id: UUID (name-based layout, version 5 bits)
-     * from the SHA-256 of the exact source bytes. Same bytes → same id;
-     * different bytes → different id. No random component.
+     * Content-derived document id via the canonical identity layer — thin
+     * pass-through kept for callers; derivation lives in
+     * {@link CanonicalIdentity} (checksum + engine + engine version).
      */
     static String contentDocumentId(byte[] source) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(source);
-            byte[] uuidBytes = new byte[16];
-            System.arraycopy(hash, 0, uuidBytes, 0, 16);
-            uuidBytes[6] = (byte) ((uuidBytes[6] & 0x0f) | 0x50);
-            uuidBytes[8] = (byte) ((uuidBytes[8] & 0x3f) | 0x80);
-            ByteBuffer buffer = ByteBuffer.wrap(uuidBytes);
-            return new UUID(buffer.getLong(), buffer.getLong()).toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 unavailable", e);
-        }
+        return CanonicalIdentity.contentDocumentId(source, ENGINE_NAME, ENGINE_VERSION);
     }
 }
