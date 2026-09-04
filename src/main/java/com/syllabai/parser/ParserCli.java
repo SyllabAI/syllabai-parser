@@ -55,7 +55,7 @@ public final class ParserCli {
                 String code = "";
                 for (int i = 3; i < args.length; i++) {
                     if (args[i].startsWith("--paper")) {
-                        String[] parts = args[i].substring(7).split("\\|");
+                        String[] parts = flagValue(args[i], 7).split("\\|");
                         if (parts.length > 0) board = parts[0];
                         if (parts.length > 1) qualification = parts[1];
                         if (parts.length > 2) subject = parts[2];
@@ -89,7 +89,7 @@ public final class ParserCli {
                 String extractor = "outline";
                 for (int i = 3; i < args.length; i++) {
                     if (args[i].startsWith("--curriculum")) {
-                        String[] parts = args[i].substring(12).split("\\|");
+                        String[] parts = flagValue(args[i], 12).split("\\|");
                         if (parts.length > 0) board = parts[0];
                         if (parts.length > 1) qualification = parts[1];
                         if (parts.length > 2) code = parts[2];
@@ -124,6 +124,12 @@ public final class ParserCli {
                 System.exit(2);
             }
         }
+    }
+
+    /** flag value, tolerating an '=' separator ("--curriculum=X" == "--curriculumX") */
+    private static String flagValue(String arg, int flagLength) {
+        String rest = arg.substring(flagLength);
+        return rest.startsWith("=") ? rest.substring(1) : rest;
     }
 
     private ParserCli() {
