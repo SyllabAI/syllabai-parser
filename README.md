@@ -4,7 +4,7 @@ SyllabAI content pipeline — **offline, polyglot document processing** that tur
 
 > Part of the SyllabAI project · master pack: [`SyllabAI/syllabai`](https://github.com/SyllabAI/syllabai) · output lands in `syllabai-core`'s knowledge/content modules.
 
-## Status: T-008 + T-009 implemented; T-010/T-011 parser-side v0
+## Status: T-008 + T-009 + T-010/T-011 parser-side; GLM-OCR Markdown adapter + QP/MS extraction (Session 9)
 
 | Piece | State |
 |---|---|
@@ -15,12 +15,21 @@ SyllabAI content pipeline — **offline, polyglot document processing** that tur
 | Syllabus structuring (T-010) | ✅ `EdexcelSyllabusOutlineExtractor` — deterministic `Unit N:`/`Topic N:`/`NC:` pattern match with title cleanup, per-node provenance (section id, element ids, page, confidence), first-match dedup; draft schema 1.1, always `SUGGESTED`. Generic fallback: v0 heading-heuristic (low confidence 0.5) |
 | Real-corpus verification | ✅ Edexcel IAL Chemistry 2018 spec (Pearson, 108 pp): 6 units / 20 topics / 15 subtopics extracted + pinned by tests |
 | MinerU / Surya / anydoc / pdf-inspector adapters | ⏳ deferred — behind the same `DocumentParser` port when OCR/hybrid fidelity is needed |
+| GLM-OCR Markdown adapter (Session 8/9) | ✅ real-corpus verified — headings, HTML islands (image divs w/ signed URLs, tables incl. rowspan), centered divs, `$$` math, entity decoding recorded in provenance, pageCount=1 honesty, deterministic identity |
+| GLM-OCR QP + MS extraction | ✅ both numbering styles (`1:`/`1 `), `*N`/`*(a)` QWC, MCQ hindsight validation, mark points w/ dependent-on/ecf/Or/any-two-from vocabulary, IC tables (3 shapes), both total placements, QP/MS reconciliation (D6: mismatches → review, never silent merges) |
+| GLM-OCR image reality | ✅ expired signed URLs preserved (full URL + decoded path + ownership + failure state); local-asset pipeline (`img:<sha256>`, MIME sniffing, dimensions) ready for re-exports |
+| Python/Java conformance | ✅ `tools/glmocr/` reference implementation + harness — 12/12 fixture-mode combinations agree field-for-field; enforced in CI |
 
 ## Build & test
 
 ```bash
-mvn verify          # Java 25; 27 unit tests incl. full PDF→canonical→draft chain
-                    # + real-spec outline extraction pinned against corpus fixtures
+mvn verify          # Java 25; 68 unit tests incl. full PDF→canonical→draft chain
+                    # + real-spec outline extraction + GLM-OCR QP/MS extraction,
+                    # determinism, reconciliation and image-reality tests pinned
+                    # against the 6 real GLM-OCR fixtures
+
+# cross-language conformance (after mvn compile)
+python3 tools/glmocr/conformance.py   # 12/12 fixture-mode combinations, enforced in CI
 ```
 
 ## Workbench CLI
@@ -64,6 +73,30 @@ Verified against the real 4CH0/1C January 2012 pair: 20-question paper → 27 dr
 **never** treated as validated: `reviewRequired=true`, confidence < 1.0, and downstream
 ingestion persists SUGGESTED validation states awaiting human review (Master Spec §7).
 Extraction quality improves iteratively in this workbench — it is content-operations, not runtime.
+
+## GLM-OCR Markdown pipeline (Session 8/9)
+
+Real corpus: `SyllabAI/Past-Papers` -> `GLM-markdown-sample/` (6 Markdown files,
+3 WPH11 QP/MS pairs; grammar documented in
+`docs/glm-ocr/real-corpus-syntax-report.md`, design reconciliation in
+`docs/glm-ocr/adapter-design-reconciliation.md`, verification in
+`docs/validation/session9-real-corpus-validation.md`).
+
+- `GlmOcrMarkdownParser` — line-oriented Markdown + HTML-island adapter into
+  the canonical document; images are **expired signed URLs** in this corpus,
+  so figures carry the complete URL, the decoded crop path and
+  `availability=unavailable-signed-url` — nothing fetched, nothing faked
+- `GlmOcrQuestionExtractor` / `GlmOcrMarkSchemeExtractor` — draft extraction
+  (`reviewRequired=true`, confidence < 1.0) with the full marking vocabulary
+  preserved as structure; QP/MS mark reconciliation reports conflicts
+  (e.g. the audited 1A 80-vs-120 paper-total conflict) instead of merging
+- `tools/glmocr/` — Python reference implementation (behavioral twin) +
+  `conformance.py`: Java production and Python reference must agree on every
+  field of every fixture; CI enforces it
+- Identity: `CanonicalIdentity` derives `documentId` from
+  SHA-256(checksum + engine + engine version) — deterministic, timestamp-free
+  (the `UUID.randomUUID()` bug was fixed at the canonical layer, not hidden
+  in the adapter)
 
 ## Polyglot policy (ADR-011)
 
