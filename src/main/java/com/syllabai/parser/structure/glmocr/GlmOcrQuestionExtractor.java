@@ -40,11 +40,11 @@ public final class GlmOcrQuestionExtractor {
     public static final String EXTRACTION_METHOD = "glm-ocr-qp-v1";
 
     private static final Pattern QUESTION_COLON = Pattern.compile("^\\*?(\\d{1,2}):\\s*(.*)$");
-    private static final Pattern QUESTION_SPACE = Pattern.compile("^(\\d{1,2})\\s+(\\S.*)$");
+    private static final Pattern QUESTION_SPACE = Pattern.compile("^(\\*?)(\\d{1,2})\\s+(\\S.*)$");
     private static final Pattern COMBINED_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*\\(([ivx]+)\\)\\s*(.*)$");
     private static final Pattern LETTER_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*(.*)$");
     private static final Pattern ROMAN_PART = Pattern.compile("^\\(([ivx]+)\\)\\s*(.*)$");
-    private static final Pattern OPTION = Pattern.compile("^([A-D])\\s*(\\S.*)$");
+    private static final Pattern OPTION = Pattern.compile("^([A-D])\\s+(\\S.*)$");
     private static final Pattern BARE_LETTER = Pattern.compile("^([A-D])$");
     private static final Pattern MARKS_BLOCK = Pattern.compile("^\\((\\d{1,2})\\)\\s*$");
     private static final Pattern TOTAL_FOR_QUESTION = Pattern.compile(
@@ -55,6 +55,10 @@ public final class GlmOcrQuestionExtractor {
     private static final Pattern TOTAL_FOR_SECTION = Pattern.compile(
             "TOTAL FOR SECTION\\s*([A-Z])\\s*=\\s*(\\d{1,3})\\s*MARKS", Pattern.CASE_INSENSITIVE);
     private static final Pattern PAPER_REF = Pattern.compile("\\b(W[A-Z]{2}\\d{2}/\\d{1,2}[A-Z]?)\\b");
+    private static final Pattern LOG_NUMBER = Pattern.compile(
+            "(?i)log\\s+number\\s+(P\\d{5,6}[A-Z])\\b");
+    private static final Pattern PUBLICATION_CODE = Pattern.compile(
+            "(?i)publications?\\s+code\\s+(\\S+)");
     private static final Pattern LOG_TOTAL = Pattern.compile(
             "total mark for this paper is\\s*(\\d{1,3})", Pattern.CASE_INSENSITIVE);
     private static final Pattern TURN_OVER = Pattern.compile("^Turn over\\s*$", Pattern.CASE_INSENSITIVE);
@@ -105,6 +109,8 @@ public final class GlmOcrQuestionExtractor {
         final List<FigureRef> frontMatterFigures = new ArrayList<>();
         final List<String> warnings = new ArrayList<>();
         final String[] meta = new String[7]; // board, qual, subject, paperRef, session, date, duration
+        String logNumber;
+        String publicationCode;
         Integer paperTotal;
         String section = null;
         boolean inFormulaAppendix;
@@ -173,11 +179,43 @@ public final class GlmOcrQuestionExtractor {
                 || t.toLowerCase().startsWith("answer all")) {
             return; // boilerplate headings
         }
+        // documented defect: question numbers promoted to Markdown headings
+        // (October export: "## 15 A student investigated a spring.") — accept a
+        // FORWARD jump so the sequence resumes; backward/duplicate still rejected
+        Matcher colonHeading = QUESTION_COLON.matcher(t);
+        if (colonHeading.matches() && isForwardQuestion(
+                Integer.parseInt(colonHeading.group(1)), state)) {
+            openQuestion(Integer.parseInt(colonHeading.group(1)), "colon",
+                    colonHeading.group(2), state);
+            if (t.startsWith("*")) {
+                state.current.qwc = true;
+            }
+            state.warnings.add("Q" + colonHeading.group(1)
+                    + ": question number promoted to heading (opened from heading)");
+            return;
+        }
+        Matcher spaceHeading = QUESTION_SPACE.matcher(t);
+        if (spaceHeading.matches() && isForwardQuestion(
+                Integer.parseInt(spaceHeading.group(2)), state)) {
+            openQuestion(Integer.parseInt(spaceHeading.group(2)), "space",
+                    spaceHeading.group(3), state);
+            if (!spaceHeading.group(1).isEmpty()) {
+                state.current.qwc = true;
+            }
+            state.warnings.add("Q" + spaceHeading.group(2)
+                    + ": question number promoted to heading (opened from heading)");
+            return;
+        }
         if (t.toLowerCase().contains("mark scheme")) {
             state.sawMarkScheme = true;
         }
         // any other heading inside the body is treated as structural noise but kept visible
         state.warnings.add("unclassified heading: " + t);
+    }
+
+    /** Forward numbering only: strictly increasing, no duplicates. */
+    private boolean isForwardQuestion(int number, State state) {
+        return state.current == null || number > state.current.number;
     }
 
     private void handleLine(String rawLine, State state) {
@@ -221,11 +259,17 @@ public final class GlmOcrQuestionExtractor {
         Matcher colon = QUESTION_COLON.matcher(text);
         if (colon.matches() && isNextQuestion(Integer.parseInt(colon.group(1)), state)) {
             openQuestion(Integer.parseInt(colon.group(1)), "colon", colon.group(2), state);
+            if (text.startsWith("*")) {
+                state.current.qwc = true; // question-level QWC asterisk (*14)
+            }
             return;
         }
         Matcher space = QUESTION_SPACE.matcher(text);
-        if (space.matches() && isNextQuestion(Integer.parseInt(space.group(1)), state)) {
-            openQuestion(Integer.parseInt(space.group(1)), "space", space.group(2), state);
+        if (space.matches() && isNextQuestion(Integer.parseInt(space.group(2)), state)) {
+            openQuestion(Integer.parseInt(space.group(2)), "space", space.group(3), state);
+            if (!space.group(1).isEmpty()) {
+                state.current.qwc = true; // question-level QWC asterisk (*14)
+            }
             return;
         }
 
@@ -259,11 +303,21 @@ public final class GlmOcrQuestionExtractor {
         }
         Matcher roman = ROMAN_PART.matcher(text);
         if (roman.matches() && !q.parts.isEmpty()) {
-            RawPart parent = q.parts.getLast();
-            RawPart sub = new RawPart(parent.label + "-" + roman.group(1));
-            sub.text.append(roman.group(2));
-            q.parts.add(sub);
-            return;
+            // parent = last LETTER-level part (label without dash), so "(ii)"
+            // after the combined part "b-i" attaches to "b" → "b-ii", never "b-i-ii"
+            RawPart parent = null;
+            for (int p = q.parts.size() - 1; p >= 0; p--) {
+                if (!q.parts.get(p).label.contains("-")) {
+                    parent = q.parts.get(p);
+                    break;
+                }
+            }
+            if (parent != null) {
+                RawPart sub = new RawPart(parent.label + "-" + roman.group(1));
+                sub.text.append(roman.group(2));
+                q.parts.add(sub);
+                return;
+            }
         }
         Matcher marks = MARKS_BLOCK.matcher(text);
         if (marks.matches()) {
@@ -283,17 +337,10 @@ public final class GlmOcrQuestionExtractor {
             return;
         }
         Matcher option = OPTION.matcher(text);
-        if (option.matches() && q.parts.isEmpty() && !q.figures.isEmpty() || option.matches()
-                && q.parts.isEmpty() && optionLettersExpected(q, option.group(1))) {
-            q.optionTexts.put(option.group(1), option.group(2));
-            return;
-        }
-        if (option.matches() && q.parts.isEmpty() && !q.figures.isEmpty()) {
-            q.optionTexts.put(option.group(1), option.group(2));
-            return;
-        }
         if (option.matches() && q.parts.isEmpty()) {
-            // candidate option (validated in hindsight when the question closes)
+            // candidate option — letter + whitespace required, so prose words
+            // starting with A-D ("Acceleration =", "As shown…") never match;
+            // validated in hindsight when the question closes
             q.optionTexts.put(option.group(1), option.group(2));
             return;
         }
@@ -316,12 +363,6 @@ public final class GlmOcrQuestionExtractor {
         }
 
         appendText(" " + text, state);
-    }
-
-    private boolean optionLettersExpected(RawQuestion q, String letter) {
-        int expectedIndex = q.optionTexts.size();
-        String expected = String.valueOf((char) ('A' + expectedIndex));
-        return expected.equals(letter) || letter.compareTo(expected) < 0;
     }
 
     private void appendText(String text, State state) {
@@ -367,6 +408,14 @@ public final class GlmOcrQuestionExtractor {
         if (paperRef.find() && state.meta[3] == null) {
             state.meta[3] = paperRef.group(1);
         }
+        Matcher logNumber = LOG_NUMBER.matcher(text);
+        if (logNumber.find() && state.logNumber == null) {
+            state.logNumber = logNumber.group(1);
+        }
+        Matcher publicationCode = PUBLICATION_CODE.matcher(text);
+        if (publicationCode.find() && state.publicationCode == null) {
+            state.publicationCode = publicationCode.group(1);
+        }
         if (state.meta[0] == null && text.contains("Pearson Edexcel")) {
             state.meta[0] = "Edexcel";
         }
@@ -398,7 +447,8 @@ public final class GlmOcrQuestionExtractor {
     private PaperMeta paperMeta(CanonicalDocument doc, State state) {
         return new PaperMeta(
                 state.meta[0] == null && state.meta[3] != null ? "Edexcel" : state.meta[0],
-                state.meta[1], state.meta[2], state.meta[3], state.meta[4], state.meta[5],
+                state.meta[1], state.meta[2], state.meta[3], state.logNumber,
+                state.publicationCode, state.meta[4], state.meta[5],
                 state.meta[6], doc.documentId());
     }
 
@@ -507,6 +557,15 @@ public final class GlmOcrQuestionExtractor {
         }
 
         Integer totalFromPaper = state.totals.get(raw.number);
+        // honesty: when both the part-marks sum and the printed total are known
+        // and disagree (OCR damage, e.g. October Q18: parts sum 2 vs total 8),
+        // the marks are NOT exact — conflict recorded, never silently resolved
+        boolean marksConflict = allMarksKnown && totalFromPaper != null
+                && partMarks != totalFromPaper;
+        if (marksConflict) {
+            state.warnings.add("Q" + raw.number + ": part marks sum (" + partMarks
+                    + ") conflicts with printed total (" + totalFromPaper + ")");
+        }
         int marks = allMarksKnown ? partMarks
                 : totalFromPaper != null ? totalFromPaper
                 : mcq ? 1 : 0;
@@ -517,8 +576,9 @@ public final class GlmOcrQuestionExtractor {
 
         return new QuestionDraft(questionId, raw.number, raw.numberingStyle, raw.section,
                 raw.stem.toString().strip(), mcq, options, parts, raw.figures,
-                raw.tableElementIds, marks, allMarksKnown || totalFromPaper != null, raw.qwc,
-                confidence);
+                raw.tableElementIds, marks, (allMarksKnown || totalFromPaper != null)
+                && !marksConflict, raw.qwc,
+                raw.answerPrompts, confidence);
     }
 
     private String shortId(String docId) {

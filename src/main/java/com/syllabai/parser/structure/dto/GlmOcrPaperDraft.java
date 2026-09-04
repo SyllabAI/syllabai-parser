@@ -56,6 +56,8 @@ public record GlmOcrPaperDraft(
             @JsonProperty("qualification") String qualification,
             @JsonProperty("subject") String subject,
             @JsonProperty("paperReference") String paperReference,
+            @JsonProperty("logNumber") String logNumber,
+            @JsonProperty("publicationCode") String publicationCode,
             @JsonProperty("session") String session,
             @JsonProperty("examDate") String examDate,
             @JsonProperty("duration") String duration,
@@ -78,6 +80,7 @@ public record GlmOcrPaperDraft(
      * @param marks           best-known marks (part sum, else paper total)
      * @param marksKnown      whether marks are exact (all parts carried marks)
      * @param qwc             asterisk (quality of written communication) marker
+     * @param answerPrompts   answer-space prompts ending in "=" (stem level)
      * @param confidence      extraction confidence (always &lt; 1.0)
      */
     public record QuestionDraft(
@@ -94,6 +97,7 @@ public record GlmOcrPaperDraft(
             @JsonProperty("marks") int marks,
             @JsonProperty("marksKnown") boolean marksKnown,
             @JsonProperty("qwc") boolean qwc,
+            @JsonProperty("answerPrompts") List<String> answerPrompts,
             @JsonProperty("confidence") double confidence) {
 
         public QuestionDraft {
@@ -102,6 +106,7 @@ public record GlmOcrPaperDraft(
             figures = figures == null ? List.of() : List.copyOf(figures);
             tableElementIds = tableElementIds == null
                     ? List.of() : List.copyOf(tableElementIds);
+            answerPrompts = answerPrompts == null ? List.of() : List.copyOf(answerPrompts);
         }
     }
 
