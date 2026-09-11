@@ -3,11 +3,13 @@ package com.syllabai.parser.structure.glmocr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.syllabai.parser.canonical.CanonicalDocument;
+import com.syllabai.parser.canonical.CanonicalJson;
 import com.syllabai.parser.engine.glmocr.GlmOcrMarkdownParser;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.GuidanceLine;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.MarkPoint;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.MarkSchemeEntry;
+import com.syllabai.parser.structure.dto.GlmOcrPaperDraft;
 import java.io.IOException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -78,7 +80,15 @@ class GlmOcrMarkSchemeExtractorTest {
         assertThat(june.icTable().rows().get(0)).containsExactly("6", "4", "", "2");
 
         assertThat(june.reviewRequired()).isTrue();
-        assertThat(june.warnings()).isEmpty(); // clean file, no ambiguity encountered
+        // the June MS's single centered image (an expired-signature OCR
+        // watermark crop) is now SURFACED at draft level instead of being
+        // silently dropped — hardening round 2, corpus-true regression
+        assertThat(june.figureRefs()).hasSize(1);
+        assertThat(june.figureRefs().get(0).availability())
+                .isEqualTo("unavailable-signed-url");
+        assertThat(june.warnings()).containsExactly(
+                "1 figure reference(s) in the mark-scheme markdown are not "
+                        + "represented in the structured entries; preserved in figureRefs");
     }
 
     @Test
@@ -198,5 +208,39 @@ class GlmOcrMarkSchemeExtractorTest {
                 "Any two from\n(1)\n• The bubble may not be spherical\n(1)");
         assertThat(separators).hasSize(2);
         assertThat(separators.get(0).anyTwoFrom()).isTrue();
+    }
+
+    @Test
+    @DisplayName("MS figure blocks: surfaced as draft-level figureRefs + visibility warning")
+    void markSchemeFiguresAreSurfaced() throws IOException {
+        GlmOcrMarkSchemeDraft draft = ms("figure-ms-ms.md");
+
+        // header figure (before the table) AND worked-answer figure (after it)
+        assertThat(draft.figureRefs()).hasSize(2);
+        GlmOcrPaperDraft.FigureRef header = draft.figureRefs().get(0);
+        assertThat(header.url()).isEqualTo("assets/crop_ms_header.png");
+        assertThat(header.elementId()).isNotBlank();
+        assertThat(header.availability()).isEqualTo("unavailable-signed-url");
+        GlmOcrPaperDraft.FigureRef graph = draft.figureRefs().get(1);
+        assertThat(graph.url()).isEqualTo("assets/crop_ms_graph.png");
+
+        // the structured entries still carry the marks; figures stay unassigned
+        assertThat(entry(draft, "1").marks()).isEqualTo(2);
+        assertThat(draft.warnings()).anyMatch(w -> w.equals(
+                "2 figure reference(s) in the mark-scheme markdown are not "
+                        + "represented in the structured entries; preserved in figureRefs"));
+    }
+
+    @Test
+    @DisplayName("figure-free MS: figureRefs stays null and is omitted from the JSON bytes")
+    void figureFreeMarkSchemeStaysByteIdentical() throws IOException {
+        GlmOcrMarkSchemeDraft draft = ms("pathological-ms.md");
+
+        assertThat(draft.figureRefs()).isNull();
+        GlmOcrMarkSchemeDraft reparsed = CanonicalJson.mapper().readValue(
+                CanonicalJson.mapper().writeValueAsString(draft), GlmOcrMarkSchemeDraft.class);
+        assertThat(reparsed.figureRefs()).isNull();
+        assertThat(CanonicalJson.mapper().writeValueAsString(draft))
+                .doesNotContain("figureRefs");
     }
 }

@@ -132,6 +132,43 @@ class GlmOcrPairCliTest {
         return copy;
     }
 
+    @Test
+    @DisplayName("--assets-dir: sidecar assets-report.json ledgers resolved + unresolved refs")
+    void assetsSidecarReport(@TempDir Path work) throws Exception {
+        Path input = work.resolve("input");
+        Path out = work.resolve("bundle");
+        Path assets = Files.createDirectories(work.resolve("assets"));
+        // minimal valid PNG (59x40 header) for the resolvable reference
+        Files.write(assets.resolve("crop_front.png"), new byte[] {
+                (byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+                0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+                0x00, 0x00, 0x00, 0x3B, 0x00, 0x00, 0x00, 0x28,
+                0x08, 0x06, 0x00, 0x00, 0x00});
+        // crop_q1.png deliberately MISSING — the operator-deletion scenario
+        copyFixtures(input, "figure-ms-qp.md", "figure-ms-ms.md");
+
+        GlmOcrPairCli.main(new String[] {
+                input.resolve("figure-ms-qp.md").toString(),
+                input.resolve("figure-ms-ms.md").toString(),
+                out.toString(),
+                "--uri-prefix=" + URI_PREFIX,
+                "--assets-dir=" + assets});
+
+        // the five-file bundle is unchanged; the report is a sixth SIDEcar file
+        for (String file : BUNDLE) {
+            assertThat(out.resolve(file)).as("bundle file %s", file).isRegularFile();
+        }
+        com.fasterxml.jackson.databind.JsonNode report = CanonicalJson.mapper()
+                .readTree(out.resolve("assets-report.json").toFile());
+        assertThat(report.get("referencesTotal").asInt()).isEqualTo(2);
+        assertThat(report.get("referencesResolved").asInt()).isEqualTo(1);
+        assertThat(report.get("distinctAssets").asInt()).isEqualTo(1);
+        assertThat(report.get("unresolved")).hasSize(1);
+        assertThat(report.get("unresolved").get(0).get("url").asText())
+                .isEqualTo("assets/crop_q1.png");
+        assertThat(report.get("unresolved").get(0).get("elementId").asText()).isNotBlank();
+    }
+
     private static void copyFixtures(Path inputDir, String qp, String ms) throws IOException {
         Files.createDirectories(inputDir);
         Files.write(inputDir.resolve(qp), fixture(qp));

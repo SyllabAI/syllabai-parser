@@ -145,4 +145,55 @@ class GlmOcrAssetEnricherTest {
         assertThat(result.draft().questions().get(0).parts().get(0).figures().get(0)
                 .availability()).isEqualTo("available");
     }
+
+    @Test
+    @DisplayName("path traversal: ../ candidates are never read, reference stays untouched")
+    void traversalEscapesAreNotResolved(@TempDir Path tempDir) throws Exception {
+        // the referenced file EXISTS one level above the assets root — the old
+        // resolver would have read it; the contained resolver must not
+        Path outside = Files.createDirectories(tempDir.resolve("outside"));
+        Files.write(outside.resolve("secret.png"), PNG_59X40);
+        Path assets = Files.createDirectories(tempDir.resolve("assets"));
+
+        GlmOcrAssetEnricher.EnrichedDraft result = GlmOcrAssetEnricher.enrich(
+                draft(ref("e000010", "assets/../outside/secret.png")), assets);
+        FigureRef untouched =
+                result.draft().questions().get(0).parts().get(0).figures().get(0);
+
+        assertThat(result.enrichment().referencesResolved()).isZero();
+        assertThat(untouched.availability()).isEqualTo("unavailable-signed-url");
+        assertThat(untouched.assetId()).isNull();
+        assertThat(untouched.sha256()).isNull();
+    }
+
+    @Test
+    @DisplayName("URL-encoded traversal (..%2F) is rejected after decoding too")
+    void encodedTraversalAlsoRejected(@TempDir Path tempDir) throws Exception {
+        Path outside = Files.createDirectories(tempDir.resolve("outside"));
+        Files.write(outside.resolve("secret.png"), PNG_59X40);
+        Path assets = Files.createDirectories(tempDir.resolve("assets"));
+        // decodes to the relative path ../outside/secret.png — the candidate
+        // normalizes OUTSIDE the assets root, so containment must reject it
+        // even though the target file exists on disk
+        GlmOcrAssetEnricher.EnrichedDraft result = GlmOcrAssetEnricher.enrich(
+                draft(ref("e000011", "..%2Foutside%2Fsecret.png")), assets);
+
+        assertThat(result.enrichment().referencesResolved()).isZero();
+        assertThat(result.draft().questions().get(0).parts().get(0).figures().get(0)
+                .availability()).isEqualTo("unavailable-signed-url");
+    }
+
+    @Test
+    @DisplayName("containment positive control: file inside the assets root still resolves")
+    void containmentKeepsLegitimateResolution(@TempDir Path tempDir) throws Exception {
+        Path assets = Files.createDirectories(tempDir.resolve("assets"));
+        Files.write(assets.resolve("crop_e000012.png"), PNG_59X40);
+
+        GlmOcrAssetEnricher.EnrichedDraft result = GlmOcrAssetEnricher.enrich(
+                draft(ref("e000012", "assets/crop_e000012.png")), assets);
+
+        assertThat(result.enrichment().referencesResolved()).isEqualTo(1);
+        assertThat(result.draft().questions().get(0).parts().get(0).figures().get(0)
+                .sha256()).isNotNull();
+    }
 }

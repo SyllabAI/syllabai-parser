@@ -2,6 +2,7 @@ package com.syllabai.parser.structure.glmocr;
 
 import com.syllabai.parser.canonical.CanonicalDocument;
 import com.syllabai.parser.canonical.DocumentElement;
+import com.syllabai.parser.canonical.FigureElement;
 import com.syllabai.parser.canonical.TableElement;
 import com.syllabai.parser.canonical.TextBlockElement;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft;
@@ -9,6 +10,8 @@ import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.GuidanceLine;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.IcTable;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.MarkPoint;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft.MarkSchemeEntry;
+import com.syllabai.parser.structure.dto.GlmOcrPaperDraft;
+import com.syllabai.parser.structure.dto.GlmOcrPaperDraft.FigureRef;
 import com.syllabai.parser.structure.dto.GlmOcrPaperDraft.PaperMeta;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -75,12 +78,23 @@ public final class GlmOcrMarkSchemeExtractor {
                 handleTable(table, state);
             } else if (element instanceof TextBlockElement block) {
                 handleTextLine(block.text(), state);
+            } else if (element instanceof FigureElement figure) {
+                state.figureRefs.add(figureRef(figure));
             }
         }
         closeEntry(state);
+        if (!state.figureRefs.isEmpty()) {
+            // visibility warning: MS figures exist but the entries have no
+            // per-row attachment — a reviewer must see what was found
+            state.warnings.add(state.figureRefs.size()
+                    + " figure reference(s) in the mark-scheme markdown are not "
+                    + "represented in the structured entries; preserved in figureRefs");
+        }
         return new GlmOcrMarkSchemeDraft(GlmOcrMarkSchemeDraft.SCHEMA_VERSION,
                 EXTRACTION_METHOD, true, paperMeta(markScheme, state), state.entries,
-                stringTotals(state.totals), state.paperTotal, state.icTable == null ? null : state.icTable,
+                stringTotals(state.totals), state.paperTotal,
+                state.icTable == null ? null : state.icTable,
+                state.figureRefs.isEmpty() ? null : List.copyOf(state.figureRefs),
                 state.warnings);
     }
 
@@ -92,6 +106,7 @@ public final class GlmOcrMarkSchemeExtractor {
         final Map<Integer, Integer> totals = new LinkedHashMap<>();
         final List<String> warnings = new ArrayList<>();
         final List<List<String>> icRows = new ArrayList<>();
+        final List<FigureRef> figureRefs = new ArrayList<>();
         final String[] meta = new String[7]; // board, qual, subject, paperRef, session, date, duration
         String logNumber;
         String publicationCode;
@@ -506,6 +521,18 @@ public final class GlmOcrMarkSchemeExtractor {
 
     private static boolean anyNonEmpty(List<String> cells) {
         return cells.stream().anyMatch(c -> !c.isBlank());
+    }
+
+    /**
+     * Figure reference exactly as the QP extractor records it (same failure
+     * state, same field semantics) — only the ownership decision differs:
+     * MS entries stay unassigned, so the ref carries just the canonical
+     * element identity and the reference URL.
+     */
+    private static FigureRef figureRef(FigureElement figure) {
+        return new FigureRef(figure.elementId(), figure.sourceName(), figure.format(),
+                figure.text(), GlmOcrImageAssets.AVAILABILITY_UNAVAILABLE_SIGNED_URL,
+                null, null, null, null, null, null);
     }
 
     private static String firstNonEmpty(List<String> cells) {

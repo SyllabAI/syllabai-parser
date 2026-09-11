@@ -94,7 +94,14 @@ def _format_mismatch(sniffed, declared):
 
 def resolve_asset(ref, assets_dir: Path):
     """Return an enriched copy of a figure reference, or the original dict
-    untouched when the referenced file does not exist under assets_dir."""
+    untouched when the referenced file does not exist under assets_dir.
+
+    Containment: a candidate is only considered when it stays inside
+    ``assets_dir`` — reference URLs are corpus data, not trusted input, so a
+    ``src`` like ``../../secrets.png`` (or an absolute path) never makes the
+    resolver read outside the declared assets root; such references simply
+    keep their failure state (identical decisions to the Java twin).
+    """
     url = ref.get("url")
     if not url:
         return ref
@@ -104,6 +111,7 @@ def resolve_asset(ref, assets_dir: Path):
         path = unquote(path)
     except ValueError:
         path = url
+    root = assets_dir.resolve()
     candidates = []
     if not path.startswith("/"):
         candidates.append(assets_dir / path)
@@ -112,9 +120,12 @@ def resolve_asset(ref, assets_dir: Path):
         candidates.append(assets_dir / name)
     for candidate in candidates:
         try:
-            if not candidate.is_file():
+            resolved = candidate.resolve()
+            if not resolved.is_relative_to(root):
                 continue
-            data = candidate.read_bytes()
+            if not resolved.is_file():
+                continue
+            data = resolved.read_bytes()
         except OSError:
             continue
         sha256_hex = __import__("hashlib").sha256(data).hexdigest()

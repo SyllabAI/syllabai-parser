@@ -11,6 +11,7 @@ import re
 
 from . import DRAFT_SCHEMA_VERSION, MS_EXTRACTION_METHOD
 from .canonical import elements_in_reading_order
+from .question_extractor import FIGURE_UNAVAILABLE
 
 LABEL = re.compile(r"^(\*?)(\d{1,2})\s*((?:\([a-h]\))?(?:\([ivx]+\))?)\s*$")
 TOTAL_IN_TABLE = re.compile(r"^total for question\s*(\d{1,2})\s*$", re.I)
@@ -57,6 +58,7 @@ class _State:
         self.totals = {}
         self.warnings = []
         self.ic_rows = []
+        self.figure_refs = []
         self.meta = [None] * 7  # board, qual, subject, paperRef, session, date, duration
         self.log_number = None
         self.publication_code = None
@@ -184,8 +186,17 @@ class GlmOcrMarkSchemeExtractor:
                 self._handle_table(element, state)
             elif kind == "text_block":
                 self._handle_text_line(element["text"], state)
+            elif kind == "figure":
+                state.figure_refs.append(self._figure_ref(element))
         self._close_entry(state)
-        return {
+        if state.figure_refs:
+            # visibility warning: MS figures exist but the entries have no
+            # per-row attachment — a reviewer must see what was found
+            state.warnings.append(
+                str(len(state.figure_refs))
+                + " figure reference(s) in the mark-scheme markdown are not "
+                + "represented in the structured entries; preserved in figureRefs")
+        draft = {
             "schemaVersion": DRAFT_SCHEMA_VERSION,
             "extractionMethod": MS_EXTRACTION_METHOD,
             "reviewRequired": True,
@@ -196,6 +207,24 @@ class GlmOcrMarkSchemeExtractor:
             "paperTotal": state.paper_total,
             "icTable": state.ic_table,
             "warnings": state.warnings,
+        }
+        if state.figure_refs:
+            # null/absent in the Java twin (per-field NON_NULL) — the key is
+            # omitted entirely so figure-free drafts stay byte-identical
+            draft["figureRefs"] = list(state.figure_refs)
+        return draft
+
+    @staticmethod
+    def _figure_ref(figure: dict) -> dict:
+        """Figure reference exactly as the QP extractor records it (same
+        failure state, same field semantics) — MS entries stay unassigned,
+        so the ref carries just the canonical element identity and URL."""
+        return {
+            "elementId": figure["element_id"],
+            "sourceName": figure["source_name"],
+            "format": figure["format"],
+            "url": figure["text"],
+            "availability": FIGURE_UNAVAILABLE,
         }
 
     # ── table handling ────────────────────────────────────────────────────────

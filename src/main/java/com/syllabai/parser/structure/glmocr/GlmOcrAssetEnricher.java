@@ -9,7 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * OPT-IN local asset resolution for figure references (T-C03 hardening,
@@ -36,8 +38,38 @@ public final class GlmOcrAssetEnricher {
     private GlmOcrAssetEnricher() {
     }
 
-    /** Result of enriching one paper draft. */
-    public record Enrichment(int referencesTotal, int referencesResolved) {
+    /** Result of enriching one paper draft.
+     *
+     * @param referencesTotal    figure references walked (question, part, front matter)
+     * @param referencesResolved references upgraded to {@code available}
+     * @param distinctAssets     distinct asset files behind the resolved references
+     *                           (several questions may share one image)
+     * @param unresolved         references that did not resolve under the assets
+     *                           root, in encounter order — the machine-readable
+     *                           input for the persisted assets report
+     */
+    public record Enrichment(int referencesTotal, int referencesResolved,
+                             int distinctAssets, List<UnresolvedRef> unresolved) {
+
+        public Enrichment {
+            unresolved = unresolved == null ? List.of() : List.copyOf(unresolved);
+        }
+    }
+
+    /** One reference that did not resolve under the assets root. */
+    public record UnresolvedRef(String elementId, String sourceName, String url) {
+    }
+
+    /** Encounter-order collector for totals, distinct assets and unresolved refs. */
+    private static final class Collector {
+        int total;
+        int resolved;
+        final Set<String> assetShas = new HashSet<>();
+        final List<UnresolvedRef> unresolved = new ArrayList<>();
+
+        Enrichment enrichment() {
+            return new Enrichment(total, resolved, assetShas.size(), unresolved);
+        }
     }
 
     /**
@@ -46,16 +78,16 @@ public final class GlmOcrAssetEnricher {
      * {@code assetsDir}. Returns the enriched draft plus resolution counts.
      */
     public static EnrichedDraft enrich(GlmOcrPaperDraft draft, Path assetsDir) {
-        int[] counter = new int[2]; // [total, resolved]
+        Collector collector = new Collector();
 
         List<GlmOcrPaperDraft.QuestionDraft> questions = new ArrayList<>();
         for (GlmOcrPaperDraft.QuestionDraft question : draft.questions()) {
-            List<FigureRef> qFigures = enrichAll(question.figures(), assetsDir, counter);
+            List<FigureRef> qFigures = enrichAll(question.figures(), assetsDir, collector);
             List<GlmOcrPaperDraft.PartDraft> parts = new ArrayList<>();
             for (GlmOcrPaperDraft.PartDraft part : question.parts()) {
                 parts.add(new GlmOcrPaperDraft.PartDraft(
                         part.partId(), part.label(), part.text(), part.marks(), part.qwc(),
-                        enrichAll(part.figures(), assetsDir, counter),
+                        enrichAll(part.figures(), assetsDir, collector),
                         part.answerPrompts(), part.confidence()));
             }
             questions.add(new GlmOcrPaperDraft.QuestionDraft(
@@ -71,10 +103,9 @@ public final class GlmOcrAssetEnricher {
                 draft.paper(), questions, draft.questionTotals(), draft.paperTotal(),
                 draft.sectionTotals(),
                 draft.frontMatterFigures() == null ? null
-                        : enrichAll(draft.frontMatterFigures(), assetsDir, counter),
+                        : enrichAll(draft.frontMatterFigures(), assetsDir, collector),
                 draft.warnings());
-        return new EnrichedDraft(enriched,
-                new Enrichment(counter[0], counter[1]));
+        return new EnrichedDraft(enriched, collector.enrichment());
     }
 
     /** Enriched draft + counts (record holder without touching the DTO). */
@@ -82,16 +113,22 @@ public final class GlmOcrAssetEnricher {
     }
 
     private static List<FigureRef> enrichAll(List<FigureRef> refs, Path assetsDir,
-                                             int[] counter) {
+                                             Collector collector) {
         if (refs == null || refs.isEmpty()) {
             return refs;
         }
         List<FigureRef> out = new ArrayList<>(refs.size());
         for (FigureRef ref : refs) {
-            counter[0]++;
+            collector.total++;
             FigureRef resolved = resolve(ref, assetsDir);
             if (resolved != ref) {
-                counter[1]++;
+                collector.resolved++;
+                if (resolved.sha256() != null) {
+                    collector.assetShas.add(resolved.sha256());
+                }
+            } else {
+                collector.unresolved.add(new UnresolvedRef(
+                        ref.elementId(), ref.sourceName(), ref.url()));
             }
             out.add(resolved);
         }
@@ -102,12 +139,20 @@ public final class GlmOcrAssetEnricher {
      * Resolves one reference: the decoded URL path is tried relative to
      * {@code assetsDir}, then its bare file name. Unresolvable references
      * come back untouched.
+     *
+     * <p><strong>Containment:</strong> a candidate is only considered when it
+     * stays inside {@code assetsDir}. Reference URLs are corpus data, not
+     * trusted input — a crafted or corrupted {@code src} such as
+     * {@code ../../secrets.png} (or an absolute path) must never make the
+     * enricher read outside the declared assets root; such references simply
+     * keep their failure state.</p>
      */
     static FigureRef resolve(FigureRef ref, Path assetsDir) {
         String url = ref.url();
         if (url == null || url.isBlank()) {
             return ref;
         }
+        Path root = assetsDir.toAbsolutePath().normalize();
         String path = urlPath(url);
         List<Path> candidates = new ArrayList<>(2);
         if (!path.startsWith("/")) {
@@ -121,11 +166,15 @@ public final class GlmOcrAssetEnricher {
             }
         }
         for (Path candidate : candidates) {
-            if (!Files.isRegularFile(candidate)) {
+            Path normalized = candidate.toAbsolutePath().normalize();
+            if (!normalized.startsWith(root)) {
+                continue;
+            }
+            if (!Files.isRegularFile(normalized)) {
                 continue;
             }
             GlmOcrImageAssets.ImageAsset asset = GlmOcrImageAssets.fromBytes(
-                    readAll(candidate), ref.sourceName(), url, ref.elementId());
+                    readAll(normalized), ref.sourceName(), url, ref.elementId());
             Integer width = asset.width() >= 0 ? asset.width() : null;
             Integer height = asset.height() >= 0 ? asset.height() : null;
             return new FigureRef(ref.elementId(), ref.sourceName(), ref.format(), ref.url(),
