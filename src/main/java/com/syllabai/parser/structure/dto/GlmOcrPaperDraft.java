@@ -1,8 +1,11 @@
 package com.syllabai.parser.structure.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * GLM-OCR question-paper draft (Session 8). Everything extracted by
@@ -43,11 +46,43 @@ public record GlmOcrPaperDraft(
 
     public GlmOcrPaperDraft {
         questions = questions == null ? List.of() : List.copyOf(questions);
-        questionTotals = questionTotals == null ? Map.of() : Map.copyOf(questionTotals);
-        sectionTotals = sectionTotals == null ? Map.of() : Map.copyOf(sectionTotals);
+        questionTotals = orderedTotals(questionTotals);
+        sectionTotals = orderedTotals(sectionTotals);
         frontMatterFigures = frontMatterFigures == null
                 ? List.of() : List.copyOf(frontMatterFigures);
         warnings = warnings == null ? List.of() : List.copyOf(warnings);
+    }
+
+    /**
+     * Deterministic total maps. {@code Map.copyOf} iterates in a salted,
+     * run-dependent order (two JVM runs of the same input serialized
+     * {@code questionTotals} differently — a determinism bug found while
+     * validating the 2026-09 hardening patch), so totals are stored in a
+     * deterministic order instead: numeric keys (question numbers) ascending
+     * first, then everything else (section letters "A"/"B") in natural
+     * string order.
+     */
+    public static Map<String, Integer> orderedTotals(Map<String, Integer> totals) {
+        if (totals == null) {
+            return Map.of();
+        }
+        TreeMap<String, Integer> ordered = new TreeMap<>(GlmOcrPaperDraft::compareTotalKeys);
+        ordered.putAll(totals);
+        return Collections.unmodifiableMap(ordered);
+    }
+
+    static int compareTotalKeys(String a, String b) {
+        String ta = a.trim();
+        String tb = b.trim();
+        boolean numericA = ta.matches("\\d+");
+        boolean numericB = tb.matches("\\d+");
+        if (numericA && numericB) {
+            return Integer.compare(Integer.parseInt(ta), Integer.parseInt(tb));
+        }
+        if (numericA != numericB) {
+            return numericA ? -1 : 1;
+        }
+        return ta.compareTo(tb);
     }
 
     /** Paper identity derived from document content, never from file names. */
@@ -137,16 +172,41 @@ public record GlmOcrPaperDraft(
     }
 
     /**
-     * A figure reference. For the audited corpus the bytes are gone
-     * (expired signed URLs), so {@code availability} is
+     * One figure reference. For the audited corpus the bytes are gone
+     * (expired signed URLs), so the extraction-time {@code availability} is
      * "unavailable-signed-url" and {@code sourceName} carries the durable
-     * URL-path crop identity.
+     * URL-path crop identity; when the pair CLI runs with {@code --assets-dir},
+     * references that resolve to real local files are upgraded to
+     * "available" with content-derived identity (see the asset fields).
+     * The five base fields are the extraction-time
+     * facts; the six asset fields are OPT-IN enrichment (pair CLI
+     * {@code --assets-dir}) and are serialized with per-field NON_NULL so
+     * that unenriched drafts stay byte-identical to the pre-hardening
+     * engine on both the Java and Python sides.
+     *
+     * @param elementId      canonical figure element id
+     * @param sourceName     durable source location (decoded URL path)
+     * @param format         path extension (declared format)
+     * @param url            original reference URL
+     * @param availability   "unavailable-signed-url" or "available" (enriched)
+     * @param assetId        "img:&lt;sha256&gt;" when resolved locally (enriched)
+     * @param sha256         SHA-256 of the asset bytes (enriched)
+     * @param mimeType       sniffed content type (enriched)
+     * @param width          pixel width from the container header, else null
+     * @param height         pixel height from the container header, else null
+     * @param formatMismatch true when sniffed type contradicts the extension
      */
     public record FigureRef(
             @JsonProperty("elementId") String elementId,
             @JsonProperty("sourceName") String sourceName,
             @JsonProperty("format") String format,
             @JsonProperty("url") String url,
-            @JsonProperty("availability") String availability) {
+            @JsonProperty("availability") String availability,
+            @JsonProperty("assetId") @JsonInclude(JsonInclude.Include.NON_NULL) String assetId,
+            @JsonProperty("sha256") @JsonInclude(JsonInclude.Include.NON_NULL) String sha256,
+            @JsonProperty("mimeType") @JsonInclude(JsonInclude.Include.NON_NULL) String mimeType,
+            @JsonProperty("width") @JsonInclude(JsonInclude.Include.NON_NULL) Integer width,
+            @JsonProperty("height") @JsonInclude(JsonInclude.Include.NON_NULL) Integer height,
+            @JsonProperty("formatMismatch") @JsonInclude(JsonInclude.Include.NON_NULL) Boolean formatMismatch) {
     }
 }

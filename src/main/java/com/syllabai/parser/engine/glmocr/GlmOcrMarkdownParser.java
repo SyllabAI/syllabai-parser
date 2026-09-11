@@ -72,6 +72,47 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
     private static final Pattern ENTITY = Pattern.compile(
             "&#x([0-9a-fA-F]+);|&#(\\d+);|&gt;|&lt;|&amp;|&quot;|&apos;");
 
+    // ── bounded-block hardening (structural-boundary predicates) ───────────────
+    //
+    // An unterminated block opener (<table> without </table>, a $$ fence whose
+    // closer was lost, a <div align=center> without </div>) must not swallow
+    // the rest of the document. The scan stops at lines that can only be
+    // block-EXTERNAL content; the opener is counted in provenance and the
+    // swallowed span re-parses as normal flow. Predicates mirror the corpus
+    // repair heuristics validated against the 82-session IGCSE chemistry
+    // corpus (unterminated table ate q1..9 in 2013-Jan; orphan $$ fences ate
+    // q3-5/q7-10 in 2016-Jun-R before the corpus-side repair).
+    private static final Pattern CELL_HTML = Pattern.compile("<t[dhr]\\b|</t[dhr]>");
+    private static final Pattern EQ_OPS = Pattern.compile(
+            "[+=]|\\\\rightarrow|\\\\quad|\\\\mathrm|\\\\%");
+    private static final Pattern PART_LABEL = Pattern.compile("^\\([a-h]\\)\\s");
+    private static final Pattern ROMAN_LABEL = Pattern.compile("^\\([ivx]+\\)\\s");
+    private static final Pattern QUESTION_STEM = Pattern.compile("^\\d{1,2}\\s+[A-Za-z]{3,}");
+    private static final Pattern TOTAL_LINE = Pattern.compile(
+            "^\\(?\\s*Total for (Question|question|paper)", Pattern.CASE_INSENSITIVE);
+
+    /** Certain block-external content: headings, div/img wrappers, tables. */
+    static boolean decisive(String s) {
+        return s != null && !s.isEmpty()
+                && (s.startsWith("#") || s.startsWith("<div")
+                || s.startsWith("<table") || s.contains("<img"));
+    }
+
+    /** Boundary usable inside MATH spans (equations never look like stems). */
+    static boolean structural(String s) {
+        if (s == null || s.isEmpty() || CELL_HTML.matcher(s).find()) {
+            return false;
+        }
+        if (decisive(s)) {
+            return true;
+        }
+        if (EQ_OPS.matcher(s).find()) {
+            return false;
+        }
+        return PART_LABEL.matcher(s).find() || ROMAN_LABEL.matcher(s).find()
+                || QUESTION_STEM.matcher(s).matches() || TOTAL_LINE.matcher(s).find();
+    }
+
     @Override
     public String engineName() {
         return ENGINE_NAME;
@@ -127,6 +168,10 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
 
         int signedUrlRefs = 0;
         int entityDecodes = 0;
+        int unterminatedTables = 0;
+        int orphanMathFences = 0;
+        int unclosedDivs = 0;
+        int pendingOrphanDivs = 0;
 
         int i = 0;
         while (i < lines.length) {
@@ -135,6 +180,14 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
             String stripped = line.strip();
 
             if (stripped.isEmpty()) {
+                i++;
+                continue;
+            }
+
+            // a standalone </div> reaching top level closes a dropped orphan
+            // div opener; skip it instead of leaking HTML into the text flow
+            if (pendingOrphanDivs > 0 && CENTER_CLOSE.matcher(stripped).matches()) {
+                pendingOrphanDivs--;
                 i++;
                 continue;
             }
@@ -152,32 +205,103 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
             }
 
             if (stripped.startsWith("<table")) {
-                StringBuilder html = new StringBuilder(stripped);
-                while (!stripped.contains("</table>") && i + 1 < lines.length) {
-                    i++;
-                    stripped = lines[i].strip();
-                    html.append('\n').append(stripped);
+                // bounded scan: closer line, or a decisive structural line
+                // (heading / div / img / new table) re-parsed as flow, or EOF
+                int end = lines.length;
+                boolean closed = false;
+                int j = i;
+                while (j < lines.length) {
+                    String s2 = lines[j].strip();
+                    if (s2.contains("</table>")) {
+                        closed = true;
+                        end = j + 1;
+                        break;
+                    }
+                    if (j > i && decisive(s2)) {
+                        end = j;
+                        break;
+                    }
+                    j++;
                 }
-                GlmOcrMarkdownParser.ParsedTable table = parseHtmlTable(html.toString());
-                entityDecodes += table.entityDecodes();
-                tables.add(new TableElement(nextId(textBlocks, tables, figures, equations),
-                        1, null, nextOrder(textBlocks, tables, figures, equations), 1.0,
-                        table.rows(), ENGINE_NAME, ENGINE_VERSION));
-                i++;
+                List<String> htmlLines = new ArrayList<>();
+                for (int k = i; k < end; k++) {
+                    htmlLines.add(lines[k].strip());
+                }
+                if (closed) {
+                    i = end;
+                } else {
+                    unterminatedTables++;
+                    // keep the last COMPLETE row; trailing partial rows
+                    // re-parse as normal flow instead of vanishing into a
+                    // bogus table that eats the remaining questions
+                    int lastRow = -1;
+                    for (int k = i; k < end; k++) {
+                        if (lines[k].strip().contains("</tr>")) {
+                            lastRow = k;
+                        }
+                    }
+                    if (lastRow >= 0) {
+                        htmlLines = new ArrayList<>();
+                        for (int k = i; k <= lastRow; k++) {
+                            htmlLines.add(lines[k].strip());
+                        }
+                        i = lastRow + 1;
+                    } else {
+                        htmlLines = List.of(); // opener with zero rows: nothing to salvage
+                        i = i + 1;
+                    }
+                }
+                if (!htmlLines.isEmpty()) {
+                    // closed-but-empty tables still emit an element (rows []),
+                    // exactly as before; only a dropped unsalvageable opener
+                    // (no closer, no complete row) emits nothing
+                    GlmOcrMarkdownParser.ParsedTable table =
+                            parseHtmlTable(String.join("\n", htmlLines));
+                    entityDecodes += table.entityDecodes();
+                    tables.add(new TableElement(nextId(textBlocks, tables, figures, equations),
+                            1, null, nextOrder(textBlocks, tables, figures, equations), 1.0,
+                            table.rows(), ENGINE_NAME, ENGINE_VERSION));
+                }
                 continue;
             }
 
             if (CENTER_OPEN.matcher(stripped).matches()) {
-                i++;
+                // bounded scan: standalone </div>, a NESTED center opener (a
+                // genuinely ambiguous pairing the old scanner mis-consumed),
+                // or EOF. Headings / tables / img wrappers are legitimate
+                // INNER content of center blocks in this corpus (e.g.
+                // "<div align=center># Mark Scheme (Results)</div>") and must
+                // not terminate the scan.
+                int end = lines.length;
+                boolean closed = false;
+                int j = i + 1;
+                while (j < lines.length) {
+                    String s2 = lines[j].strip();
+                    if (CENTER_CLOSE.matcher(s2).matches()) {
+                        closed = true;
+                        end = j;
+                        break;
+                    }
+                    if (CENTER_OPEN.matcher(s2).matches()) {
+                        end = j;
+                        break;
+                    }
+                    j++;
+                }
+                if (!closed) {
+                    unclosedDivs++;
+                    pendingOrphanDivs++;
+                    i = i + 1; // opener dropped; inner lines re-parse as flow
+                    continue;
+                }
                 List<String> inner = new ArrayList<>();
-                while (i < lines.length && !CENTER_CLOSE.matcher(lines[i].strip()).matches()) {
-                    String innerLine = lines[i].strip();
+                for (int k = i + 1; k < end; k++) {
+                    String innerLine = lines[k].strip();
                     if (!innerLine.isEmpty()) {
                         inner.add(innerLine);
                     }
-                    i++;
                 }
-                i++; // consume </div>
+                i = end + 1; // consume </div>
                 for (String innerLine : inner) {
                     Matcher innerHeading = HEADING.matcher(innerLine);
                     if (innerHeading.matches()) {
@@ -193,13 +317,37 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
             }
 
             if (DISPLAY_MATH_OPEN.matcher(stripped).matches()) {
-                StringBuilder latex = new StringBuilder();
-                i++;
-                while (i < lines.length && !DISPLAY_MATH_OPEN.matcher(lines[i].strip()).matches()) {
-                    latex.append(lines[i].stripTrailing()).append('\n');
-                    i++;
+                // bounded scan: the closing $$ line, or a structural line that
+                // cannot be equation content, or EOF. An orphan opener is
+                // dropped and its span re-parses as normal flow — the old
+                // unbounded scan paired it with the NEXT block's opener and
+                // swallowed everything between.
+                int end = lines.length;
+                boolean closed = false;
+                int j = i + 1;
+                while (j < lines.length) {
+                    String s2 = lines[j].strip();
+                    if (DISPLAY_MATH_OPEN.matcher(s2).matches()) {
+                        closed = true;
+                        end = j;
+                        break;
+                    }
+                    if (structural(s2)) {
+                        end = j;
+                        break;
+                    }
+                    j++;
                 }
-                i++; // closing $$
+                if (!closed) {
+                    orphanMathFences++;
+                    i = i + 1; // orphan opener dropped; span re-parses as flow
+                    continue;
+                }
+                StringBuilder latex = new StringBuilder();
+                for (int k = i + 1; k < end; k++) {
+                    latex.append(lines[k].stripTrailing()).append('\n');
+                }
+                i = end + 1; // closing $$
                 equations.add(new EquationElement(
                         nextId(textBlocks, tables, figures, equations), 1, null,
                         latex.toString().stripTrailing(),
@@ -250,6 +398,17 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         params.put("entityDecodedLines", entityDecodes);
         params.put("signedUrlFigureRefs", signedUrlRefs);
         params.put("sourceLineCount", lines.length);
+        // honesty counters — present ONLY when non-zero so that clean-input
+        // provenance maps stay byte-identical to the pre-hardening engine
+        if (unterminatedTables > 0) {
+            params.put("unterminatedTableBlocks", unterminatedTables);
+        }
+        if (orphanMathFences > 0) {
+            params.put("orphanMathFences", orphanMathFences);
+        }
+        if (unclosedDivs > 0) {
+            params.put("unclosedCenterDivs", unclosedDivs);
+        }
 
         String fileName = sourceUri == null ? null
                 : sourceUri.substring(Math.max(sourceUri.lastIndexOf('/'),

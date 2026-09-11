@@ -191,7 +191,8 @@ class GlmOcrMarkSchemeExtractor:
             "reviewRequired": True,
             "paper": self._paper_meta(mark_scheme, state),
             "entries": state.entries,
-            "questionTotals": {str(number): value for number, value in state.totals.items()},
+            "questionTotals": {str(number): value
+                               for number, value in sorted(state.totals.items())},
             "paperTotal": state.paper_total,
             "icTable": state.ic_table,
             "warnings": state.warnings,

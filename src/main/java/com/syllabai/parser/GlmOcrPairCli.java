@@ -3,6 +3,7 @@ package com.syllabai.parser;
 import com.syllabai.parser.canonical.CanonicalDocument;
 import com.syllabai.parser.canonical.CanonicalJson;
 import com.syllabai.parser.engine.glmocr.GlmOcrMarkdownParser;
+import com.syllabai.parser.structure.glmocr.GlmOcrAssetEnricher;
 import com.syllabai.parser.structure.glmocr.GlmOcrMarkReconciliation;
 import com.syllabai.parser.structure.glmocr.GlmOcrMarkSchemeExtractor;
 import com.syllabai.parser.structure.glmocr.GlmOcrQuestionExtractor;
@@ -21,6 +22,7 @@ import java.util.Locale;
  *
  * <pre>
  *   syllabai-glmocr-pair &lt;qp.md&gt; &lt;ms.md&gt; &lt;out-dir&gt; [--uri-prefix &lt;prefix&gt;]
+ *                         [--assets-dir &lt;dir&gt;]
  * </pre>
  *
  * Writes the five-file bundle that syllabai-core's T-C02 bridge consumes,
@@ -39,22 +41,46 @@ import java.util.Locale;
  * <p><strong>Pairing is the operator's responsibility</strong> (same policy as
  * the corpus audit): the two files must be the QP and MS of the same paper.
  * The reconciliation output makes mismatches visible instead of hiding them.</p>
+ *
+ * <p><strong>Asset enrichment is opt-in:</strong> with {@code --assets-dir},
+ * QP figure references that resolve to real files under that directory are
+ * upgraded to {@code available} with content-derived identity
+ * ({@code img:<sha256>}, sniffed MIME, dimensions — via
+ * {@link GlmOcrAssetEnricher}); unresolvable references keep their failure
+ * state and carry no new fields. Without the flag no filesystem access
+ * happens and drafts are byte-identical to the pre-hardening engine.</p>
  */
 public final class GlmOcrPairCli {
 
     public static void main(String[] args) throws Exception {
         String uriPrefix = "";
+        Path assetsDir = null;
         int positional = 0;
         Path qpFile = null;
         Path msFile = null;
         Path outDir = null;
-        for (String arg : args) {
+        for (int a = 0; a < args.length; a++) {
+            String arg = args[a];
             if (arg.startsWith("--uri-prefix=")) {
                 uriPrefix = arg.substring("--uri-prefix=".length());
             } else if (arg.startsWith("--uri-prefix")) {
                 uriPrefix = arg.substring("--uri-prefix".length());
                 if (uriPrefix.startsWith("=")) {
                     uriPrefix = uriPrefix.substring(1);
+                }
+            } else if (arg.startsWith("--assets-dir=")) {
+                assetsDir = Path.of(arg.substring("--assets-dir=".length()));
+            } else if (arg.equals("--assets-dir")) {
+                if (a + 1 >= args.length) {
+                    System.err.println("--assets-dir requires a directory argument");
+                    usage();
+                    System.exit(2);
+                }
+                assetsDir = Path.of(args[++a]);
+            } else if (arg.startsWith("--assets-dir")) {
+                assetsDir = Path.of(arg.substring("--assets-dir".length()));
+                if (assetsDir.toString().startsWith("=")) {
+                    assetsDir = Path.of(assetsDir.toString().substring(1));
                 }
             } else switch (positional) {
                 case 0 -> qpFile = Path.of(arg);
@@ -80,6 +106,10 @@ public final class GlmOcrPairCli {
                 System.exit(2);
             }
         }
+        if (assetsDir != null && !Files.isDirectory(assetsDir)) {
+            System.err.println("not a readable directory: " + assetsDir);
+            System.exit(2);
+        }
 
         GlmOcrMarkdownParser parser = new GlmOcrMarkdownParser();
         CanonicalDocument qp = parser.parse(Files.readAllBytes(qpFile), uri(qpFile, uriPrefix));
@@ -87,6 +117,13 @@ public final class GlmOcrPairCli {
 
         GlmOcrPaperDraft qpDraft = new GlmOcrQuestionExtractor().extract(qp);
         GlmOcrMarkSchemeDraft msDraft = new GlmOcrMarkSchemeExtractor().extract(ms);
+        GlmOcrAssetEnricher.Enrichment assetEnrichment = null;
+        if (assetsDir != null) {
+            GlmOcrAssetEnricher.EnrichedDraft enrichedDraft =
+                    GlmOcrAssetEnricher.enrich(qpDraft, assetsDir);
+            qpDraft = enrichedDraft.draft();
+            assetEnrichment = enrichedDraft.enrichment();
+        }
         GlmOcrMarkReconciliation.Reconciliation reconciliation =
                 GlmOcrMarkReconciliation.reconcile(qpDraft, msDraft);
 
@@ -103,6 +140,11 @@ public final class GlmOcrPairCli {
                 + "; review required: " + reconciliation.reviewRequired()
                 + " (mismatches: " + reconciliation.mismatchCount()
                 + ", paper-total conflict: " + reconciliation.paperTotalConflict() + ")");
+        if (assetEnrichment != null) {
+            System.out.println("assets: " + assetEnrichment.referencesResolved() + "/"
+                    + assetEnrichment.referencesTotal() + " figure references resolved under "
+                    + assetsDir.toAbsolutePath());
+        }
         System.out.println("bundle written to: " + outDir.toAbsolutePath());
     }
 
@@ -120,10 +162,12 @@ public final class GlmOcrPairCli {
     private static void usage() {
         System.err.println("""
                 usage:
-                  syllabai-glmocr-pair <qp.md> <ms.md> <out-dir> [--uri-prefix <corpus-prefix>]
+                  syllabai-glmocr-pair <qp.md> <ms.md> <out-dir> [--uri-prefix <corpus-prefix>] [--assets-dir <dir>]
 
                 writes the five-file T-C02/T-C03 bundle (qp-canonical.json,
-                ms-canonical.json, qp-draft.json, ms-draft.json, reconciliation.json)
+                ms-canonical.json, qp-draft.json, ms-draft.json, reconciliation.json);
+                --assets-dir optionally enriches QP figure references that resolve
+                to real local files (availability=available, img:<sha256>)
                 """);
     }
 

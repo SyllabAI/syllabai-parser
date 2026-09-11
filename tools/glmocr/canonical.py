@@ -58,6 +58,48 @@ CELL_TAG = re.compile(r"<t[dh][^>]*>(.*?)</t[dh]>", re.S)
 ANY_TAG = re.compile(r"<[^>]+>")
 ENTITY = re.compile(r"&#x([0-9a-fA-F]+);|&#(\d+);|&gt;|&lt;|&amp;|&quot;|&apos;")
 
+# ── bounded-block hardening (structural-boundary predicates) ─────────────────
+#
+# An unterminated block opener (<table> without </table>, a $$ fence whose
+# closer was lost, a <div align=center> without </div>) must not swallow the
+# rest of the document: scanning stops at lines that can only be block-
+# EXTERNAL content, the opener is reported in provenance, and the swallowed
+# span re-parses as normal flow. The predicates mirror the corpus-repair
+# heuristics validated against the full 82-session IGCSE chemistry corpus
+# (Past-Papers repair pass): decisive markers bound table spans; math spans
+# also stop at part labels / question stems / total lines unless the line
+# carries equation operators or table-cell markup.
+
+CELL_HTML = re.compile(r"<t[dhr]\b|</t[dhr]>")
+EQ_OPS = re.compile(r"[+=]|\\rightarrow|\\quad|\\mathrm|\\%")
+PART_LABEL = re.compile(r"^\([a-h]\)\s")
+ROMAN_LABEL = re.compile(r"^\([ivx]+\)\s")
+QUESTION_STEM = re.compile(r"^\d{1,2}\s+[A-Za-z]{3,}")
+TOTAL_LINE = re.compile(r"^\(?\s*Total for (Question|question|paper)", re.I)
+
+
+def _decisive(s):
+    """Certain block-external content: headings, div/img wrappers, tables."""
+    return bool(s) and (s.startswith("#") or s.startswith("<div")
+                        or s.startswith("<table") or "<img" in s)
+
+
+def _structural(s):
+    """Boundary usable inside MATH spans (equations never look like stems)."""
+    if not s or CELL_HTML.search(s):
+        return False
+    if _decisive(s):
+        return True
+    if EQ_OPS.search(s):
+        return False
+    return bool(PART_LABEL.match(s) or ROMAN_LABEL.match(s)
+                or QUESTION_STEM.match(s) or TOTAL_LINE.match(s))
+
+
+# div spans stop only at their own kind of structure: a heading, a table or a
+# second center-div opener. <img>/<div style> wrappers are legitimate INNER
+# content of center blocks and must not terminate the scan.
+
 _NAMED_ENTITIES = {"&gt;": ">", "&lt;": "<", "&amp;": "&", "&quot;": '"', "&apos;": "'"}
 
 
@@ -137,6 +179,10 @@ class GlmOcrMarkdownParser:
 
         signed_url_refs = 0
         entity_decodes = 0
+        unterminated_tables = 0
+        orphan_math_fences = 0
+        unclosed_divs = 0
+        pending_orphan_divs = 0
 
         def next_index():
             return len(text_blocks) + len(tables) + len(figures) + len(equations)
@@ -149,6 +195,13 @@ class GlmOcrMarkdownParser:
             stripped = line.strip()
 
             if not stripped:
+                i += 1
+                continue
+
+            # a standalone </div> reaching top level closes a dropped orphan
+            # div opener; skip it instead of leaking HTML into the text flow
+            if pending_orphan_divs and CENTER_CLOSE.fullmatch(stripped):
+                pending_orphan_divs -= 1
                 i += 1
                 continue
 
@@ -181,43 +234,96 @@ class GlmOcrMarkdownParser:
                 continue
 
             if stripped.startswith("<table"):
-                html = [stripped]
-                while "</table>" not in stripped and i + 1 < n:
-                    i += 1
-                    stripped = lines[i].strip()
-                    html.append(stripped)
-                rows, decodes = _parse_html_table("\n".join(html))
+                # bounded scan: closer line, or a decisive structural line
+                # (heading / div / img / new table) re-parsed as flow, or EOF
+                end = n
+                closed = False
+                j = i
+                while j < n:
+                    s2 = lines[j].strip()
+                    if "</table>" in s2:
+                        closed = True
+                        end = j + 1
+                        break
+                    if j > i and _decisive(s2):
+                        end = j
+                        break
+                    j += 1
+                html_lines = [lines[k].strip() for k in range(i, end)]
+                if closed:
+                    i = end
+                else:
+                    unterminated_tables += 1
+                    # keep the last COMPLETE row; trailing partial rows
+                    # re-parse as normal flow instead of vanishing into a
+                    # bogus table that eats the remaining questions
+                    last_row = -1
+                    for k in range(i, end):
+                        if "</tr>" in lines[k].strip():
+                            last_row = k
+                    if last_row >= 0:
+                        html_lines = [lines[k].strip() for k in range(i, last_row + 1)]
+                        i = last_row + 1
+                    else:
+                        html_lines = []  # opener with zero rows: nothing to salvage
+                        i = i + 1
+                rows, decodes = _parse_html_table("\n".join(html_lines))
                 entity_decodes += decodes
-                idx = next_index()
-                joined = None
-                if rows:
-                    joined = "\n".join(" | ".join(row) for row in rows)
-                tables.append({
-                    "element_id": f"e{idx:06d}",
-                    "element_type": "table",
-                    "page_number": 1,
-                    "bounding_box": None,
-                    "text": joined,
-                    "reading_order": idx,
-                    "confidence": 1.0,
-                    "rows": rows,
-                    "row_count": len(rows),
-                    "column_count": len(rows[0]) if rows else 0,
-                    "source_engine": ENGINE_NAME,
-                    "source_engine_version": ENGINE_VERSION,
-                })
-                i += 1
+                if html_lines:
+                    # closed-but-empty tables still emit an element (text None),
+                    # exactly as before; only a dropped unsalvageable opener
+                    # (no closer, no complete row) emits nothing
+                    idx = next_index()
+                    joined = None
+                    if rows:
+                        joined = "\n".join(" | ".join(row) for row in rows)
+                    tables.append({
+                        "element_id": f"e{idx:06d}",
+                        "element_type": "table",
+                        "page_number": 1,
+                        "bounding_box": None,
+                        "text": joined,
+                        "reading_order": idx,
+                        "confidence": 1.0,
+                        "rows": rows,
+                        "row_count": len(rows),
+                        "column_count": len(rows[0]) if rows else 0,
+                        "source_engine": ENGINE_NAME,
+                        "source_engine_version": ENGINE_VERSION,
+                    })
                 continue
 
             if CENTER_OPEN.fullmatch(stripped):
-                i += 1
+                # bounded scan: standalone </div>, a NESTED center opener (a
+                # genuinely ambiguous pairing the old scanner mis-consumed),
+                # or EOF. Headings / tables / img wrappers are legitimate
+                # INNER content of center blocks in this corpus (e.g.
+                # "<div align=center># Mark Scheme (Results)</div>") and must
+                # not terminate the scan.
+                end = n
+                closed = False
+                j = i + 1
+                while j < n:
+                    s2 = lines[j].strip()
+                    if CENTER_CLOSE.fullmatch(s2):
+                        closed = True
+                        end = j
+                        break
+                    if CENTER_OPEN.fullmatch(s2):
+                        end = j
+                        break
+                    j += 1
+                if not closed:
+                    unclosed_divs += 1
+                    pending_orphan_divs += 1
+                    i = i + 1  # opener dropped; inner lines re-parse as flow
+                    continue
                 inner = []
-                while i < n and not CENTER_CLOSE.fullmatch(lines[i].strip()):
-                    inner_line = lines[i].strip()
+                for k in range(i + 1, end):
+                    inner_line = lines[k].strip()
                     if inner_line:
                         inner.append(inner_line)
-                    i += 1
-                i += 1  # consume </div>
+                i = end + 1  # consume </div>
                 for inner_line in inner:
                     inner_heading = HEADING.fullmatch(inner_line)
                     idx = next_index()
@@ -252,12 +358,30 @@ class GlmOcrMarkdownParser:
                 continue
 
             if DISPLAY_MATH_OPEN.fullmatch(stripped):
-                latex = []
-                i += 1
-                while i < n and not DISPLAY_MATH_OPEN.fullmatch(lines[i].strip()):
-                    latex.append(lines[i].rstrip() + "\n")
-                    i += 1
-                i += 1  # closing $$
+                # bounded scan: the closing $$ line, or a structural line that
+                # cannot be equation content, or EOF. An orphan opener is
+                # dropped and its span re-parses as normal flow — the old
+                # unbounded scan paired it with the NEXT block's opener and
+                # swallowed everything between (2016-Jun-R lost q3-5/q7-10).
+                end = n
+                closed = False
+                j = i + 1
+                while j < n:
+                    s2 = lines[j].strip()
+                    if DISPLAY_MATH_OPEN.fullmatch(s2):
+                        closed = True
+                        end = j
+                        break
+                    if _structural(s2):
+                        end = j
+                        break
+                    j += 1
+                if not closed:
+                    orphan_math_fences += 1
+                    i = i + 1  # orphan opener dropped; span re-parses as flow
+                    continue
+                latex = [lines[k].rstrip() + "\n" for k in range(i + 1, end)]
+                i = end + 1  # closing $$
                 joined = "".join(latex).rstrip()
                 idx = next_index()
                 equations.append({
@@ -357,6 +481,14 @@ class GlmOcrMarkdownParser:
             "signedUrlFigureRefs": signed_url_refs,
             "sourceLineCount": len(lines),
         }
+        # honesty counters — present ONLY when non-zero so that clean-input
+        # provenance maps stay byte-identical to the pre-hardening engine
+        if unterminated_tables:
+            params["unterminatedTableBlocks"] = unterminated_tables
+        if orphan_math_fences:
+            params["orphanMathFences"] = orphan_math_fences
+        if unclosed_divs:
+            params["unclosedCenterDivs"] = unclosed_divs
 
         file_name = None
         if source_uri is not None:

@@ -23,11 +23,15 @@ import java.util.regex.Pattern;
 /**
  * GLM-OCR question-paper extractor (Session 8, syntax report §3).
  *
- * <p>Segmentation accepts BOTH real numbering styles — {@code "1: stem"}
- * (June export) and {@code "1 stem"} (October export) — plus the documented
+ * <p>Segmentation accepts THREE real numbering styles — {@code "1: stem"}
+ * (June export), {@code "1 stem"} (October export) and {@code "1. stem"}
+ * (2011-June / Specimen-2017 export) — plus the documented
  * artefacts: total lines promoted to headings, detached MCQ option letters,
  * options arriving out of order, centered {@code (N)} marks blocks, and
- * answer prompts ending in "=".</p>
+ * answer prompts ending in "=". The dot style requires the stem to start
+ * with a part label "(a)" or a capital letter: GLM-OCR line-breaks decimal
+ * quantities after the point ("25.0 cm3" → "25. 0 cm3…") and such fragments
+ * must never open a question (sequence check plus stem plausibility).</p>
  *
  * <p><strong>Honesty:</strong> MCQ status is validated in hindsight — a
  * pending option set only counts if the complete A–D set closes before the
@@ -41,6 +45,7 @@ public final class GlmOcrQuestionExtractor {
 
     private static final Pattern QUESTION_COLON = Pattern.compile("^\\*?(\\d{1,2}):\\s*(.*)$");
     private static final Pattern QUESTION_SPACE = Pattern.compile("^(\\*?)(\\d{1,2})\\s+(\\S.*)$");
+    private static final Pattern QUESTION_DOT = Pattern.compile("^(\\*?)(\\d{1,2})\\.\\s+(\\S.*)$");
     private static final Pattern COMBINED_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*\\(([ivx]+)\\)\\s*(.*)$");
     private static final Pattern LETTER_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*(.*)$");
     private static final Pattern ROMAN_PART = Pattern.compile("^\\(([ivx]+)\\)\\s*(.*)$");
@@ -206,6 +211,19 @@ public final class GlmOcrQuestionExtractor {
                     + ": question number promoted to heading (opened from heading)");
             return;
         }
+        Matcher dotHeading = QUESTION_DOT.matcher(t);
+        if (dotHeading.matches() && isForwardQuestion(
+                Integer.parseInt(dotHeading.group(2)), state)
+                && dotStemPlausible(dotHeading.group(3))) {
+            openQuestion(Integer.parseInt(dotHeading.group(2)), "dot",
+                    dotHeading.group(3), state);
+            if (!dotHeading.group(1).isEmpty()) {
+                state.current.qwc = true;
+            }
+            state.warnings.add("Q" + dotHeading.group(2)
+                    + ": question number promoted to heading (opened from heading)");
+            return;
+        }
         if (t.toLowerCase().contains("mark scheme")) {
             state.sawMarkScheme = true;
         }
@@ -255,7 +273,7 @@ public final class GlmOcrQuestionExtractor {
             return; // appendix text after "List of data…" is not question content
         }
 
-        // question starts — both numbering styles, sequence-checked
+        // question starts — all three numbering styles, sequence-checked
         Matcher colon = QUESTION_COLON.matcher(text);
         if (colon.matches() && isNextQuestion(Integer.parseInt(colon.group(1)), state)) {
             openQuestion(Integer.parseInt(colon.group(1)), "colon", colon.group(2), state);
@@ -268,6 +286,15 @@ public final class GlmOcrQuestionExtractor {
         if (space.matches() && isNextQuestion(Integer.parseInt(space.group(2)), state)) {
             openQuestion(Integer.parseInt(space.group(2)), "space", space.group(3), state);
             if (!space.group(1).isEmpty()) {
+                state.current.qwc = true; // question-level QWC asterisk (*14)
+            }
+            return;
+        }
+        Matcher dot = QUESTION_DOT.matcher(text);
+        if (dot.matches() && isNextQuestion(Integer.parseInt(dot.group(2)), state)
+                && dotStemPlausible(dot.group(3))) {
+            openQuestion(Integer.parseInt(dot.group(2)), "dot", dot.group(3), state);
+            if (!dot.group(1).isEmpty()) {
                 state.current.qwc = true; // question-level QWC asterisk (*14)
             }
             return;
@@ -399,6 +426,22 @@ public final class GlmOcrQuestionExtractor {
         return number == state.current.number + 1;
     }
 
+    /**
+     * Decimal-quantity guard for the "N." numbering style (2011-Jun,
+     * Specimen-2017). GLM-OCR line-breaks decimal quantities after the
+     * decimal point — "25.0 cm3" surfaces as "25. 0 cm3…" — and such a
+     * fragment must NOT open question 25. Every real dot-style stem in the
+     * audited corpus starts with a part label "(a)" or a capital letter;
+     * every observed decimal fragment starts with a digit. A rejected real
+     * stem fails safe: its text stays attached to the previous question
+     * where teacher review sees it.
+     */
+    static boolean dotStemPlausible(String remainder) {
+        return remainder != null && !remainder.isEmpty()
+                && (remainder.charAt(0) == '('
+                || Character.isUpperCase(remainder.charAt(0)));
+    }
+
     private void recordTotal(Matcher total, State state) {
         state.totals.put(Integer.parseInt(total.group(1)), Integer.parseInt(total.group(2)));
     }
@@ -456,7 +499,7 @@ public final class GlmOcrQuestionExtractor {
 
     private void handleFigure(FigureElement figure, State state) {
         FigureRef ref = new FigureRef(figure.elementId(), figure.sourceName(), figure.format(),
-                figure.text(), FIGURE_UNAVAILABLE);
+                figure.text(), FIGURE_UNAVAILABLE, null, null, null, null, null, null);
         RawQuestion q = state.current;
         if (q == null || state.inFormulaAppendix) {
             if (q == null) {

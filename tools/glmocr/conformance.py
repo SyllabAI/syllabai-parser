@@ -42,6 +42,9 @@ FIXTURE_PAIRS = [
     ("june-2025-wph11-01-qp.md", "june-2025-wph11-01-ms.md"),
     ("october-2025-wph11-01-qp.md", "october-2025-wph11-01-ms.md"),
     ("october-2025-wph11-01a-qp.md", "october-2025-wph11-01a-ms.md"),
+    # synthetic hardening fixture: unterminated <table>, orphan $$ fence,
+    # unclosed <div align=center>, "N." numbering style + decimal guard
+    ("pathological-qp.md", "pathological-ms.md"),
 ]
 
 MODES = ("doc", "qp", "ms")

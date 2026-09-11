@@ -13,6 +13,7 @@ from .canonical import elements_in_reading_order
 
 QUESTION_COLON = re.compile(r"^\*?(\d{1,2}):[ \t]*(.*)$")
 QUESTION_SPACE = re.compile(r"^(\*?)(\d{1,2})\s+(\S.*)$")
+QUESTION_DOT = re.compile(r"^(\*?)(\d{1,2})\.\s+(\S.*)$")
 COMBINED_PART = re.compile(r"^\*?\(([a-h])\)\s*\(([ivx]+)\)\s*(.*)$")
 LETTER_PART = re.compile(r"^\*?\(([a-h])\)\s*(.*)$")
 ROMAN_PART = re.compile(r"^\(([ivx]+)\)\s*(.*)$")
@@ -111,7 +112,7 @@ class GlmOcrQuestionExtractor:
                     self._append_text(
                         " $" + element["latex"].replace("\n", " ").strip() + "$", state)
 
-        totals = {str(number): value for number, value in state.totals.items()}
+        totals = {str(number): value for number, value in sorted(state.totals.items())}
         return {
             "schemaVersion": DRAFT_SCHEMA_VERSION,
             "extractionMethod": QP_EXTRACTION_METHOD,
@@ -120,7 +121,7 @@ class GlmOcrQuestionExtractor:
             "questions": [self._to_draft(raw, state) for raw in state.questions],
             "questionTotals": totals,
             "paperTotal": state.paper_total,
-            "sectionTotals": dict(state.section_totals),
+            "sectionTotals": dict(sorted(state.section_totals.items())),
             "frontMatterFigures": state.front_matter_figures,
             "warnings": state.warnings,
         }
@@ -159,6 +160,15 @@ class GlmOcrQuestionExtractor:
                 state.current.qwc = True
             state.warnings.append(
                 "Q" + space.group(2) + ": question number promoted to heading (opened from heading)")
+            return
+        dot = QUESTION_DOT.fullmatch(t)
+        if dot and self._is_forward_question(int(dot.group(2)), state) \
+                and self._dot_stem_plausible(dot.group(3)):
+            self._open_question(int(dot.group(2)), "dot", dot.group(3), state)
+            if dot.group(1):
+                state.current.qwc = True
+            state.warnings.append(
+                "Q" + dot.group(2) + ": question number promoted to heading (opened from heading)")
             return
         state.warnings.append("unclassified heading: " + t)
 
@@ -208,6 +218,13 @@ class GlmOcrQuestionExtractor:
         if space and self._is_next_question(int(space.group(2)), state):
             self._open_question(int(space.group(2)), "space", space.group(3), state)
             if space.group(1):
+                state.current.qwc = True  # question-level QWC asterisk (*14)
+            return
+        dot = QUESTION_DOT.fullmatch(text)
+        if dot and self._is_next_question(int(dot.group(2)), state) \
+                and self._dot_stem_plausible(dot.group(3)):
+            self._open_question(int(dot.group(2)), "dot", dot.group(3), state)
+            if dot.group(1):
                 state.current.qwc = True  # question-level QWC asterisk (*14)
             return
 
@@ -303,6 +320,18 @@ class GlmOcrQuestionExtractor:
         if state.current is None:
             return number == 1
         return number == state.current.number + 1
+
+    @staticmethod
+    def _dot_stem_plausible(remainder):
+        """Decimal-quantity guard for the "N." numbering style (2011-Jun,
+        Specimen-2017). GLM-OCR line-breaks decimal quantities after the
+        decimal point — "25.0 cm3" surfaces as "25. 0 cm3…" — and such a
+        fragment must NOT open question 25. Every real dot-style stem in the
+        audited corpus starts with a part label "(a)" or a capital letter;
+        every observed decimal fragment starts with a digit. A rejected real
+        stem fails safe: its text stays attached to the previous question
+        where teacher review sees it."""
+        return bool(remainder) and (remainder[0] == "(" or remainder[:1].isupper())
 
     def _record_total(self, total, state):
         state.totals[int(total.group(1))] = int(total.group(2))

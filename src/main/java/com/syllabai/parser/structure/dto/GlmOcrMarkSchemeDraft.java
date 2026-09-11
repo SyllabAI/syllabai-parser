@@ -48,7 +48,7 @@ public record GlmOcrMarkSchemeDraft(
 
     public GlmOcrMarkSchemeDraft {
         entries = entries == null ? List.of() : List.copyOf(entries);
-        questionTotals = questionTotals == null ? Map.of() : Map.copyOf(questionTotals);
+        questionTotals = GlmOcrPaperDraft.orderedTotals(questionTotals);
         warnings = warnings == null ? List.of() : List.copyOf(warnings);
     }
 

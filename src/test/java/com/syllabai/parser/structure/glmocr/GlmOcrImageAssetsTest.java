@@ -107,7 +107,7 @@ class GlmOcrImageAssetsTest {
                 "/ocr/crop/20260401/crop_1_1774977149836.png", "png",
                 "https://host/ocr%2Fcrop%2F20260401%2Fcrop_1_1774977149836.png"
                         + "?UCloudPublicKey=TOKEN&Signature=4lRw%3D&Expires=1775581949",
-                "unavailable-signed-url");
+                "unavailable-signed-url", null, null, null, null, null, null);
         GlmOcrImageAssets.ImageAsset asset = GlmOcrImageAssets.unavailableReference(ref, "q01-doc");
         assertThat(asset.availability()).isEqualTo("unavailable-signed-url");
         assertThat(asset.url()).contains("Expires=1775581949"); // expiry evidence preserved
@@ -122,7 +122,7 @@ class GlmOcrImageAssetsTest {
     void sourceNameMatching() {
         FigureRef ref = new FigureRef("e000007",
                 "/ocr/crop/20260401/crop_1_1774977149836.png", "png", null,
-                "unavailable-signed-url");
+                "unavailable-signed-url", null, null, null, null, null, null);
         GlmOcrImageAssets.ImageAsset saved = GlmOcrImageAssets.fromBytes(
                 PNG_HEADER, "/ocr/crop/20260401/crop_1_1774977149836.png", null, "q01-doc");
         assertThat(GlmOcrImageAssets.matchesBySourceName(saved, ref)).isTrue();
