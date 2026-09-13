@@ -130,6 +130,10 @@ public final class GlmOcrQuestionExtractor {
         String logNumber;
         String publicationCode;
         String specimenYear;
+        /** every printed paper-reference code, in reading order (cover prints 2-3:
+         *  the Edexcel-Certificate twin KCH0/1C, the International GCSE 4CH0/1C and
+         *  the Double Award 4SC0/1C) */
+        final List<String> paperRefCandidates = new ArrayList<>();
         Integer paperTotal;
         String section = null;
         boolean inFormulaAppendix;
@@ -496,8 +500,13 @@ public final class GlmOcrQuestionExtractor {
 
     private void metaFromLine(String text, State state) {
         Matcher paperRef = PAPER_REF.matcher(text);
-        if (paperRef.find() && state.meta[3] == null) {
-            state.meta[3] = paperRef.group(1);
+        while (paperRef.find()) {
+            if (state.meta[3] == null) {
+                state.meta[3] = paperRef.group(1);
+            }
+            if (!state.paperRefCandidates.contains(paperRef.group(1))) {
+                state.paperRefCandidates.add(paperRef.group(1));
+            }
         }
         Matcher logNumber = LOG_NUMBER.matcher(text);
         if (logNumber.find() && state.logNumber == null) {
@@ -574,10 +583,24 @@ public final class GlmOcrQuestionExtractor {
         return state.specimenYear == null ? null : "Specimen " + state.specimenYear;
     }
 
+    /**
+     * Paper-reference choice: covers print 2-3 codes (Certificate twin KCH0/1C,
+     * International GCSE 4CH0/1C, Double Award 4SC0/1C). Prefer the FIRST
+     * 4-prefixed code — the International GCSE series this pipeline ingests —
+     * falling back to the first printed code. Deterministic and printed-faithful.
+     */
+    private String paperReference(State state) {
+        return state.paperRefCandidates.stream()
+                .filter(code -> code.startsWith("4"))
+                .findFirst()
+                .orElse(state.paperRefCandidates.isEmpty() ? null
+                        : state.paperRefCandidates.getFirst());
+    }
+
     private PaperMeta paperMeta(CanonicalDocument doc, State state) {
         return new PaperMeta(
                 state.meta[0] == null && state.meta[3] != null ? "Edexcel" : state.meta[0],
-                state.meta[1], state.meta[2], state.meta[3], state.logNumber,
+                state.meta[1], state.meta[2], paperReference(state), state.logNumber,
                 state.publicationCode, sessionLabel(state), state.meta[5],
                 state.meta[6], doc.documentId());
     }
