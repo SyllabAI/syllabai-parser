@@ -1,0 +1,165 @@
+name: ocr-batch
+
+# Automation for the GLM-OCR batch tool (tools/ocr_batch/).
+#
+# Three independent jobs:
+#   tool-tests  — unit tests (mocked HTTP) on every push/PR touching the tool
+#   demo-api    — real end-to-end run against the Z.ai layout_parsing API
+#                 (workflow_dispatch; requires the ZAI_API_KEY secret)
+#   demo-ollama — real end-to-end run against a local Ollama glm-ocr
+#                 (workflow_dispatch; no key needed, CPU-only, slow)
+#
+# Runner spec for the demo jobs: standard ubuntu-latest (4 vCPU, 16 GB RAM,
+# ~14 GB free disk) comfortably fits both routes. The api job is
+# network-bound (~1-3 min per paper). The ollama job pays model download
+# (~2 GB) plus CPU-only inference (~1-3 min per page) — smoke-test scale
+# only; bulk runs belong on the api backend or a GPU runner.
+
+on:
+  push:
+    paths:
+      - "tools/ocr_batch/**"
+      - ".github/workflows/ocr-batch.yml"
+  pull_request:
+    paths:
+      - "tools/ocr_batch/**"
+      - ".github/workflows/ocr-batch.yml"
+  workflow_dispatch:
+    inputs:
+      papers_repo:
+        description: "Repository holding the PDF corpus"
+        default: "SyllabAI/Past-Papers"
+      papers_ref:
+        description: "Ref of the papers repository"
+        default: "main"
+      sample_pdf:
+        description: "Path (inside the papers repo) of the demo PDF"
+        default: "IAL/Edexcel/Physics/Unit 4/January 2012 QP - Unit 4 Edexcel Physics A-level.pdf"
+
+permissions:
+  contents: read
+
+jobs:
+  tool-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: unit tests (mocked HTTP, no network, no key)
+        run: python3 tools/ocr_batch/test_ocr_batch.py -v
+
+  demo-api:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: check for API key
+        id: key
+        run: |
+          if [ -n "${{ secrets.ZAI_API_KEY }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::secret ZAI_API_KEY is not set — add it in repo settings to run the api demo"
+          fi
+      - name: fetch the demo paper
+        if: steps.key.outputs.present == 'true'
+        run: |
+          # PAT when provided (private corpus); anonymous clone otherwise
+          # (works when the papers repository is public).
+          if [ -n "${{ secrets.PAPERS_PAT }}" ]; then
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://x-access-token:${{ secrets.PAPERS_PAT }}@github.com/${{ inputs.papers_repo }}.git" papers
+          else
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://github.com/${{ inputs.papers_repo }}.git" papers
+          fi
+      - name: run the batch tool (api backend)
+        if: steps.key.outputs.present == 'true'
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+        run: |
+          python3 tools/ocr_batch/ocr_batch.py \
+            "papers/${{ inputs.sample_pdf }}" \
+            -o ocr-demo-out \
+            --backend api
+      - name: run summary
+        if: steps.key.outputs.present == 'true'
+        run: |
+          find ocr-demo-out -type f | sort
+          echo "---- manifest ----"
+          cat ocr-demo-out/*/manifest.json
+      - uses: actions/upload-artifact@v4
+        if: steps.key.outputs.present == 'true'
+        with:
+          name: ocr-demo-api
+          path: ocr-demo-out/
+          retention-days: 14
+
+  demo-ollama:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: install ollama
+        run: |
+          curl -fsSL https://ollama.ai/install.sh | sh
+          ollama --version
+      - name: pull the glm-ocr model
+        run: |
+          # q8_0 is the smallest official quant (1.6 GB, 128K context)
+          ollama pull glm-ocr:q8_0
+          ollama list
+      - name: start ollama serve
+        run: |
+          nohup ollama serve > ollama-serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:11434/api/tags > /dev/null; then
+              echo "ollama is up"; break
+            fi
+            sleep 1
+          done
+      - name: fetch the demo paper
+        run: |
+          if [ -n "${{ secrets.PAPERS_PAT }}" ]; then
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://x-access-token:${{ secrets.PAPERS_PAT }}@github.com/${{ inputs.papers_repo }}.git" papers
+          else
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://github.com/${{ inputs.papers_repo }}.git" papers
+          fi
+      - name: run the batch tool (ollama backend, CPU-only smoke)
+        run: |
+          python3 tools/ocr_batch/ocr_batch.py \
+            "papers/${{ inputs.sample_pdf }}" \
+            -o ocr-demo-out \
+            --backend ollama \
+            --model glm-ocr:q8_0 \
+            --num-ctx 8192
+      - name: run summary
+        run: |
+          find ocr-demo-out -type f | sort
+          echo "---- manifest ----"
+          cat ocr-demo-out/*/manifest.json
+          echo "---- ollama ps ----"
+          ollama ps || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ocr-demo-ollama
+          path: |
+            ocr-demo-out/
+            ollama-serve.log
+          retention-days: 14
