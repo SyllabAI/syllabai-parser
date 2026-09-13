@@ -23,7 +23,11 @@ import java.util.regex.Pattern;
  * <p>Table-first: every non-boilerplate HTML table is a mark-scheme block.
  * Row shapes handled: header rows ({@code Question Number | Answer |
  * [Additional Guidance] | Mark}, 3–5 columns), label rows
- * ({@code 11}, {@code 13(a)}, {@code *14} in cell 0), rowspan continuation
+ * ({@code 11}, {@code 13(a)}, {@code *14} in cell 0), two-level label rows
+ * (the "Question number" column spanning two cells: {@code 7 | (a)(i)} —
+ * T-C04 repair), continuation-label rows (cell 0 is a bare sub-part label
+ * such as {@code (ii)}, {@code (iii)}, {@code (b)(i)}, {@code (c)} — a new
+ * sub-part of the current question, T-C04 repair), rowspan continuation
  * rows (label and/or marks deferred), in-table total rows
  * ({@code Total for question 12}), embedded IC tables, and the QWC
  * structure rubric. Standalone {@code (Total for Question N=X marks)} lines
@@ -40,6 +44,16 @@ public final class GlmOcrMarkSchemeExtractor {
 
     private static final Pattern LABEL = Pattern.compile(
             "^(\\*?)(\\d{1,2})\\s*((?:\\([a-h]\\))?(?:\\([ivx]+\\))?)\\s*$");
+    /** cell 0 of a continuation-label row: "(ii)", "(iii)", "(b)(i)", "(c)" */
+    private static final Pattern CONT_LABEL = Pattern.compile(
+            "^(?:\\([a-h]\\))?(?:\\([ivx]+\\))+$|^(?:\\([a-h]\\))$");
+    /** cell 1 of a two-level label row: "(a)(i)", "(b)", "a (i)" (spaced) */
+    private static final Pattern SUB_LABEL = Pattern.compile(
+            "^(?:\\([a-h]\\))(?:\\([ivx]+\\))?$|^[a-h]\\s*\\([ivx]+\\)$");
+    /** captures the letter and roman of a continuation label, e.g. "(b)(ii)";
+     * both groups optional, at least one required (null-null guarded in code) */
+    private static final Pattern CONT_LABEL_PARTS = Pattern.compile(
+            "^(?:(\\([a-h]\\)))?(?:(\\([ivx]+\\)))?$");
     private static final Pattern TOTAL_IN_TABLE = Pattern.compile(
             "(?i)^total for question\\s*(\\d{1,2})\\s*$");
     private static final Pattern TOTAL_STANDALONE = Pattern.compile(
@@ -101,6 +115,9 @@ public final class GlmOcrMarkSchemeExtractor {
         RawEntry current;
         boolean inIcBlock;
         String icLocation;
+        /** last part letter seen in the current question ("b" of "2(b)(i)");
+         * letter context for bare-roman continuation labels */
+        String lastPartLetter;
 
         State(String docId) {
             this.docId = docId;
@@ -189,10 +206,31 @@ public final class GlmOcrMarkSchemeExtractor {
             }
         }
 
+        // two-level label row: the "Question number" column spans two cells —
+        // cell 0 carries the question number, cell 1 the sub-part label
+        // ("(a)(i)", "a (i)"); the answer starts at cell 2 (T-C04 repair)
+        if (cells.size() >= 5 && SUB_LABEL.matcher(cells.get(1).strip()).matches()
+                && LABEL.matcher(cells.get(0).strip()).matches()) {
+            openTwoLevelEntry(cells, state);
+            return;
+        }
+
         // label row → new entry
         Matcher label = LABEL.matcher(cells.get(0).strip());
         if (label.matches()) {
             openEntry(label, cells, state);
+            return;
+        }
+
+        // continuation-label row: cell 0 is a bare sub-part label ("(ii)",
+        // "(iii)", "(b)(i)", "(c)") — a new sub-part of the current question,
+        // never a rowspan continuation of the previous entry. A second label
+        // in cell 1 marks the two-level group layout, which stays on the
+        // continuation path (T-C04 repair).
+        if (state.current != null && cells.size() >= 3
+                && CONT_LABEL.matcher(cells.get(0).strip()).matches()
+                && !CONT_LABEL.matcher(cells.get(1).strip()).matches()
+                && openContinuationEntry(cells, state)) {
             return;
         }
 
@@ -264,6 +302,114 @@ public final class GlmOcrMarkSchemeExtractor {
         entry.guidance.addAll(guidance);
         state.current = entry;
         state.entries.add(toEntry(entry));
+        // part-letter context for later bare-roman continuation labels; a
+        // question-level label ("11") resets it — letters never cross questions
+        state.lastPartLetter = part.isEmpty() ? null
+                : part.substring(0, 1);
+    }
+
+    /**
+     * Two-level label row: cell 0 = question number, cell 1 = sub-part label
+     * ("(a)(i)", "a (i)"). Opens the entry with the compound label
+     * ({@code 7(a)(i)}), the answer at cell 2, and the marks cell last —
+     * instead of losing the real answer into the guidance of a bare
+     * question-level entry.
+     */
+    private void openTwoLevelEntry(List<String> cells, State state) {
+        closeEntry(state);
+        String subLabel = cells.get(1).strip();
+        // canonicalize the spaced form "a (i)" → "(a)(i)"
+        String canonical = subLabel.matches("^[a-h]\\s*\\([ivx]+\\)$")
+                ? "(" + subLabel.substring(0, 1) + ")" + subLabel.substring(1).strip()
+                : subLabel;
+        Matcher question = LABEL.matcher(cells.get(0).strip());
+        if (!question.matches()) {
+            return; // unreachable from handleRow; defensive
+        }
+        int number = Integer.parseInt(question.group(2));
+        String part = canonical.replaceAll("[()]", "");
+        String printedLabel = number + canonical;
+        String entryId = "ms-" + shortId(state.docId) + "-q" + number + part;
+
+        String answer = cellAt(cells, 2);
+        Integer marks = trailingInteger(cells);
+
+        List<MarkPoint> markPoints = markPoints(answer);
+        List<GuidanceLine> guidance = new ArrayList<>();
+        for (int i = 3; i <= cells.size() - 2; i++) {
+            String cell = cells.get(i);
+            if (cell != null && !cell.isBlank()) {
+                classifyGuidance(cell.strip(), guidance);
+            }
+        }
+
+        RawEntry entry = new RawEntry(entryId, printedLabel, number, false,
+                markPoints, answer == null ? "" : answer.strip());
+        entry.marks = marks;
+        entry.marksCellSource = marks != null ? "two-level label row" : null;
+        entry.guidance.addAll(guidance);
+        state.current = entry;
+        state.entries.add(toEntry(entry));
+        state.lastPartLetter = part.isEmpty() ? null : part.substring(0, 1);
+    }
+
+    /**
+     * Continuation-label row: cell 0 is a bare sub-part label of the current
+     * question ("(ii)", "(b)(i)"). Letter-bearing labels name the part
+     * directly; bare roman labels continue the letter of the current part
+     * sequence. Returns false (row left on the continuation path) when no
+     * letter context exists for a bare-roman label — the association would be
+     * a guess, and guessing is not this extractor's contract.
+     */
+    private boolean openContinuationEntry(List<String> cells, State state) {
+        String contLabel = cells.get(0).strip();
+        Matcher parts = CONT_LABEL_PARTS.matcher(contLabel);
+        if (!parts.matches()) {
+            return false;
+        }
+        String letterGroup = parts.group(1); // "(b)" or null
+        String romanGroup = parts.group(2);  // "(ii)" or null
+        if (letterGroup == null && romanGroup == null) {
+            return false;
+        }
+        String letter;
+        if (letterGroup != null) {
+            letter = letterGroup.replaceAll("[()]", "");
+            state.lastPartLetter = letter;
+        } else {
+            if (state.lastPartLetter == null) {
+                return false; // conservative: no letter context, do not guess
+            }
+            letter = state.lastPartLetter;
+        }
+        String roman = romanGroup == null ? "" : romanGroup;
+
+        RawEntry current = state.current;
+        String printedLabel = current.number + "(" + letter + ")" + roman;
+        String entryId = "ms-" + shortId(state.docId) + "-q" + current.number
+                + letter + roman.replaceAll("[()]", "");
+
+        String answer = cellAt(cells, 1);
+        Integer marks = trailingInteger(cells);
+
+        List<MarkPoint> markPoints = markPoints(answer);
+        List<GuidanceLine> guidance = new ArrayList<>();
+        for (int i = 2; i <= cells.size() - 2; i++) {
+            String cell = cells.get(i);
+            if (cell != null && !cell.isBlank()) {
+                classifyGuidance(cell.strip(), guidance);
+            }
+        }
+
+        closeEntry(state);
+        RawEntry entry = new RawEntry(entryId, printedLabel, current.number,
+                false, markPoints, answer == null ? "" : answer.strip());
+        entry.marks = marks;
+        entry.marksCellSource = marks != null ? "continuation label row" : null;
+        entry.guidance.addAll(guidance);
+        state.current = entry;
+        state.entries.add(toEntry(entry));
+        return true;
     }
 
     private void closeEntry(State state) {
