@@ -14,21 +14,26 @@ import java.util.TreeMap;
  * Mismatches produce review findings — never a silent merge or "fix".
  *
  * <p>Compares: per-question totals (QP printed totals vs MS totals), paper
- * totals, and (advisory) presence of MS entries for QP questions. Missing
+ * totals, printed-identity disagreement (session / paper reference printed on
+ * BOTH covers — a disagreement is a finding, never silently resolved by picking
+ * one side), and (advisory) presence of MS entries for QP questions. Missing
  * totals on either side are reported as gaps, not treated as zero.</p>
  */
 public final class GlmOcrMarkReconciliation {
 
     /**
-     * @param questionNumber question the finding is about
+     * @param questionNumber question the finding is about ("paper" for
+     *                       identity-mismatch findings)
      * @param qpMarks        QP-side total (null when the QP side has no value)
      * @param msMarks        MS-side total (null when the MS side has no value)
-     * @param severity "match" | "mismatch" | "qp-only" | "ms-only" | "gap",
-     *                 named for where the value EXISTS: "qp-only" = the total
-     *                 is present on the QP and missing from the MS (qpMarks !=
-     *                 null, msMarks == null); "ms-only" = the mirror case;
-     *                 "gap" = neither side yields a value for a question the
-     *                 QP opened.
+     * @param severity "match" | "mismatch" | "qp-only" | "ms-only" | "gap"
+     *                 | "identity-mismatch", named for where the value EXISTS:
+     *                 "qp-only" = the total is present on the QP and missing
+     *                 from the MS (qpMarks != null, msMarks == null);
+     *                 "ms-only" = the mirror case; "gap" = neither side yields
+     *                 a value for a question the QP opened;
+     *                 "identity-mismatch" = printed-identity disagreement
+     *                 between the covers (T-C04 r2).
      */
     public record Finding(String questionNumber, Integer qpMarks, Integer msMarks,
                           String severity) {
@@ -108,7 +113,30 @@ public final class GlmOcrMarkReconciliation {
 
         boolean paperConflict = qp.paperTotal() != null && ms.paperTotal() != null
                 && !qp.paperTotal().equals(ms.paperTotal());
+
+        // Printed-identity disagreement (T-C04 r2 hardening): the QP cover is the
+        // authoritative identity source, but when BOTH covers print a session
+        // (or a paper reference) and they disagree, the pair is flagged for
+        // review — the disagreement itself is evidence, never silently merged.
+        // One-sided identity stays out of scope here: a QP with no printed
+        // session is rejected fail-closed by the core identity gate, and an MS
+        // cover cannot override the QP by itself (QP-first mapping).
+        int identityMismatches = 0;
+        GlmOcrPaperDraft.PaperMeta qpMeta = qp.paper();
+        GlmOcrPaperDraft.PaperMeta msMeta = ms.paper();
+        if (qpMeta != null && msMeta != null) {
+            if (qpMeta.session() != null && msMeta.session() != null
+                    && !qpMeta.session().equalsIgnoreCase(msMeta.session())) {
+                findings.add(new Finding("paper", null, null, "identity-mismatch"));
+                identityMismatches++;
+            }
+            if (qpMeta.paperReference() != null && msMeta.paperReference() != null
+                    && !qpMeta.paperReference().equalsIgnoreCase(msMeta.paperReference())) {
+                findings.add(new Finding("paper", null, null, "identity-mismatch"));
+                identityMismatches++;
+            }
+        }
         return new Reconciliation(List.copyOf(findings), qp.paperTotal(), ms.paperTotal(),
-                paperConflict, mismatches);
+                paperConflict, mismatches + identityMismatches);
     }
 }

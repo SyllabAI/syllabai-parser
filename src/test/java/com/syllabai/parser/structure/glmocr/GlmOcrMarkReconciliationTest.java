@@ -131,4 +131,72 @@ class GlmOcrMarkReconciliationTest {
         assertThat(finding.msMarks()).isEqualTo(4);
         assertThat(r.reviewRequired()).isTrue();
     }
+
+    // ── printed-identity disagreement (T-C04 r2 hardening, directive 2026-09-13) ──
+
+    private static GlmOcrPaperDraft.PaperMeta meta(String reference, String session) {
+        return new GlmOcrPaperDraft.PaperMeta("Edexcel", "IGCSE", "Chemistry",
+                reference, null, null, session, null, null, "test-doc");
+    }
+
+    private static GlmOcrPaperDraft qpWith(GlmOcrPaperDraft.PaperMeta paper) {
+        return new GlmOcrPaperDraft("1.0", "test", false, paper,
+                List.of(), Map.of("1", 3), 3, Map.of(), List.of(), List.of());
+    }
+
+    private static GlmOcrMarkSchemeDraft msWith(GlmOcrPaperDraft.PaperMeta paper) {
+        return new GlmOcrMarkSchemeDraft("1.0", "test", false, paper,
+                List.of(), Map.of("1", 3), 3, null, List.of());
+    }
+
+    @Test
+    @DisplayName("QP vs MS session disagreement is an identity-mismatch finding, never merged")
+    void sessionDisagreementIsFlagged() {
+        // the 2016-Jan duplicate shape: QP prints January 2015 while the paired
+        // MS cover names January 2016 — the disagreement itself must surface
+        Reconciliation r = GlmOcrMarkReconciliation.reconcile(
+                qpWith(meta("4CH0/1C", "January 2015")),
+                msWith(meta("4CH0/1C", "January 2016")));
+
+        assertThat(r.findings()).anySatisfy(f -> {
+            assertThat(f.severity()).isEqualTo("identity-mismatch");
+            assertThat(f.questionNumber()).isEqualTo("paper");
+        });
+        assertThat(r.mismatchCount()).isEqualTo(1);
+        assertThat(r.reviewRequired()).isTrue();
+        // QP-first: the reconciliation never rewrites either side
+        assertThat(qpWith(meta("4CH0/1C", "January 2015")).paper().session())
+                .isEqualTo("January 2015");
+    }
+
+    @Test
+    @DisplayName("QP vs MS paper-reference disagreement is flagged; one-sided identity is not")
+    void referenceDisagreementIsFlaggedOneSidedIsNot() {
+        Reconciliation referenceConflict = GlmOcrMarkReconciliation.reconcile(
+                qpWith(meta("4CH0/1C", "January 2016")),
+                msWith(meta("4CH1/1C", "January 2016")));
+        assertThat(referenceConflict.mismatchCount()).isEqualTo(1);
+        assertThat(referenceConflict.reviewRequired()).isTrue();
+
+        // one-sided identity (e.g. expired image QP cover) stays out of scope:
+        // the core session gate handles that shape fail-closed
+        Reconciliation oneSided = GlmOcrMarkReconciliation.reconcile(
+                qpWith(meta(null, null)),
+                msWith(meta("4CH0/1C", "January 2016")));
+        assertThat(oneSided.mismatchCount()).isZero();
+        assertThat(oneSided.reviewRequired()).isFalse();
+    }
+
+    @Test
+    @DisplayName("agreeing printed identity produces no identity findings")
+    void agreeingIdentityStaysClean() {
+        Reconciliation r = GlmOcrMarkReconciliation.reconcile(
+                qpWith(meta("4CH0/1C", "June 2011")),
+                msWith(meta("4ch0/1c", "June 2011"))); // case-insensitive print
+
+        assertThat(r.findings()).noneSatisfy(f ->
+                assertThat(f.severity()).isEqualTo("identity-mismatch"));
+        assertThat(r.mismatchCount()).isZero();
+        assertThat(r.reviewRequired()).isFalse();
+    }
 }
