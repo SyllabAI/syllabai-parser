@@ -69,7 +69,7 @@ public final class GlmOcrQuestionExtractor {
      * chemistry paper is printed first on every observed 4CH1 cover.
      */
     private static final Pattern PAPER_REF = Pattern.compile(
-            "\\b((?:W[A-Z]{2}\\d{2}|[A-Z0-9]{4})/\\d{1,2}[A-Z]?)\\b");
+            "\\b((?:W[A-Z]{2}\\d{2}|[A-Z0-9]{4})/\\d{1,2}[A-Z]{0,2})\\b");
     /** months accepted on a printed session line (e.g. "Summer 2013", "November 2021") */
     private static final String SESSION_MONTHS = "January|February|March|April|May|June|July|"
             + "August|September|October|November|December";
@@ -603,6 +603,23 @@ public final class GlmOcrQuestionExtractor {
     }
 
     private void handleTable(TableElement table, State state) {
+        // Front-matter cover tables carry the printed paper identity (paper
+        // reference, exam date, session line). Extract it BEFORE the
+        // current-question early return — that return skips everything else in
+        // a cover table, and the identity regexes need printed cell lines, not
+        // the element as a whole.
+        for (List<String> row : table.rows()) {
+            for (String cell : row) {
+                for (String line : cell.split("\\n")) {
+                    metaFromLine(line.replaceAll("[ \\t\\r]+", " ").strip(), state);
+                }
+            }
+        }
+        if (table.rows().isEmpty() && table.text() != null) {
+            for (String candidate : tableCellLines(table.text())) {
+                metaFromLine(candidate, state);
+            }
+        }
         RawQuestion q = state.current;
         if (q == null) {
             return; // front-matter cover table (1A variant)
