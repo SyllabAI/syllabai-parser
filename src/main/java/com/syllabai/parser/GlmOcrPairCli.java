@@ -65,6 +65,13 @@ public final class GlmOcrPairCli {
             String arg = args[a];
             if (arg.startsWith("--uri-prefix=")) {
                 uriPrefix = arg.substring("--uri-prefix=".length());
+            } else if (arg.equals("--uri-prefix")) {
+                if (a + 1 >= args.length) {
+                    System.err.println("--uri-prefix requires a value argument");
+                    usage();
+                    System.exit(2);
+                }
+                uriPrefix = args[++a];
             } else if (arg.startsWith("--uri-prefix")) {
                 uriPrefix = arg.substring("--uri-prefix".length());
                 if (uriPrefix.startsWith("=")) {
@@ -72,10 +79,6 @@ public final class GlmOcrPairCli {
                 }
             } else if (arg.startsWith("--assets-dir=")) {
                 assetsDir = Path.of(arg.substring("--assets-dir=".length()));
-            } else if (arg.startsWith("--paper-code=")) {
-                paperCodeOverride = arg.substring("--paper-code=".length()).strip();
-            } else if (arg.startsWith("--session-label=")) {
-                sessionLabelOverride = arg.substring("--session-label=".length()).strip();
             } else if (arg.equals("--assets-dir")) {
                 if (a + 1 >= args.length) {
                     System.err.println("--assets-dir requires a directory argument");
@@ -83,11 +86,32 @@ public final class GlmOcrPairCli {
                     System.exit(2);
                 }
                 assetsDir = Path.of(args[++a]);
-            } else if (arg.startsWith("--assets-dir")) {
-                assetsDir = Path.of(arg.substring("--assets-dir".length()));
-                if (assetsDir.toString().startsWith("=")) {
-                    assetsDir = Path.of(assetsDir.toString().substring(1));
+            } else if (arg.startsWith("--paper-code=")) {
+                paperCodeOverride = arg.substring("--paper-code=".length()).strip();
+            } else if (arg.equals("--paper-code")) {
+                // P-7: space form used to fall through and become a positional
+                // file path (--paper-code 4CH1 swallowed "4CH1" as qpFile)
+                if (a + 1 >= args.length) {
+                    System.err.println("--paper-code requires a value argument");
+                    usage();
+                    System.exit(2);
                 }
+                paperCodeOverride = args[++a].strip();
+            } else if (arg.startsWith("--session-label=")) {
+                sessionLabelOverride = arg.substring("--session-label=".length()).strip();
+            } else if (arg.equals("--session-label")) {
+                if (a + 1 >= args.length) {
+                    System.err.println("--session-label requires a value argument");
+                    usage();
+                    System.exit(2);
+                }
+                sessionLabelOverride = args[++a].strip();
+            } else if (arg.startsWith("--")) {
+                // P-7: unknown flags used to become positional file paths
+                // silently (e.g. a typo'd --asset-dir turned into qpFile)
+                System.err.println("unknown flag: " + arg);
+                usage();
+                System.exit(2);
             } else switch (positional) {
                 case 0 -> qpFile = Path.of(arg);
                 case 1 -> msFile = Path.of(arg);

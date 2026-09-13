@@ -210,4 +210,32 @@ class GlmOcrQuestionExtractorTest {
         assertThat(draft.questions().get(1).parts().get(0).marks()).isEqualTo(2);
         assertThat(draft.questionTotals()).containsEntry("1", 1).containsEntry("2", 3);
     }
+
+    @Test
+    @DisplayName("P-4: a skipped question number merges LOUDLY, with the gap recorded")
+    void numberingGapIsLoud() {
+        String markdown = """
+                1: Stem one.
+
+                3: Stem three.
+                """;
+        GlmOcrPaperDraft draft = extractor.extract(parser.parse(
+                markdown.getBytes(StandardCharsets.UTF_8), "synthetic.md"));
+        // fail-safe merge is kept: Q3's line attaches to Q1's body — but loudly
+        assertThat(draft.warnings()).containsExactly(
+                "question numbering gap: expected Q2, got Q3 (content merges into Q1)");
+    }
+
+    @Test
+    @DisplayName("P-4: a paper whose first question line is not Q1 warns, drops nothing silently")
+    void firstQuestionGapIsLoud() {
+        String markdown = """
+                2: Orphan stem.
+                """;
+        GlmOcrPaperDraft draft = extractor.extract(parser.parse(
+                markdown.getBytes(StandardCharsets.UTF_8), "synthetic.md"));
+        assertThat(draft.questions()).isEmpty();
+        assertThat(draft.warnings()).containsExactly(
+                "question numbering gap: expected Q1, got Q2 (no current question to merge into)");
+    }
 }

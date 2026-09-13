@@ -106,7 +106,16 @@ public final class OpenDataLoaderParser implements DocumentParser {
 
     private CanonicalDocument map(JsonNode root, byte[] source, String sourceUri) {
         String engineVersion = engineVersion();
-        String fileName = root.path("file name").asText(null);
+        // P-10: the library stages inputs under its own temp name and reports it
+        // in its JSON ("file name" — e.g. "input.pdf"); provenance must record
+        // the LOGICAL input name, so the caller-supplied sourceUri basename wins
+        // and the library's value is only a fallback.
+        String fileName = sourceUri == null ? null
+                : sourceUri.substring(Math.max(sourceUri.lastIndexOf('/'),
+                        sourceUri.lastIndexOf('\\')) + 1);
+        if (fileName == null || fileName.isBlank()) {
+            fileName = root.path("file name").asText(null);
+        }
         int pageCount = root.path("number of pages").asInt(0);
         if (pageCount < 1) {
             throw new ParseFailureException(ENGINE_NAME,

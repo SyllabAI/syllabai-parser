@@ -157,7 +157,7 @@ class GlmOcrMarkdownParserTest {
     @DisplayName("engine identity and markdown support")
     void engineIdentity() {
         assertThat(parser.engineName()).isEqualTo("glm-ocr-markdown");
-        assertThat(parser.engineVersion()).isEqualTo("1.1.0");
+        assertThat(parser.engineVersion()).isEqualTo("1.2.0");
         assertThat(parser.supports("text/markdown")).isTrue();
         assertThat(parser.supports("application/pdf")).isFalse();
     }
@@ -166,5 +166,50 @@ class GlmOcrMarkdownParserTest {
         return document.elementsInReadingOrder().stream()
                 .map(DocumentElement::elementId)
                 .toList();
+    }
+
+    @Test
+    @DisplayName("P-9: astral numeric entities decode to their full code point")
+    void astralEntities() {
+        // U+1D400 MATHEMATICAL BOLD CAPITAL A — previously truncated to the
+        // low 16 bits (lone surrogate 0xD400)
+        assertThat(GlmOcrMarkdownParser.decodeEntities("&#x1D400;")).isEqualTo("𝐀");
+        assertThat(GlmOcrMarkdownParser.decodeEntities("&#119808;")).isEqualTo("𝐀");
+        // surrogate-range and out-of-range code points stay literal (fail-safe,
+        // mirrored in the Python reference)
+        assertThat(GlmOcrMarkdownParser.decodeEntities("&#xD800;")).isEqualTo("&#xD800;");
+        assertThat(GlmOcrMarkdownParser.decodeEntities("&#x110000;")).isEqualTo("&#x110000;");
+    }
+
+    @Test
+    @DisplayName("P-11: a fully-covered $$..$$ line yields one equation per span")
+    void mathSpanDecomposition() {
+        String markdown = """
+                # Title
+
+                $$E = mc^2$$ $$F = ma$$
+                """;
+        CanonicalDocument document = parser.parse(
+                markdown.getBytes(java.nio.charset.StandardCharsets.UTF_8), "synthetic.md");
+        assertThat(document.equations()).hasSize(2);
+        assertThat(document.equations().get(0).text()).isEqualTo("E = mc^2");
+        assertThat(document.equations().get(1).text()).isEqualTo("F = ma");
+        assertThat(document.provenance().extractionParams()).doesNotContainKey("greedyMathLines");
+    }
+
+    @Test
+    @DisplayName("P-11: a line mixing math spans with prose re-parses as text, counted")
+    void mixedMathLineDowngrades() {
+        String markdown = """
+                # Title
+
+                $$E$$ and $$F$$ disagree
+                """;
+        CanonicalDocument document = parser.parse(
+                markdown.getBytes(java.nio.charset.StandardCharsets.UTF_8), "synthetic.md");
+        assertThat(document.equations()).isEmpty();
+        assertThat(document.textBlocks()).hasSize(2);
+        assertThat(document.textBlocks().get(1).text()).isEqualTo("$$E$$ and $$F$$ disagree");
+        assertThat(document.provenance().extractionParams()).containsEntry("greedyMathLines", 1);
     }
 }

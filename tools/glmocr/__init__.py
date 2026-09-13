@@ -15,7 +15,7 @@ change with it (and vice versa).
 """
 
 ENGINE_NAME = "glm-ocr-markdown"
-ENGINE_VERSION = "1.1.0"  # 1.1.0: <br> -> newline in table cells (Java twin parity)
+ENGINE_VERSION = "1.2.0"  # 1.2.0: full-Unicode entities (P-9), $$ span decomposition (P-11)
 
 QP_EXTRACTION_METHOD = "glm-ocr-qp-v1"
 MS_EXTRACTION_METHOD = "glm-ocr-ms-v1"

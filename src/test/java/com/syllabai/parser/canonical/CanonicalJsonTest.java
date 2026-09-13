@@ -26,7 +26,12 @@ class CanonicalJsonTest {
                         new BoundingBox(72, 650, 400, 60),
                         "1 A student heats copper(II) carbonate. (Total for Question 1 = 3 marks)",
                         1, 1.0, TextRole.PARAGRAPH, null, "opendataloader-pdf", "2.5.7"));
-        return new CanonicalDocument("0b9f6c78-1111-2222-3333-444455556666",
+        // P-6: documentId is derived, not free-form — synthetic documents mint
+        // their id through the identity layer so the validator's derivation
+        // check holds.
+        String documentId = CanonicalIdentity.contentDocumentId(
+                "a".repeat(64), "opendataloader-pdf", "2.5.7");
+        return new CanonicalDocument(documentId,
                 CanonicalSchema.VERSION, 1,
                 new SourceInfo("corpus/IGCSE/Chemistry/Paper 1/Jan 2012 QP.pdf",
                         "a".repeat(64), "SHA-256", "application/pdf", "QP.pdf"),
@@ -122,7 +127,7 @@ class CanonicalJsonTest {
     void rejectsDuplicateIds() {
         TextBlockElement duplicate = new TextBlockElement("e000000", 1, null, "x", 1,
                 1.0, TextRole.PARAGRAPH, null, "opendataloader-pdf", "2.5.7");
-        CanonicalDocument bad = new CanonicalDocument("id", "1.0", 1,
+        CanonicalDocument bad = new CanonicalDocument(sample().documentId(), "1.0", 1,
                 sample().source(), 1, sample().pages(), List.of(),
                 List.of(sample().textBlocks().get(0), duplicate), List.of(), List.of(),
                 List.of(), sample().provenance());

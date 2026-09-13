@@ -54,7 +54,7 @@ import java.util.regex.Pattern;
 public final class GlmOcrMarkdownParser implements DocumentParser {
 
     public static final String ENGINE_NAME = "glm-ocr-markdown";
-    public static final String ENGINE_VERSION = "1.1.0"; // 1.1.0: <br> -> newline in table cells
+    public static final String ENGINE_VERSION = "1.2.0"; // 1.2.0: full-Unicode entities (P-9), $$ span decomposition (P-11)
 
     private static final String MARKDOWN_MIME = "text/markdown";
 
@@ -65,7 +65,7 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
     private static final Pattern CENTER_OPEN = Pattern.compile("^<div\\s+align=[\"']center[\"']>\\s*$");
     private static final Pattern CENTER_CLOSE = Pattern.compile("^</div>\\s*$");
     private static final Pattern DISPLAY_MATH_OPEN = Pattern.compile("^\\$\\$\\s*$");
-    private static final Pattern INLINE_DISPLAY_MATH = Pattern.compile("^\\$\\$(.+)\\$\\$\\s*$");
+    private static final Pattern MATH_SPAN = Pattern.compile("\\$\\$(.+?)\\$\\$");
     private static final Pattern TR_TAG = Pattern.compile("<tr[^>]*>(.*?)</tr>", Pattern.DOTALL);
     private static final Pattern CELL_TAG = Pattern.compile("<t[dh][^>]*>(.*?)</t[dh]>", Pattern.DOTALL);
     private static final Pattern ANY_TAG = Pattern.compile("<[^>]+>");
@@ -172,6 +172,7 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         int unterminatedTables = 0;
         int orphanMathFences = 0;
         int unclosedDivs = 0;
+        int greedyMathLines = 0;
         int pendingOrphanDivs = 0;
 
         int i = 0;
@@ -357,15 +358,28 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
                 continue;
             }
 
-            Matcher inlineMath = INLINE_DISPLAY_MATH.matcher(stripped);
-            if (inlineMath.matches()) {
-                equations.add(new EquationElement(
-                        nextId(textBlocks, tables, figures, equations), 1, null,
-                        inlineMath.group(1).strip(),
-                        nextOrder(textBlocks, tables, figures, equations), 1.0,
-                        inlineMath.group(1).strip(), ENGINE_NAME, ENGINE_VERSION));
+            // P-11: a line classified as inline display math must be FULLY covered
+            // by lazy $$..$$ spans (whitespace between them allowed) — one equation
+            // per span, in order. The old greedy ^\$\$(.+)\$\$$ capture swallowed
+            // multiple spans AND the prose between them into one equation whose
+            // latex contained literal '$$' markers; such mixed lines now fall
+            // through to paragraph flow (raw line preserved for teacher review)
+            // and are counted in provenance.
+            java.util.List<int[]> mathSpans = mathSpanBounds(stripped);
+            if (!mathSpans.isEmpty() && fullyCoveredBySpans(stripped, mathSpans)) {
+                for (int[] span : mathSpans) {
+                    String content = stripped.substring(span[2], span[3]).strip();
+                    equations.add(new EquationElement(
+                            nextId(textBlocks, tables, figures, equations), 1, null,
+                            content,
+                            nextOrder(textBlocks, tables, figures, equations), 1.0,
+                            content, ENGINE_NAME, ENGINE_VERSION));
+                }
                 i++;
                 continue;
+            }
+            if (!mathSpans.isEmpty()) {
+                greedyMathLines++;
             }
 
             Matcher heading = HEADING.matcher(stripped);
@@ -409,6 +423,9 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         }
         if (unclosedDivs > 0) {
             params.put("unclosedCenterDivs", unclosedDivs);
+        }
+        if (greedyMathLines > 0) {
+            params.put("greedyMathLines", greedyMathLines);
         }
 
         String fileName = sourceUri == null ? null
@@ -571,6 +588,36 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         return decoded.strip();
     }
 
+    /**
+     * All non-overlapping lazy {@code $$..$$} spans on a line, outermost-first:
+     * {@code {matchStart, matchEnd, contentStart, contentEnd}}. Mirrors the
+     * Python reference's {@code _math_spans} exactly (conformance contract).
+     */
+    private static java.util.List<int[]> mathSpanBounds(String line) {
+        Matcher m = MATH_SPAN.matcher(line);
+        java.util.List<int[]> spans = new java.util.ArrayList<>();
+        while (m.find()) {
+            spans.add(new int[]{m.start(), m.end(), m.start(1), m.end(1)});
+        }
+        return spans;
+    }
+
+    /**
+     * True when the line is only whitespace outside the matched {@code $$..$$}
+     * spans (delimiter-to-delimiter). A line mixing math spans with prose is
+     * NOT display math (P-11) and re-parses as paragraph flow.
+     */
+    private static boolean fullyCoveredBySpans(String line, java.util.List<int[]> spans) {
+        int prev = 0;
+        for (int[] span : spans) {
+            if (!line.substring(prev, span[0]).isBlank()) {
+                return false;
+            }
+            prev = span[1];
+        }
+        return line.substring(prev).isBlank();
+    }
+
     /** Deterministic HTML-entity decoding (the one normalization this adapter performs). */
     static String decodeEntities(String text) {
         if (text == null || !text.contains("&")) {
@@ -581,9 +628,9 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         while (m.find()) {
             String replacement;
             if (m.group(1) != null) {
-                replacement = String.valueOf((char) Integer.parseInt(m.group(1), 16));
+                replacement = decodeCodePoint(Integer.parseInt(m.group(1), 16), m.group());
             } else if (m.group(2) != null) {
-                replacement = String.valueOf((char) Integer.parseInt(m.group(2)));
+                replacement = decodeCodePoint(Integer.parseInt(m.group(2)), m.group());
             } else {
                 replacement = switch (m.group()) {
                     case "&gt;" -> ">";
@@ -598,6 +645,21 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+
+    /**
+     * P-9: numeric entities decode across the FULL Unicode range — astral
+     * plane code points (&#x1D400; and friends) previously truncated to the
+     * low 16 bits, producing lone surrogates. Surrogate-range and out-of-range
+     * code points stay as the literal entity: a deterministic fail-safe
+     * mirrored byte-for-byte in the Python reference.
+     */
+    private static String decodeCodePoint(int codePoint, String literal) {
+        if (codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT
+                && !(codePoint >= Character.MIN_SURROGATE && codePoint <= Character.MAX_SURROGATE)) {
+            return new String(Character.toChars(codePoint));
+        }
+        return literal;
     }
 
     // ── deterministic identity ─────────────────────────────────────────────────

@@ -35,6 +35,14 @@ public final class CanonicalValidator {
         require(document.provenance().engine() != null, "provenance.engine is required");
         require(document.provenance().engineVersion() != null,
                 "provenance.engineVersion is required");
+        // P-6: the id is DERIVED, not free-form — re-derive it from the identity
+        // material and fail closed on drift. A documentId that does not match its
+        // own checksum+engine+engineVersion would silently break consumer dedup
+        // (content ingestion resolves documents by that derivation).
+        require(document.documentId().equals(CanonicalIdentity.contentDocumentId(
+                        document.source().checksum(), document.provenance().engine(),
+                        document.provenance().engineVersion())),
+                "documentId does not match its checksum+engine+engineVersion derivation");
         require(document.pageCount() >= 1, "pageCount must be >= 1");
 
         Set<String> elementIds = new HashSet<>();

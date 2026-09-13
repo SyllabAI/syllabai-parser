@@ -54,14 +54,25 @@ public final class ParserCli {
                 String session = "";
                 String code = "";
                 for (int i = 3; i < args.length; i++) {
+                    // P-12: unknown flags used to be silently ignored (a typo'd
+                    // --extractor silently ran the default) — fail loud now.
                     if (args[i].startsWith("--paper")) {
-                        String[] parts = flagValue(args[i], 7).split("\\|");
+                        String value = flagValue(args[i], "--paper".length());
+                        if (value.isBlank()) {
+                            System.err.println("--paper requires a board|qualification|subject|"
+                                    + "unit|session|code value");
+                            System.exit(2);
+                        }
+                        String[] parts = value.split("\\|");
                         if (parts.length > 0) board = parts[0];
                         if (parts.length > 1) qualification = parts[1];
                         if (parts.length > 2) subject = parts[2];
                         if (parts.length > 3) unit = parts[3];
                         if (parts.length > 4) session = parts[4];
                         if (parts.length > 5) code = parts[5];
+                    } else if (args[i].startsWith("--")) {
+                        System.err.println("unknown flag: " + args[i]);
+                        System.exit(2);
                     }
                 }
                 CanonicalDocument qp = parser.parse(Files.readAllBytes(pdf), pdf.getFileName().toString());
@@ -89,7 +100,13 @@ public final class ParserCli {
                 String extractor = "outline";
                 for (int i = 3; i < args.length; i++) {
                     if (args[i].startsWith("--curriculum")) {
-                        String[] parts = flagValue(args[i], 12).split("\\|");
+                        String value = flagValue(args[i], "--curriculum".length());
+                        if (value.isBlank()) {
+                            System.err.println("--curriculum requires a board|qualification|"
+                                    + "code|title|subjectCode|subjectName value");
+                            System.exit(2);
+                        }
+                        String[] parts = value.split("\\|");
                         if (parts.length > 0) board = parts[0];
                         if (parts.length > 1) qualification = parts[1];
                         if (parts.length > 2) code = parts[2];
@@ -98,6 +115,12 @@ public final class ParserCli {
                         if (parts.length > 5) subjectName = parts[5];
                     } else if (args[i].startsWith("--extractor=")) {
                         extractor = args[i].substring("--extractor=".length());
+                    } else if (args[i].startsWith("--")) {
+                        // P-12: a space-form --extractor outline used to be ignored
+                        // silently, running the default extractor
+                        System.err.println("unknown flag: " + args[i]
+                                + " (--extractor requires the = form)");
+                        System.exit(2);
                     }
                 }
                 CanonicalDocument syllabus = parser.parse(Files.readAllBytes(pdf),

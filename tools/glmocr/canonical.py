@@ -52,7 +52,7 @@ IMAGE_LINE = re.compile(
 CENTER_OPEN = re.compile(r"^<div\s+align=[\"']center[\"']>\s*$")
 CENTER_CLOSE = re.compile(r"^</div>\s*$")
 DISPLAY_MATH_OPEN = re.compile(r"^\$\$\s*$")
-INLINE_DISPLAY_MATH = re.compile(r"^\$\$(.+)\$\$\s*$")
+MATH_SPAN = re.compile(r"\$\$(.+?)\$\$")
 TR_TAG = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S)
 CELL_TAG = re.compile(r"<t[dh][^>]*>(.*?)</t[dh]>", re.S)
 ANY_TAG = re.compile(r"<[^>]+>")
@@ -112,12 +112,39 @@ def decode_entities(text):
     def repl(match: re.Match) -> str:
         hex_group, dec_group = match.group(1), match.group(2)
         if hex_group is not None:
-            return chr(int(hex_group, 16))
+            return _decode_code_point(int(hex_group, 16), match.group(0))
         if dec_group is not None:
-            return chr(int(dec_group))
+            return _decode_code_point(int(dec_group), match.group(0))
         return _NAMED_ENTITIES.get(match.group(0), match.group(0))
 
     return ENTITY.sub(repl, text)
+
+
+def _decode_code_point(code_point: int, literal: str) -> str:
+    """P-9: numeric entities decode across the FULL Unicode range — astral
+    plane code points previously truncated in the Java twin. Surrogate-range
+    and out-of-range code points stay as the literal entity: a deterministic
+    fail-safe mirrored byte-for-byte by GlmOcrMarkdownParser.decodeCodePoint."""
+    if 0 <= code_point <= 0x10FFFF and not (0xD800 <= code_point <= 0xDFFF):
+        return chr(code_point)
+    return literal
+
+
+def _math_spans(line: str):
+    """All non-overlapping lazy $$..$$ spans on a line, outermost-first:
+    (match_start, match_end, content). Mirrors GlmOcrMarkdownParser.mathSpanBounds."""
+    return [(m.start(), m.end(), m.group(1)) for m in MATH_SPAN.finditer(line)]
+
+
+def _fully_covered(line: str, spans) -> bool:
+    """True when the line is only whitespace outside the matched $$..$$ spans.
+    A line mixing math spans with prose is NOT display math (P-11)."""
+    prev = 0
+    for start, end, _ in spans:
+        if line[prev:start].strip():
+            return False
+        prev = end
+    return not line[prev:].strip()
 
 
 def _url_path(url: str) -> str:
@@ -189,6 +216,7 @@ class GlmOcrMarkdownParser:
         unterminated_tables = 0
         orphan_math_fences = 0
         unclosed_divs = 0
+        greedy_math_lines = 0
         pending_orphan_divs = 0
 
         def next_index():
@@ -405,24 +433,34 @@ class GlmOcrMarkdownParser:
                 })
                 continue
 
-            inline_math = INLINE_DISPLAY_MATH.fullmatch(stripped)
-            if inline_math:
-                content = inline_math.group(1).strip()
-                idx = next_index()
-                equations.append({
-                    "element_id": f"e{idx:06d}",
-                    "element_type": "equation",
-                    "page_number": 1,
-                    "bounding_box": None,
-                    "text": content,
-                    "reading_order": idx,
-                    "confidence": 1.0,
-                    "latex": content,
-                    "source_engine": ENGINE_NAME,
-                    "source_engine_version": ENGINE_VERSION,
-                })
+            # P-11: a line classified as inline display math must be FULLY covered
+            # by lazy $$..$$ spans (whitespace between them allowed) — one equation
+            # per span, in order. The old greedy ^\$\$(.+)\$\$$ capture swallowed
+            # multiple spans AND the prose between them into one equation whose
+            # latex contained literal '$$' markers; such mixed lines now fall
+            # through to paragraph flow (raw line preserved for teacher review)
+            # and are counted in provenance. Mirrors GlmOcrMarkdownParser exactly.
+            spans = _math_spans(stripped)
+            if spans and _fully_covered(stripped, spans):
+                for _, _, span_content in spans:
+                    content = span_content.strip()
+                    idx = next_index()
+                    equations.append({
+                        "element_id": f"e{idx:06d}",
+                        "element_type": "equation",
+                        "page_number": 1,
+                        "bounding_box": None,
+                        "text": content,
+                        "reading_order": idx,
+                        "confidence": 1.0,
+                        "latex": content,
+                        "source_engine": ENGINE_NAME,
+                        "source_engine_version": ENGINE_VERSION,
+                    })
                 i += 1
                 continue
+            if spans:
+                greedy_math_lines += 1
 
             heading = HEADING.fullmatch(stripped)
             if heading:
@@ -496,6 +534,8 @@ class GlmOcrMarkdownParser:
             params["orphanMathFences"] = orphan_math_fences
         if unclosed_divs:
             params["unclosedCenterDivs"] = unclosed_divs
+        if greedy_math_lines:
+            params["greedyMathLines"] = greedy_math_lines
 
         file_name = None
         if source_uri is not None:

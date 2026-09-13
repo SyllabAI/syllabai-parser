@@ -291,31 +291,50 @@ public final class GlmOcrQuestionExtractor {
             return; // appendix text after "List of data…" is not question content
         }
 
-        // question starts — all three numbering styles, sequence-checked
+        // question starts — all three numbering styles, sequence-checked.
+        // P-4: a numbered line OUT of sequence used to fall through and merge
+        // silently into the current question's body. The merge is kept (fail-safe:
+        // content stays attached where teacher review sees it) but is now LOUD.
         Matcher colon = QUESTION_COLON.matcher(text);
-        if (colon.matches() && isNextQuestion(Integer.parseInt(colon.group(1)), state)) {
-            openQuestion(Integer.parseInt(colon.group(1)), "colon", colon.group(2), state);
-            if (text.startsWith("*")) {
-                state.current.qwc = true; // question-level QWC asterisk (*14)
+        if (colon.matches()) {
+            int number = Integer.parseInt(colon.group(1));
+            if (isNextQuestion(number, state)) {
+                openQuestion(number, "colon", colon.group(2), state);
+                if (text.startsWith("*")) {
+                    state.current.qwc = true; // question-level QWC asterisk (*14)
+                }
+                return;
             }
-            return;
+            numberingGap(number, state);
         }
         Matcher space = QUESTION_SPACE.matcher(text);
-        if (space.matches() && isNextQuestion(Integer.parseInt(space.group(2)), state)) {
-            openQuestion(Integer.parseInt(space.group(2)), "space", space.group(3), state);
-            if (!space.group(1).isEmpty()) {
-                state.current.qwc = true; // question-level QWC asterisk (*14)
+        if (space.matches()) {
+            int number = Integer.parseInt(space.group(2));
+            if (isNextQuestion(number, state)) {
+                openQuestion(number, "space", space.group(3), state);
+                if (!space.group(1).isEmpty()) {
+                    state.current.qwc = true; // question-level QWC asterisk (*14)
+                }
+                return;
             }
-            return;
+            numberingGap(number, state);
         }
         Matcher dot = QUESTION_DOT.matcher(text);
-        if (dot.matches() && isNextQuestion(Integer.parseInt(dot.group(2)), state)
-                && dotStemPlausible(dot.group(3))) {
-            openQuestion(Integer.parseInt(dot.group(2)), "dot", dot.group(3), state);
-            if (!dot.group(1).isEmpty()) {
-                state.current.qwc = true; // question-level QWC asterisk (*14)
+        if (dot.matches()) {
+            int number = Integer.parseInt(dot.group(2));
+            if (isNextQuestion(number, state)) {
+                if (dotStemPlausible(dot.group(3))) {
+                    openQuestion(number, "dot", dot.group(3), state);
+                    if (!dot.group(1).isEmpty()) {
+                        state.current.qwc = true; // question-level QWC asterisk (*14)
+                    }
+                    return;
+                }
+                // next-in-sequence but a decimal-quantity fragment — not a
+                // numbering gap, stays attached to the current question silently
+            } else {
+                numberingGap(number, state);
             }
-            return;
         }
 
         if (state.current == null) {
@@ -442,6 +461,25 @@ public final class GlmOcrQuestionExtractor {
             return number == 1;
         }
         return number == state.current.number + 1;
+    }
+
+    /**
+     * P-4: a question-numbered line out of sequence (an OCR-skipped number).
+     * The line's content merges into the current question exactly as before —
+     * the merge is fail-safe — but the gap is now recorded so teacher review
+     * sees it instead of a silently corrupted question. Warning text is part
+     * of the cross-language conformance contract (mirrored in
+     * {@code tools/glmocr/question_extractor.py}).
+     */
+    private void numberingGap(int number, State state) {
+        if (state.current == null) {
+            state.warnings.add("question numbering gap: expected Q1, got Q" + number
+                    + " (no current question to merge into)");
+        } else {
+            state.warnings.add("question numbering gap: expected Q"
+                    + (state.current.number + 1) + ", got Q" + number
+                    + " (content merges into Q" + state.current.number + ")");
+        }
     }
 
     /**

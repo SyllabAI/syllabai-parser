@@ -241,26 +241,42 @@ class GlmOcrQuestionExtractor:
         if state.in_formula_appendix:
             return  # appendix text after "List of data…" is not question content
 
-        # question starts — both numbering styles, sequence-checked
+        # question starts — both numbering styles, sequence-checked.
+        # P-4: a numbered line OUT of sequence used to fall through and merge
+        # silently into the current question's body. The merge is kept
+        # (fail-safe: content stays attached where teacher review sees it) but
+        # is now LOUD. Mirrors GlmOcrQuestionExtractor exactly.
         colon = QUESTION_COLON.fullmatch(text)
-        if colon and self._is_next_question(int(colon.group(1)), state):
-            self._open_question(int(colon.group(1)), "colon", colon.group(2), state)
-            if text.startswith("*"):
-                state.current.qwc = True  # question-level QWC asterisk (*14)
-            return
+        if colon:
+            number = int(colon.group(1))
+            if self._is_next_question(number, state):
+                self._open_question(number, "colon", colon.group(2), state)
+                if text.startswith("*"):
+                    state.current.qwc = True  # question-level QWC asterisk (*14)
+                return
+            self._numbering_gap(number, state)
         space = QUESTION_SPACE.fullmatch(text)
-        if space and self._is_next_question(int(space.group(2)), state):
-            self._open_question(int(space.group(2)), "space", space.group(3), state)
-            if space.group(1):
-                state.current.qwc = True  # question-level QWC asterisk (*14)
-            return
+        if space:
+            number = int(space.group(2))
+            if self._is_next_question(number, state):
+                self._open_question(number, "space", space.group(3), state)
+                if space.group(1):
+                    state.current.qwc = True  # question-level QWC asterisk (*14)
+                return
+            self._numbering_gap(number, state)
         dot = QUESTION_DOT.fullmatch(text)
-        if dot and self._is_next_question(int(dot.group(2)), state) \
-                and self._dot_stem_plausible(dot.group(3)):
-            self._open_question(int(dot.group(2)), "dot", dot.group(3), state)
-            if dot.group(1):
-                state.current.qwc = True  # question-level QWC asterisk (*14)
-            return
+        if dot:
+            number = int(dot.group(2))
+            if self._is_next_question(number, state):
+                if self._dot_stem_plausible(dot.group(3)):
+                    self._open_question(number, "dot", dot.group(3), state)
+                    if dot.group(1):
+                        state.current.qwc = True  # question-level QWC asterisk (*14)
+                    return
+                # next-in-sequence but a decimal-quantity fragment — not a
+                # numbering gap, stays attached to the current question silently
+            else:
+                self._numbering_gap(number, state)
 
         if state.current is None:
             return  # content before the first question
@@ -354,6 +370,23 @@ class GlmOcrQuestionExtractor:
         if state.current is None:
             return number == 1
         return number == state.current.number + 1
+
+    def _numbering_gap(self, number, state):
+        """P-4: a question-numbered line out of sequence (an OCR-skipped number).
+        The line's content merges into the current question exactly as before —
+        the merge is fail-safe — but the gap is now recorded so teacher review
+        sees it instead of a silently corrupted question. Warning text is part
+        of the cross-language conformance contract (mirrored in
+        GlmOcrQuestionExtractor.numberingGap)."""
+        if state.current is None:
+            state.warnings.append(
+                "question numbering gap: expected Q1, got Q" + str(number)
+                + " (no current question to merge into)")
+        else:
+            state.warnings.append(
+                "question numbering gap: expected Q" + str(state.current.number + 1)
+                + ", got Q" + str(number)
+                + " (content merges into Q" + str(state.current.number) + ")")
 
     @staticmethod
     def _dot_stem_plausible(remainder):
