@@ -16,6 +16,7 @@ import com.syllabai.parser.structure.dto.GlmOcrPaperDraft.QuestionDraft;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,7 +60,19 @@ public final class GlmOcrQuestionExtractor {
             "TOTAL FOR PAPER\\s*=\\s*(\\d{1,3})\\s*MARKS", Pattern.CASE_INSENSITIVE);
     private static final Pattern TOTAL_FOR_SECTION = Pattern.compile(
             "TOTAL FOR SECTION\\s*([A-Z])\\s*=\\s*(\\d{1,3})\\s*MARKS", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PAPER_REF = Pattern.compile("\\b(W[A-Z]{2}\\d{2}/\\d{1,2}[A-Z]?)\\b");
+    /**
+     * Paper reference codes. Two printed families:
+     *  - IAL unit codes  : WCH11/1C  (W + 2 letters + 2 digits)
+     *  - IGCSE codes     : 4CH0/1C, 4CH1/1CR, KCH0/2C (4 chars + / + number + optional R)
+     * When a cover prints several codes (e.g. "4CH1/1C 4SD0/1C" or the Edexcel
+     * Certificate twin "KCH0/2C 4CH0/2C"), the FIRST printed code wins — the
+     * chemistry paper is printed first on every observed 4CH1 cover.
+     */
+    private static final Pattern PAPER_REF = Pattern.compile(
+            "\\b((?:W[A-Z]{2}\\d{2}|[A-Z0-9]{4})/\\d{1,2}[A-Z]?)\\b");
+    /** months accepted on a printed session line (e.g. "Summer 2013", "November 2021") */
+    private static final String SESSION_MONTHS = "January|February|March|April|May|June|July|"
+            + "August|September|October|November|December";
     private static final Pattern LOG_NUMBER = Pattern.compile(
             "(?i)log\\s+number\\s+(P\\d{5,6}[A-Z])\\b");
     private static final Pattern PUBLICATION_CODE = Pattern.compile(
@@ -116,6 +129,7 @@ public final class GlmOcrQuestionExtractor {
         final String[] meta = new String[7]; // board, qual, subject, paperRef, session, date, duration
         String logNumber;
         String publicationCode;
+        String specimenYear;
         Integer paperTotal;
         String section = null;
         boolean inFormulaAppendix;
@@ -447,6 +461,40 @@ public final class GlmOcrQuestionExtractor {
     }
 
     private void extractMeta(String text, State state) {
+        if (text.indexOf('<') >= 0 && text.toLowerCase(Locale.ROOT).contains("<table")) {
+            // Cover metadata on newer templates lives inside HTML table cells; a
+            // whole-table element defeats the ^...$ line regexes. Run the same
+            // matchers against each printed cell line (tags split, entities kept
+            // simple). Plain-line extraction below still runs first.
+            for (String candidate : tableCellLines(text)) {
+                metaFromLine(candidate, state);
+            }
+        }
+        metaFromLine(text, state);
+    }
+
+    /** splits an HTML-table element into printed cell lines, tags stripped */
+    static List<String> tableCellLines(String tableHtml) {
+        List<String> lines = new ArrayList<>();
+        if (!tableHtml.toLowerCase(Locale.ROOT).contains("<table")) {
+            return lines;
+        }
+        for (String cell : tableHtml.split("</t[dh]>|<tr[^>]*>|</tr>")) {
+            // cells keep raw internal newlines (e.g. "Wednesday 18 January 2017 – Afternoon\nTime: 1 hour");
+            // each printed line is matched separately so the ^...$ identity regexes survive
+            for (String line : cell.replaceAll("<[^>]+>", " ").split("\\n")) {
+                String stripped = line.replace("&amp;", "&").replace("&nbsp;", " ")
+                        .replace("&#39;", "'").replace("&lt;", "<").replace("&gt;", ">")
+                        .replaceAll("[ \\t\\r]+", " ").strip();
+                if (!stripped.isEmpty()) {
+                    lines.add(stripped);
+                }
+            }
+        }
+        return lines;
+    }
+
+    private void metaFromLine(String text, State state) {
         Matcher paperRef = PAPER_REF.matcher(text);
         if (paperRef.find() && state.meta[3] == null) {
             state.meta[3] = paperRef.group(1);
@@ -462,7 +510,8 @@ public final class GlmOcrQuestionExtractor {
         if (state.meta[0] == null && text.contains("Pearson Edexcel")) {
             state.meta[0] = "Edexcel";
         }
-        if (state.meta[4] == null && text.matches("(?i)^(Summer|January|June|October|May|March)\\s+20\\d{2}$")) {
+        if (state.meta[4] == null
+                && text.matches("(?i)^(Summer|Autumn|Winter|" + SESSION_MONTHS + ")\\s+20\\d{2}$")) {
             state.meta[4] = text;
         }
         if (state.meta[6] == null && text.toLowerCase().contains("time:")
@@ -471,9 +520,18 @@ public final class GlmOcrQuestionExtractor {
         }
         if (state.meta[5] == null && text.matches(
                 "(?i)^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+\\d{1,2}\\s+"
-                        + "(January|February|March|April|May|June|July|August|September|October|"
-                        + "November|December)\\s+20\\d{2}$")) {
+                        + "(" + SESSION_MONTHS + ")\\s+20\\d{2}"
+                        // newer covers append the sitting time to the same line:
+                        // "Wednesday 18 January 2017 – Afternoon"
+                        + "(\\s*[–—-]\\s*(Morning|Afternoon|Evening))?$")) {
             state.meta[5] = text;
+        }
+        if (state.specimenYear == null) {
+            Matcher specimen = Pattern.compile(
+                    "(?i)Sample Assessment Materials.*?(20\\d{2})").matcher(text);
+            if (specimen.find()) {
+                state.specimenYear = specimen.group(1);
+            }
         }
         if (state.meta[2] == null && state.meta[3] != null && paperRef.find()) {
             // subject stays null unless an identity line names it
@@ -487,11 +545,40 @@ public final class GlmOcrQuestionExtractor {
         }
     }
 
+    /**
+     * Session label resolution, first evidence wins:
+     *  1. a printed session line ("Summer 2013", "November 2021");
+     *  2. the printed exam date ("Thursday 14 May 2020") — month mapped to the
+     *     session name (May and June sittings are the "June" session; every other
+     *     month maps to itself). Both tokens are printed on the cover; the May→June
+     *     mapping is Pearson's own session naming (the approved corpus slugs use it:
+     *     2020jun), NOT a guess;
+     *  3. "Specimen &lt;year&gt;" for Sample Assessment Materials covers (the year is
+     *     printed on the same line: "... for first teaching September 2017").
+     */
+    private String sessionLabel(State state) {
+        if (state.meta[4] != null) {
+            return state.meta[4];
+        }
+        if (state.meta[5] != null) {
+            Matcher m = Pattern.compile(
+                    "(?i)(" + SESSION_MONTHS + ")\\s+(20\\d{2})").matcher(state.meta[5]);
+            if (m.find()) {
+                String month = m.group(1);
+                month = month.equalsIgnoreCase("May") ? "June"
+                        : month.substring(0, 1).toUpperCase(Locale.ROOT)
+                                + month.substring(1).toLowerCase(Locale.ROOT);
+                return month + " " + m.group(2);
+            }
+        }
+        return state.specimenYear == null ? null : "Specimen " + state.specimenYear;
+    }
+
     private PaperMeta paperMeta(CanonicalDocument doc, State state) {
         return new PaperMeta(
                 state.meta[0] == null && state.meta[3] != null ? "Edexcel" : state.meta[0],
                 state.meta[1], state.meta[2], state.meta[3], state.logNumber,
-                state.publicationCode, state.meta[4], state.meta[5],
+                state.publicationCode, sessionLabel(state), state.meta[5],
                 state.meta[6], doc.documentId());
     }
 

@@ -58,7 +58,8 @@ public final class GlmOcrMarkSchemeExtractor {
     private static final Pattern PUBLICATION_CODE = Pattern.compile(
             "(?i)publications?\\s+code\\s+(\\S+)");
     private static final Pattern SESSION_LINE = Pattern.compile(
-            "(?i)^(Summer|January|June|October|May|March)\\s+20\\d{2}$");
+            "(?i)^(Summer|Autumn|Winter|January|February|March|April|May|June|July|August|"
+                    + "September|October|November|December)\\s+20\\d{2}$");
     private static final Pattern IC_HEADER_CELL = Pattern.compile(
             "(?i)^(ic points|number of indicative marking points.*)$");
     private static final Pattern IC_VALUE = Pattern.compile("^\\d{1,2}([\\u2013\\u2014-]\\d{1,2})?$");

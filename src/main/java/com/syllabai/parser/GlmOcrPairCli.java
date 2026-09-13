@@ -22,7 +22,7 @@ import java.util.Locale;
  *
  * <pre>
  *   syllabai-glmocr-pair &lt;qp.md&gt; &lt;ms.md&gt; &lt;out-dir&gt; [--uri-prefix &lt;prefix&gt;]
- *                         [--assets-dir &lt;dir&gt;]
+ *                         [--assets-dir &lt;dir&gt;] [--paper-code &lt;code&gt;] [--session-label &lt;label&gt;]
  * </pre>
  *
  * Writes the five-file bundle that syllabai-core's T-C02 bridge consumes,
@@ -55,6 +55,8 @@ public final class GlmOcrPairCli {
     public static void main(String[] args) throws Exception {
         String uriPrefix = "";
         Path assetsDir = null;
+        String paperCodeOverride = null;
+        String sessionLabelOverride = null;
         int positional = 0;
         Path qpFile = null;
         Path msFile = null;
@@ -70,6 +72,10 @@ public final class GlmOcrPairCli {
                 }
             } else if (arg.startsWith("--assets-dir=")) {
                 assetsDir = Path.of(arg.substring("--assets-dir=".length()));
+            } else if (arg.startsWith("--paper-code=")) {
+                paperCodeOverride = arg.substring("--paper-code=".length()).strip();
+            } else if (arg.startsWith("--session-label=")) {
+                sessionLabelOverride = arg.substring("--session-label=".length()).strip();
             } else if (arg.equals("--assets-dir")) {
                 if (a + 1 >= args.length) {
                     System.err.println("--assets-dir requires a directory argument");
@@ -117,6 +123,27 @@ public final class GlmOcrPairCli {
 
         GlmOcrPaperDraft qpDraft = new GlmOcrQuestionExtractor().extract(qp);
         GlmOcrMarkSchemeDraft msDraft = new GlmOcrMarkSchemeExtractor().extract(ms);
+        if (paperCodeOverride != null || sessionLabelOverride != null) {
+            // Operator-supplied identity for covers whose printed identity the OCR
+            // cannot recover (e.g. the cover page was lost). The override is printed
+            // loudly here and archived with the run log; the printed MS cover is the
+            // acceptable evidence source. Extraction still fills everything else.
+            GlmOcrPaperDraft.PaperMeta m = qpDraft.paper();
+            qpDraft = new GlmOcrPaperDraft(
+                    qpDraft.schemaVersion(), qpDraft.extractionMethod(), qpDraft.reviewRequired(),
+                    new GlmOcrPaperDraft.PaperMeta(
+                            m.board(), m.qualification(), m.subject(),
+                            paperCodeOverride != null ? paperCodeOverride : m.paperReference(),
+                            m.logNumber(), m.publicationCode(),
+                            sessionLabelOverride != null ? sessionLabelOverride : m.session(),
+                            m.examDate(), m.duration(), m.canonicalDocumentId()),
+                    qpDraft.questions(), qpDraft.questionTotals(), qpDraft.paperTotal(),
+                    qpDraft.sectionTotals(), qpDraft.frontMatterFigures(), qpDraft.warnings());
+            System.out.println("[identity] OPERATOR-SUPPLIED:" 
+                    + (paperCodeOverride != null ? " paper-code=" + paperCodeOverride : "")
+                    + (sessionLabelOverride != null ? " session-label=" + sessionLabelOverride : "")
+                    + " (printed cover identity unrecoverable — see campaign audit)");
+        }
         GlmOcrAssetEnricher.Enrichment assetEnrichment = null;
         if (assetsDir != null) {
             GlmOcrAssetEnricher.EnrichedDraft enrichedDraft =
@@ -163,6 +190,7 @@ public final class GlmOcrPairCli {
         System.err.println("""
                 usage:
                   syllabai-glmocr-pair <qp.md> <ms.md> <out-dir> [--uri-prefix <corpus-prefix>] [--assets-dir <dir>]
+                        [--paper-code <code>] [--session-label <label>]
 
                 writes the five-file T-C02/T-C03 bundle (qp-canonical.json,
                 ms-canonical.json, qp-draft.json, ms-draft.json, reconciliation.json);
