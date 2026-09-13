@@ -383,5 +383,265 @@ class HelperTests(unittest.TestCase):
                     os.environ[k] = v
 
 
+# --------------------------------------------------------------------------- #
+# pair mode (QP + MS as one unit)
+# --------------------------------------------------------------------------- #
+
+class RoleDetectionTests(unittest.TestCase):
+    def test_official_corpus_names(self):
+        self.assertEqual(
+            ob.detect_role(
+                "January 2012 QP - Unit 4 Edexcel Physics A-level.pdf"), "QP")
+        self.assertEqual(
+            ob.detect_role(
+                "January 2012 MS - Unit 4 Edexcel Physics A-level.pdf"), "MS")
+        self.assertEqual(ob.detect_role("WPH11_01_que_20120112.pdf"), "QP")
+        self.assertEqual(ob.detect_role("WPH11_01_msc_20120112.pdf"), "MS")
+        self.assertEqual(ob.detect_role("june 2018 mark scheme.pdf"), "MS")
+        self.assertIsNone(ob.detect_role("physics paper.pdf"))
+        self.assertIsNone(ob.detect_role("ms-and-qp combined.pdf"))
+
+    def test_fingerprint_matches_pairs_not_papers(self):
+        a = ob.pair_fingerprint(
+            "January 2012 QP - Unit 4 Edexcel Physics A-level.pdf")
+        b = ob.pair_fingerprint(
+            "January 2012 MS - Unit 4 Edexcel Physics A-level.pdf")
+        self.assertEqual(a, b)
+        self.assertNotIn("qp", a)
+        self.assertNotEqual(
+            a,
+            ob.pair_fingerprint(
+                "January 2013 QP - Unit 4 Edexcel Physics A-level.pdf"))
+
+    def test_pair_dir_name_strips_role_token(self):
+        self.assertEqual(
+            ob.pair_dir_name(
+                Path("January 2012 QP - Unit 4 Edexcel Physics A-level.pdf")),
+            "January 2012 Unit 4 Edexcel Physics A-level")
+        self.assertEqual(ob.pair_dir_name(Path("WPH11_01_que_20120112.pdf")),
+                         "WPH11_01 20120112")
+        # separator greediness must not unbalance "(IAL)"
+        self.assertEqual(
+            ob.pair_dir_name(
+                Path("January 2014 (IAL) QP - Unit 4 Edexcel Physics A-level.pdf")),
+            "January 2014 (IAL) Unit 4 Edexcel Physics A-level")
+
+
+class PairModeTests(unittest.TestCase):
+    def setUp(self):
+        self.server = MockServer()
+        self.addCleanup(self.server.close)
+        self.tmp = Path(__import__("tempfile").mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, self.tmp, True)
+        self.qp = self.tmp / "January 2012 QP - Unit 4 Edexcel Physics A-level.pdf"
+        self.ms = self.tmp / "January 2012 MS - Unit 4 Edexcel Physics A-level.pdf"
+        self.qp.write_bytes(MINIMAL_TWO_PAGE_PDF)
+        self.ms.write_bytes(MINIMAL_TWO_PAGE_PDF)
+        self.pair_dir = (self.tmp / "out"
+                         / "January 2012 Unit 4 Edexcel Physics A-level")
+
+    def _run(self, inputs: list[str], extra: list[str] | None = None) -> int:
+        return ob.main(["--pair", *inputs, "-o", str(self.tmp / "out"),
+                        "--api-url", self.server.url("/layout_parsing"),
+                        "--api-key", "test-key-123"] + (extra or []))
+
+    def _route_pair(self, crop_url: str) -> None:
+        def handler(body):
+            rid = body.get("request_id", "").lower()
+            if " qp " in rid:
+                md = (f"# Question paper\n\n"
+                      f"<div><img src='{crop_url}' alt='OCR图片'/></div>")
+            else:
+                md = (f"# Mark scheme\n\n"
+                      f"<div><img src='{crop_url}' alt='OCR图片'/></div>")
+            return (200, maas_response(md, crop_url), "")
+
+        self.server.routes["/layout_parsing"] = handler
+
+    def _route_image(self, crop_url: str) -> None:
+        self.server.routes[crop_url.split(self.server.base, 1)[1]] = (
+            lambda b: (200, PNG_1X1, "image/png"))
+
+    def test_pair_two_files_layout_manifest_assets(self):
+        crop = self.server.url("/img/crop_1_100.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+        rc = self._run([str(self.qp), str(self.ms)])
+        self.assertEqual(rc, 0)
+
+        qp_md = (self.pair_dir / "QP.md").read_text(encoding="utf-8")
+        ms_md = (self.pair_dir / "MS.md").read_text(encoding="utf-8")
+        self.assertTrue(qp_md.startswith("# Question paper"))
+        self.assertTrue(ms_md.startswith("# Mark scheme"))
+
+        # shared assets/: QP keeps the clean website name, MS collision prefixed
+        self.assertTrue((self.pair_dir / "assets" / "crop_1_100.png").exists())
+        self.assertTrue(
+            (self.pair_dir / "assets" / "ms_crop_1_100.png").exists())
+        self.assertEqual(
+            (self.pair_dir / "assets" / "crop_1_100.png").read_bytes(), PNG_1X1)
+
+        manifest = json.loads((self.pair_dir / "manifest.json").read_text())
+        self.assertEqual(manifest["manifestVersion"], 2)
+        self.assertEqual(manifest["mode"], "pair")
+        self.assertEqual(sorted(manifest["documents"]), ["MS", "QP"])
+        self.assertEqual(manifest["documents"]["QP"]["markdown"]["sha256"],
+                         ob.sha256_hex(qp_md.encode("utf-8")))
+        self.assertEqual(manifest["documents"]["QP"]["assets"][0]["localPath"],
+                         "assets/crop_1_100.png")
+        self.assertEqual(manifest["documents"]["MS"]["assets"][0]["localPath"],
+                         "assets/ms_crop_1_100.png")
+        self.assertEqual(manifest["failures"], [])
+
+        prov = json.loads((self.pair_dir / "provenance.json").read_text())
+        self.assertEqual(prov["status"], "OK")
+        self.assertEqual(sorted(prov["responses"]), ["MS", "QP"])
+        dumped = "".join(p.read_text(errors="replace")
+                         for p in self.pair_dir.rglob("*") if p.is_file())
+        self.assertNotIn("test-key-123", dumped)
+
+    def test_pair_reversed_input_order_roles_from_filenames(self):
+        crop = self.server.url("/img/crop_2_200.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+        rc = self._run([str(self.ms), str(self.qp)])   # MS deliberately first
+        self.assertEqual(rc, 0)
+        manifest = json.loads((self.pair_dir / "manifest.json").read_text())
+        self.assertEqual(manifest["documents"]["QP"]["source"]["fileName"],
+                         self.qp.name)
+        self.assertEqual(manifest["documents"]["MS"]["source"]["fileName"],
+                         self.ms.name)
+
+    def test_pair_directory_autopair_with_unpaired(self):
+        base = self.tmp / "corpus" / "Unit 4"
+        base.mkdir(parents=True)
+        for n in ("January 2012 QP - Unit 4 Edexcel Physics A-level.pdf",
+                  "January 2012 MS - Unit 4 Edexcel Physics A-level.pdf",
+                  "June 2013 QP - Unit 4 Edexcel Physics A-level.pdf",
+                  "June 2013 MS - Unit 4 Edexcel Physics A-level.pdf",
+                  "orphan QP - loose.pdf"):
+            (base / n).write_bytes(MINIMAL_TWO_PAGE_PDF)
+        crop = self.server.url("/img/crop_3_300.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+
+        rc = self._run([str(self.tmp / "corpus")])
+        self.assertEqual(rc, 0)
+        out = self.tmp / "out"
+        for name in ("January 2012 Unit 4 Edexcel Physics A-level",
+                     "June 2013 Unit 4 Edexcel Physics A-level"):
+            self.assertTrue((out / name / "QP.md").exists(), name)
+            self.assertTrue((out / name / "MS.md").exists(), name)
+        self.assertFalse((out / "orphan QP - loose").exists())
+
+    def test_pair_unpaired_only_exits_two(self):
+        base = self.tmp / "lonely"
+        base.mkdir()
+        (base / "orphan QP.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+        self.assertEqual(self._run([str(base)]), 2)
+
+    def test_pair_single_file_exits_two(self):
+        self.assertEqual(self._run([str(self.qp)]), 2)
+
+    def test_pair_ms_failure_partial_manifest(self):
+        def handler(body):
+            rid = body.get("request_id", "").lower()
+            if " qp " in rid:
+                return (200, maas_response("# Question paper"), "")
+            return (200, {"unexpected": True}, "")
+
+        self.server.routes["/layout_parsing"] = handler
+        rc = self._run([str(self.qp), str(self.ms)])
+        self.assertEqual(rc, 1)
+        self.assertTrue((self.pair_dir / "QP.md").exists())
+        self.assertFalse((self.pair_dir / "MS.md").exists())
+        manifest = json.loads((self.pair_dir / "manifest.json").read_text())
+        self.assertEqual(sorted(manifest["documents"]), ["QP"])
+        self.assertEqual(manifest["failures"][0]["role"], "MS")
+        prov = json.loads((self.pair_dir / "provenance.json").read_text())
+        self.assertEqual(prov["status"], "PARTIAL")
+
+    def test_pair_both_fail_leaves_failed_provenance(self):
+        self.server.routes["/layout_parsing"] = lambda b: (200, {"nope": 1}, "")
+        rc = self._run([str(self.qp), str(self.ms)])
+        self.assertEqual(rc, 1)
+        self.assertFalse((self.pair_dir / "manifest.json").exists())
+        prov = json.loads((self.pair_dir / "provenance.json").read_text())
+        self.assertEqual(prov["status"], "FAILED")
+
+    def test_pair_out_name_override(self):
+        crop = self.server.url("/img/crop_4_400.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+        rc = self._run([str(self.qp), str(self.ms)],
+                       ["--out-name", "Unit4-Jan2012"])
+        self.assertEqual(rc, 0)
+        self.assertTrue((self.tmp / "out" / "Unit4-Jan2012" / "QP.md").exists())
+        self.assertTrue((self.tmp / "out" / "Unit4-Jan2012" / "MS.md").exists())
+
+    def test_pair_dry_run_needs_no_key(self):
+        import os
+        old = {k: os.environ.pop(k, None) for k in ob.ENV_KEY_NAMES}
+        try:
+            rc = self._run([str(self.qp), str(self.ms)], ["--dry-run"])
+        finally:
+            for k, v in old.items():
+                if v is not None:
+                    os.environ[k] = v
+        self.assertEqual(rc, 0)
+
+    def test_scan_pairs_never_crosses_directories(self):
+        # real-corpus trap: 'January 2002 QP.pdf' exists in M2 AND S2 while
+        # their MS files carry a downloader '_2' suffix — fingerprints are
+        # relative-directory based + duplicate-suffix stripped, so M2 pairs
+        # with M2 and nothing leaks across folders
+        base = self.tmp / "corpus"
+        for unit in ("M2", "S2"):
+            (base / unit).mkdir(parents=True)
+            (base / unit / "January 2002 QP.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+        (base / "M2" / "January 2002 MS_2.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+        # S2 has an MS only for June -> stays unpaired, never mispaired
+        (base / "S2" / "June 2002 MS.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+        crop = self.server.url("/img/crop_5_500.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+
+        rc = self._run([str(base)])
+        self.assertEqual(rc, 0)
+        self.assertTrue((self.tmp / "out" / "January 2002" / "QP.md").exists())
+        self.assertTrue((self.tmp / "out" / "January 2002" / "MS.md").exists())
+        # exactly ONE pair was formed (M2); S2's QP/MS are unpaired
+        pairs = [d.name for d in (self.tmp / "out").iterdir() if d.is_dir()]
+        self.assertEqual(pairs, ["January 2002"])
+
+    def test_scan_pairs_duplicate_names_get_folder_prefix(self):
+        base = self.tmp / "corpus"
+        for unit in ("C1", "C12"):
+            (base / unit).mkdir(parents=True)
+            (base / unit / "January 2005 QP.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+            (base / unit / "January 2005 MS.pdf").write_bytes(MINIMAL_TWO_PAGE_PDF)
+        crop = self.server.url("/img/crop_6_600.png")
+        self._route_pair(crop)
+        self._route_image(crop)
+
+        rc = self._run([str(base)])
+        self.assertEqual(rc, 0)
+        self.assertTrue((self.tmp / "out" / "C1 January 2005" / "QP.md").exists())
+        self.assertTrue((self.tmp / "out" / "C12 January 2005" / "QP.md").exists())
+
+    def test_scan_pairs_ambiguous_group_skipped_not_guessed(self):
+        # real-corpus case: 'June 2014 QP.pdf' and 'June 2014 QP_2.pdf' are
+        # DIFFERENT files (different variants) — guessing a pairing would
+        # fabricate a match, so the whole group is skipped
+        base = self.tmp / "corpus" / "M1"
+        base.mkdir(parents=True)
+        for i, n in enumerate(("June 2014 QP.pdf", "June 2014 QP_2.pdf",
+                               "June 2014 MS.pdf", "June 2014 MS_2.pdf")):
+            (base / n).write_bytes(MINIMAL_TWO_PAGE_PDF + bytes([i]))
+        rc = self._run([str(self.tmp / "corpus")])
+        self.assertEqual(rc, 2)   # nothing paired -> error, nothing fabricated
+        self.assertFalse((self.tmp / "out").exists())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -4,8 +4,8 @@ name: ocr-batch
 #
 # Three independent jobs:
 #   tool-tests  — unit tests (mocked HTTP) on every push/PR touching the tool
-#   demo-api    — real end-to-end run against the Z.ai layout_parsing API
-#                 (workflow_dispatch; requires the ZAI_API_KEY secret)
+#   demo-api    — real end-to-end PAIR run (QP + MS) against the Z.ai
+#                 layout_parsing API (workflow_dispatch; needs ZAI_API_KEY)
 #   demo-ollama — real end-to-end run against a local Ollama glm-ocr
 #                 (workflow_dispatch; no key needed, CPU-only, slow)
 #
@@ -33,8 +33,11 @@ on:
         description: "Ref of the papers repository"
         default: "main"
       sample_pdf:
-        description: "Path (inside the papers repo) of the demo PDF"
+        description: "Path (inside the papers repo) of the demo QP PDF"
         default: "IAL/Edexcel/Physics/Unit 4/January 2012 QP - Unit 4 Edexcel Physics A-level.pdf"
+      sample_ms_pdf:
+        description: "Path of the demo MS PDF; when it exists, demo-api runs --pair (QP + MS in one folder)"
+        default: "IAL/Edexcel/Physics/Unit 4/January 2012 MS - Unit 4 Edexcel Physics A-level.pdf"
 
 permissions:
   contents: read
@@ -87,10 +90,16 @@ jobs:
         env:
           ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
         run: |
-          python3 tools/ocr_batch/ocr_batch.py \
-            "papers/${{ inputs.sample_pdf }}" \
-            -o ocr-demo-out \
-            --backend api
+          QP="papers/${{ inputs.sample_pdf }}"
+          MS="papers/${{ inputs.sample_ms_pdf }}"
+          if [ -n "${{ inputs.sample_ms_pdf }}" ] && [ -f "$MS" ]; then
+            # pair mode: QP + MS -> one folder (QP.md, MS.md, shared assets/)
+            python3 tools/ocr_batch/ocr_batch.py --pair "$QP" "$MS" \
+              -o ocr-demo-out --backend api
+          else
+            python3 tools/ocr_batch/ocr_batch.py "$QP" \
+              -o ocr-demo-out --backend api
+          fi
       - name: run summary
         if: steps.key.outputs.present == 'true'
         run: |
@@ -143,6 +152,8 @@ jobs:
           fi
       - name: run the batch tool (ollama backend, CPU-only smoke)
         run: |
+          # NOTE: pair mode (--pair QP.pdf MS.pdf) works identically on this
+          # backend; kept single-file here to bound the CPU-only job time.
           python3 tools/ocr_batch/ocr_batch.py \
             "papers/${{ inputs.sample_pdf }}" \
             -o ocr-demo-out \

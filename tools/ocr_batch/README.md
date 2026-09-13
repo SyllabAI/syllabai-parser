@@ -104,13 +104,70 @@ run exits non-zero) and writes a failure `provenance.json` — nothing is
 silently fabricated. A dead image URL is recorded under `unfetchedAssets`
 and never blocks the text pipeline.
 
+## Pair mode (QP + MS in one shot)
+
+`--pair` treats a question paper and its mark scheme as one unit and writes
+the manual-corpus layout directly — one folder per paper, exactly like the
+existing `Past-Papers/paper 1/<session>/` tree:
+
+```text
+ocr-out/<pair-name>/
+├── QP.md                question paper markdown (byte-faithful)
+├── MS.md                mark scheme markdown (byte-faithful)
+├── manifest.json        version-2 manifest: per-document sections + failures
+├── provenance.json      engine/model/endpoint, token usage, per-doc timings
+├── pages/QP|MS/         per-page markdown (when produced page-by-page)
+└── assets/crop_*.png    shared by both documents, saved at export time
+```
+
+```bash
+# two files, any order — roles are detected from the filenames
+python3 tools/ocr_batch/ocr_batch.py --pair \
+    "January 2012 QP - Unit 4 Edexcel Physics A-level.pdf" \
+    "January 2012 MS - Unit 4 Edexcel Physics A-level.pdf" \
+    -o ocr-out
+
+# a whole directory tree, auto-paired (verified: 45/45 sessions in
+# Past-Papers IAL Physics Unit 4 pair cleanly)
+python3 tools/ocr_batch/ocr_batch.py --pair "IAL/Edexcel/Physics/Unit 4" -o ocr-out
+
+# explicit folder name
+python3 tools/ocr_batch/ocr_batch.py --pair qp.pdf ms.pdf --out-name "Unit4-Jan2012" -o ocr-out
+```
+
+Pairing rules (also used by `--pair <dir>` auto-scan):
+
+* A filename containing a QP token (`qp`, `que`, `question`) maps to the
+  question paper; an MS token (`ms`, `msc`, `mark scheme`, `answers`) maps
+  to the mark scheme. Everything else (session, unit, board) forms the pair
+  fingerprint, and one QP + one MS sharing a fingerprint become a pair.
+* Fingerprints include the scan-root-relative directory, so identical
+  filenames in different unit folders (`C1/January 2005 QP.pdf` vs
+  `C12/...`) never cross-pair.
+* Downloader duplicate suffixes (`January 2002 MS_2.pdf`) are stripped for
+  fingerprinting; byte-identical duplicate downloads are skipped with a
+  warning.
+* **Ambiguous groups are skipped, never guessed**: if two genuinely
+  different QPs (or MSs) share one fingerprint (e.g. two `June 2014`
+  variants), none of them is auto-paired — pair those explicitly with
+  `--pair <qp.pdf> <ms.pdf>`.
+* The output folder name is the QP filename minus the role token, or
+  `--out-name`; duplicate names across folders get the folder name prefixed
+  (`C1 January 2005`).
+* Both documents share one `assets/` folder — the first document keeps the
+  clean website crop names, collisions get a `qp_`/`ms_` prefix — and the
+  version-2 manifest records the full md ↔ asset map per document.
+* Works with both backends and with `--dry-run` (lists the pairs it would
+  process, no key needed). A partially-failed pair still writes the
+  succeeded document plus a `failures[]` section and exits non-zero.
+
 ## Tests
 
 ```bash
 python3 tools/ocr_batch/test_ocr_batch.py -v
 ```
 
-17 unit tests, no network and no key required (both backends run against a
+32 unit tests, no network and no key required (both backends run against a
 local mock endpoint; rasterization is exercised on a real two-page PDF).
 The `tool-tests` job in `.github/workflows/ocr-batch.yml` runs them in CI on
 every push/PR touching this directory.

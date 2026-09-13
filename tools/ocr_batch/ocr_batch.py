@@ -25,6 +25,17 @@ Two backends, same output conventions:
            prompt ("Text Recognition:"). Model-only inference: NO layout
            stage, so no figure crops — the manifest records that honestly.
 
+Pair mode (--pair) processes a question paper + mark scheme as ONE unit and
+writes the manual-corpus layout per pair:
+
+    <out>/<pair>/QP.md + MS.md + shared assets/ + pages/QP|MS/ + manifest.json
+
+Roles are detected from the filenames (QP/que/question vs MS/msc/"mark
+scheme"), two PDFs may be passed in any order, and whole directories are
+auto-paired by filename fingerprint (e.g. "January 2012 QP - Unit 4 Edexcel
+Physics A-level.pdf" and "January 2012 MS - ..." share everything except
+the role token). Unpaired PDFs are reported and skipped, never guessed.
+
 Design rules inherited from the parser repo:
 
   * Markdown bytes are saved exactly as received (byte-faithful); the
@@ -69,7 +80,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 TOOL_NAME = "syllabai-parser ocr-batch"
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.1.0"
 
 DEFAULT_API_URL = "https://api.z.ai/api/paas/v4/layout_parsing"
 DEFAULT_MODEL_API = "glm-ocr"
@@ -659,30 +670,54 @@ def _ext_for_mime(content_type: str) -> str:
             "image/webp": ".webp"}.get(ct, ".bin")
 
 
+def _reserve_asset_name(base: str, index: int, used_names: set[str],
+                        collision_prefix: str = "") -> str:
+    """Pick a unique asset name (website convention first).
+
+    Pair mode shares one assets/ folder across QP and MS: the first document
+    processed keeps the clean website name, later collisions get the
+    qp_/ms_ prefix, so nothing is ever overwritten.
+    """
+    stem, dot, ext = base.rpartition(".")
+    numbered = f"p{index + 1}_{stem or base}{dot or ''}{ext if dot else ''}"
+    candidates = [base]
+    if collision_prefix:
+        candidates.append(f"{collision_prefix}{base}")
+    candidates.append(numbered)
+    if collision_prefix:
+        candidates.append(f"{collision_prefix}{numbered}")
+    candidates.append(f"crop_{index + 1}{_ext_for_mime('')}")
+    for name in candidates:
+        if name not in used_names:
+            used_names.add(name)
+            return name
+    counter = 1  # unreachable in practice
+    while True:
+        name = f"{collision_prefix}crop_{index + 1}_{counter}.bin"
+        if name not in used_names:
+            used_names.add(name)
+            return name
+        counter += 1
+
+
 def download_assets(crop_urls: list[str], assets_dir: Path,
-                    cfg: Config) -> tuple[list[dict], list[dict]]:
+                    cfg: Config, used_names: set[str] | None = None,
+                    collision_prefix: str = "") -> tuple[list[dict], list[dict]]:
     """Fetch every referenced crop image NOW. Returns (assets, unfetched).
 
     Signed crop URLs expire (~1 week in the audited corpus); a re-export that
     does not save images at export time loses them forever. This is the
     documented adapter-reconciliation lesson #1 implemented in code.
+    Pair mode passes a shared used_names set so both documents can safely
+    download into one assets/ folder without clobbering each other.
     """
     assets_dir.mkdir(parents=True, exist_ok=True)
     assets: list[dict] = []
     unfetched: list[dict] = []
-    used_names: set[str] = set()
+    names = used_names if used_names is not None else set()
     for index, url in enumerate(crop_urls):
         base = _safe_remote_name(url, index, "")
-        name = base
-        collision = 1
-        while name in used_names:
-            stem, dot, ext = base.rpartition(".")
-            name = f"p{index + 1}_{stem or base}{dot or ''}{ext if dot else ''}"
-            collision += 1
-            if collision > 5:
-                name = f"crop_{index + 1}{_ext_for_mime('')}"
-                break
-        used_names.add(name)
+        name = _reserve_asset_name(base, index, names, collision_prefix)
         target = assets_dir / name
         try:
             blob, content_type = http_get_bytes(url, cfg.image_timeout)
@@ -715,14 +750,23 @@ def _write_json(path: Path, payload: dict) -> None:
                                sort_keys=False) + "\n", encoding="utf-8")
 
 
-def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
-    """OCR one PDF into <out>/<stem>/. Returns (ok, summary-row)."""
+def ocr_document(pdf_path: Path, cfg: Config, *,
+                 out_dir: Path | None = None, md_stem: str | None = None,
+                 role: str | None = None,
+                 used_names: set[str] | None = None,
+                 ) -> tuple[bool, dict, dict | None]:
+    """OCR one PDF. role=None is classic single-paper mode (writes
+    manifest.json + provenance.json exactly like v1.0); role='QP'|'MS' is
+    pair mode: writes QP.md/MS.md + pages/<role>/ + shared assets/ and
+    returns the per-document section for the pair-level manifest."""
     started = time.time()
-    stem = pdf_path.stem
-    out_dir = cfg.out_dir / stem
+    stem = md_stem or pdf_path.stem
+    out_dir = out_dir if out_dir is not None else cfg.out_dir / stem
     timings: dict = {}
 
     row = {"file": str(pdf_path), "status": "FAILED", "outDir": str(out_dir)}
+    if role:
+        row["role"] = role
     try:
         data = pdf_path.read_bytes()
         source_sha = sha256_hex(data)
@@ -742,8 +786,8 @@ def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
 
         pages_dir = None
         if result.page_markdowns and len(result.page_markdowns) > 1:
-            pages_dir = out_dir / "pages"
-            pages_dir.mkdir(exist_ok=True)
+            pages_dir = out_dir / ("pages" if not role else f"pages/{role}")
+            pages_dir.mkdir(parents=True, exist_ok=True)
             for i, piece in enumerate(result.page_markdowns):
                 (pages_dir / f"page_{i + 1:03d}.md").write_text(
                     piece, encoding="utf-8", newline="")
@@ -753,63 +797,98 @@ def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
         if result.crop_urls and not cfg.keep_remote_urls:
             t1 = time.time()
             assets, unfetched = download_assets(
-                result.crop_urls, out_dir / "assets", cfg)
+                result.crop_urls, out_dir / "assets", cfg,
+                used_names=used_names,
+                collision_prefix=(f"{role.lower()}_" if role else ""))
             timings["assetDownloadSeconds"] = round(time.time() - t1, 2)
         elif result.crop_urls and cfg.keep_remote_urls:
             unfetched = [{"url": u, "reason": "downloads skipped (--keep-urls)"}
                          for u in result.crop_urls]
 
         md_bytes = md_path.read_bytes()
-        manifest = {
-            "manifestVersion": 1,
-            "tool": f"{TOOL_NAME} {TOOL_VERSION}",
-            "generatedAt": _utc_now(),
-            "backend": cfg.backend,
-            "engine": {
-                "name": result.engine_name,
-                "variant": result.engine_variant,
-                "model": cfg.model,
-            },
-            "source": {
-                "fileName": pdf_path.name,
-                "sha256": source_sha,
-                "bytes": len(data),
-            },
-            "markdown": {
-                "fileName": md_path.name,
-                "sha256": sha256_hex(md_bytes),
-                "bytes": len(md_bytes),
-                "origin": ("md_results-as-received" if cfg.backend == "api"
-                           else "ollama /api/generate per-page, joined"),
-                "pageCount": (len(result.page_markdowns)
-                              if result.page_markdowns else 1),
-                "pagesDir": "pages/" if pages_dir else None,
-            },
+        markdown_section = {
+            "fileName": md_path.name,
+            "sha256": sha256_hex(md_bytes),
+            "bytes": len(md_bytes),
+            "origin": ("md_results-as-received" if cfg.backend == "api"
+                       else "ollama /api/generate per-page, joined"),
+            "pageCount": (len(result.page_markdowns)
+                          if result.page_markdowns else 1),
+            "pagesDir": (f"pages/{role}/" if role else "pages/")
+                        if pages_dir else None,
+        }
+
+        if role is None:
+            # classic single-paper mode: unchanged version-1 sidecars
+            manifest = {
+                "manifestVersion": 1,
+                "tool": f"{TOOL_NAME} {TOOL_VERSION}",
+                "generatedAt": _utc_now(),
+                "backend": cfg.backend,
+                "engine": {
+                    "name": result.engine_name,
+                    "variant": result.engine_variant,
+                    "model": cfg.model,
+                },
+                "source": {
+                    "fileName": pdf_path.name,
+                    "sha256": source_sha,
+                    "bytes": len(data),
+                },
+                "markdown": markdown_section,
+                "assets": assets,
+                "unfetchedAssets": unfetched,
+                "warnings": result.warnings,
+                "timings": timings,
+                "note": ("markdown bytes are saved exactly as received; the "
+                         "parser derives documentId from SHA-256(bytes)+engine+"
+                         "engineVersion, so this file is the identity anchor"),
+            }
+            _write_json(out_dir / "manifest.json", manifest)
+
+            provenance = {
+                "provenanceVersion": 1,
+                "tool": f"{TOOL_NAME} {TOOL_VERSION}",
+                "generatedAt": _utc_now(),
+                "config": cfg.redacted(),
+                "response": result.response_meta,
+                "timings": timings,
+                "note": ("API key material is never written to disk; "
+                         "apiKeySource names the env var or flag used"),
+            }
+            _write_json(out_dir / "provenance.json", provenance)
+
+            row.update({
+                "status": "OK",
+                "pages": markdown_section["pageCount"],
+                "assets": len(assets),
+                "unfetched": len(unfetched),
+                "mdBytes": len(md_bytes),
+                "seconds": round(time.time() - started, 2),
+            })
+            if result.warnings:
+                row["warnings"] = len(result.warnings)
+            return True, row, None
+
+        # pair mode: return the per-document section; the pair-level
+        # manifest/provenance are written by process_pair()
+        doc = {
+            "role": role,
+            "source": {"fileName": pdf_path.name, "sha256": source_sha,
+                       "bytes": len(data)},
+            "markdown": markdown_section,
             "assets": assets,
             "unfetchedAssets": unfetched,
             "warnings": result.warnings,
             "timings": timings,
-            "note": ("markdown bytes are saved exactly as received; the "
-                     "parser derives documentId from SHA-256(bytes)+engine+"
-                     "engineVersion, so this file is the identity anchor"),
-        }
-        _write_json(out_dir / "manifest.json", manifest)
-
-        provenance = {
-            "provenanceVersion": 1,
-            "tool": f"{TOOL_NAME} {TOOL_VERSION}",
-            "generatedAt": _utc_now(),
-            "config": cfg.redacted(),
+            "engine": {"name": result.engine_name,
+                       "variant": result.engine_variant,
+                       "model": cfg.model},
             "response": result.response_meta,
-            "timings": timings,
-            "note": ("API key material is never written to disk; "
-                     "apiKeySource names the env var or flag used"),
         }
-        _write_json(out_dir / "provenance.json", provenance)
-
         row.update({
             "status": "OK",
-            "pages": manifest["markdown"]["pageCount"],
+            "pages": markdown_section["pageCount"],
             "assets": len(assets),
             "unfetched": len(unfetched),
             "mdBytes": len(md_bytes),
@@ -817,7 +896,7 @@ def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
         })
         if result.warnings:
             row["warnings"] = len(result.warnings)
-        return True, row
+        return True, row, doc
 
     except Exception as exc:  # noqa: BLE001 — fail-loud per paper, keep going
         row.update({
@@ -826,19 +905,110 @@ def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
             "seconds": round(time.time() - started, 2),
         })
         # write a failure provenance so the run leaves durable evidence
+        # (single-paper mode; pair mode records failures in the pair manifest)
+        if role is None:
+            try:
+                out_dir.mkdir(parents=True, exist_ok=True)
+                _write_json(out_dir / "provenance.json", {
+                    "provenanceVersion": 1,
+                    "tool": f"{TOOL_NAME} {TOOL_VERSION}",
+                    "generatedAt": _utc_now(),
+                    "config": cfg.redacted(),
+                    "status": "FAILED",
+                    "error": str(exc),
+                })
+            except OSError:
+                pass
+        return False, row, None
+
+
+def process_paper(pdf_path: Path, cfg: Config) -> tuple[bool, dict]:
+    """OCR one PDF into <out>/<stem>/. Returns (ok, summary-row)."""
+    ok, row, _doc = ocr_document(pdf_path, cfg)
+    return ok, row
+
+
+def process_pair(qp_path: Path, ms_path: Path, name: str,
+                 cfg: Config) -> list[dict]:
+    """Run one QP+MS pair into <out>/<name>/ using the manual-corpus layout:
+    QP.md + MS.md + shared assets/ + pages/QP|MS/ + version-2 manifest."""
+    out_dir = cfg.out_dir / name
+    shared_names: set[str] = set()
+    docs: dict[str, dict] = {}
+    failures: list[dict] = []
+    rows: list[dict] = []
+
+    for role, pdf in (("QP", qp_path), ("MS", ms_path)):
+        ok, row, doc = ocr_document(pdf, cfg, out_dir=out_dir, md_stem=role,
+                                    role=role, used_names=shared_names)
+        row["pair"] = name
+        rows.append(row)
+        if ok and doc:
+            docs[role] = doc
+        else:
+            failures.append({"role": role, "file": str(pdf),
+                             "error": row.get("error")})
+
+    if docs:
+        engine = next(iter(docs.values()))["engine"]
+        manifest = {
+            "manifestVersion": 2,
+            "mode": "pair",
+            "tool": f"{TOOL_NAME} {TOOL_VERSION}",
+            "generatedAt": _utc_now(),
+            "backend": cfg.backend,
+            "engine": engine,
+            "pair": {
+                "name": name,
+                "layout": "QP.md + MS.md + shared assets/ (mirrors the "
+                          "manual Past-Papers convention)",
+            },
+            "documents": {
+                doc_role: {k: doc[k] for k in ("source", "markdown", "assets",
+                                               "unfetchedAssets", "warnings",
+                                               "timings")}
+                for doc_role, doc in docs.items()
+            },
+            "failures": failures,
+            "note": ("markdown bytes are saved exactly as received; assets/ "
+                     "is shared by both documents — colliding crop names "
+                     "keep the clean website name for the first document and "
+                     "get an ms_/qp_ prefix for the other; documentId remains "
+                     "SHA-256(bytes)+engine+engineVersion"),
+        }
+        _write_json(out_dir / "manifest.json", manifest)
+
+        provenance = {
+            "provenanceVersion": 1,
+            "tool": f"{TOOL_NAME} {TOOL_VERSION}",
+            "generatedAt": _utc_now(),
+            "mode": "pair",
+            "config": cfg.redacted(),
+            "responses": {doc_role: doc["response"]
+                          for doc_role, doc in docs.items()},
+            "timings": {doc_role: doc["timings"]
+                        for doc_role, doc in docs.items()},
+            "status": "PARTIAL" if failures else "OK",
+            "note": ("API key material is never written to disk; "
+                     "apiKeySource names the env var or flag used"),
+        }
+        _write_json(out_dir / "provenance.json", provenance)
+    else:
+        # both documents failed — leave durable evidence
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
             _write_json(out_dir / "provenance.json", {
                 "provenanceVersion": 1,
                 "tool": f"{TOOL_NAME} {TOOL_VERSION}",
                 "generatedAt": _utc_now(),
+                "mode": "pair",
                 "config": cfg.redacted(),
                 "status": "FAILED",
-                "error": str(exc),
+                "failures": failures,
             })
         except OSError:
             pass
-        return False, row
+    return rows
 
 
 def _utc_now() -> str:
@@ -874,11 +1044,177 @@ def collect_inputs(raw_inputs: list[str]) -> list[Path]:
     return out
 
 
+# --------------------------------------------------------------------------- #
+# pair mode — QP + MS as one unit (manual-corpus layout)
+# --------------------------------------------------------------------------- #
+
+ROLE_TOKENS_QP = {"qp", "que", "question", "questions", "questionpaper"}
+ROLE_TOKENS_MS = {"ms", "msc", "markscheme", "mark", "scheme", "answers"}
+ROLE_TOKENS_ALL = ROLE_TOKENS_QP | ROLE_TOKENS_MS
+
+_ROLE_REMOVE_RE = re.compile(
+    r"(?i)[\s_\-]*?(?<![a-z0-9])(?:qp|que|questions?|questionpaper|"
+    r"ms|msc|markscheme|mark[\s_-]?scheme|mark|scheme|answers?)"
+    r"(?![a-z0-9])[\s_\-.,]*")
+
+# downloader duplicate markers: 'January 2002 MS_2.pdf' -> 'January 2002 MS.pdf'.
+# Date-like suffixes (que_20120112) are 7+ digits and never match.
+_DUP_SUFFIX_RE = re.compile(r"[_\-]\d{1,2}(\.[A-Za-z0-9]+)$")
+
+
+def _strip_dup_suffix(filename: str) -> str:
+    return _DUP_SUFFIX_RE.sub(r"\1", filename)
+
+
+def detect_role(filename: str) -> str | None:
+    """'January 2012 QP - Unit 4 ...' -> QP, 'WPH11_01_msc_20120112' -> MS.
+    Returns None when the filename carries no role token or is ambiguous."""
+    tokens = {t for t in re.split(r"[^a-z0-9]+", filename.lower()) if t}
+    is_qp = bool(tokens & ROLE_TOKENS_QP)
+    is_ms = bool(tokens & ROLE_TOKENS_MS)
+    if is_qp and not is_ms:
+        return "QP"
+    if is_ms and not is_qp:
+        return "MS"
+    return None
+
+
+def pair_fingerprint(filename: str, rel_dir: str = "") -> str:
+    """Filename with the role token and any downloader duplicate suffix
+    ('_2') stripped. The QP and the MS of one paper share the same
+    fingerprint; different papers never do. scan_pairs passes the
+    scan-root-relative directory so identical filenames in different unit
+    folders never cross-pair."""
+    base = _strip_dup_suffix(filename)
+    tokens = [t for t in re.split(r"[^a-z0-9]+", base.lower()) if t]
+    stem = " ".join(t for t in tokens if t not in ROLE_TOKENS_ALL)
+    if stem.endswith(" pdf"):
+        stem = stem[:-4]
+    prefix = (rel_dir.strip("/").lower().replace("\\", "/") + "/") if rel_dir else ""
+    return prefix + stem
+
+
+def pair_dir_name(qp_path: Path) -> str:
+    """Output folder name: the QP filename minus any duplicate suffix and the
+    role token ('January 2012 QP - Unit 4 Edexcel Physics A-level' ->
+    'January 2012 Unit 4 Edexcel Physics A-level')."""
+    stem = Path(_strip_dup_suffix(qp_path.name)).stem
+    cleaned = _ROLE_REMOVE_RE.sub(" ", stem)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -_.,")
+    return cleaned or qp_path.stem
+
+
+def _partition_inputs(raw_inputs: list[str]) -> tuple[list[Path], list[Path]]:
+    files: list[Path] = []
+    dirs: list[Path] = []
+    for raw in raw_inputs:
+        path = Path(raw).expanduser().resolve()
+        if path.is_dir():
+            dirs.append(path)
+        elif path.is_file() and path.suffix.lower() == ".pdf":
+            files.append(path)
+        else:
+            raise PaperError(f"input not found or not a PDF: {raw}")
+    return files, dirs
+
+
+def _dedupe_by_hash(paths: list[Path]) -> list[Path]:
+    """Drop byte-identical duplicate downloads (keep the first sorted)."""
+    kept: list[Path] = []
+    seen: set[str] = set()
+    for p in paths:
+        digest = sha256_hex(p.read_bytes())
+        if digest in seen:
+            warn(f"skipping duplicate download (identical bytes): {p}")
+            continue
+        seen.add(digest)
+        kept.append(p)
+    return kept
+
+
+def scan_pairs(dirs: list[Path]) -> tuple[list[tuple[Path, Path, str]],
+                                          list[Path]]:
+    """Auto-pair QP/MS PDFs under the given directories. Fingerprints are
+    relative-directory + filename based, so identical filenames in different
+    unit folders never cross-pair. Returns (pairs, unpaired); a pair is
+    (qp, ms, out_name). Duplicate output names get their folder name
+    prefixed; unresolvable collisions raise PaperError."""
+    entries: list[tuple[str, Path]] = []   # (rel-dir key, path)
+    seen: set[Path] = set()
+    for d in dirs:
+        found = sorted(p for p in d.rglob("*")
+                       if p.is_file() and p.suffix.lower() == ".pdf"
+                       and not p.name.startswith("~$"))
+        if not found:
+            warn(f"no PDFs under {d}")
+        for p in found:
+            if p not in seen:
+                seen.add(p)
+                rel = p.parent.relative_to(d)
+                rel_str = ("" if str(rel) == "."
+                           else str(rel).replace("\\", "/").lower() + "/")
+                entries.append((rel_str, p))
+
+    qp_by_fp: dict[str, list[Path]] = {}
+    ms_by_fp: dict[str, list[Path]] = {}
+    unpaired: list[Path] = []
+    for rel_str, p in entries:
+        role = detect_role(p.name)
+        if role == "QP":
+            qp_by_fp.setdefault(rel_str + pair_fingerprint(p.name), []).append(p)
+        elif role == "MS":
+            ms_by_fp.setdefault(rel_str + pair_fingerprint(p.name), []).append(p)
+        else:
+            unpaired.append(p)
+
+    pairs: list[tuple[Path, Path, str]] = []
+    for fp in sorted(set(qp_by_fp) | set(ms_by_fp)):
+        qs = _dedupe_by_hash(qp_by_fp.get(fp, []))
+        ms = _dedupe_by_hash(ms_by_fp.get(fp, []))
+        if not qs or not ms:
+            unpaired.extend(qs)
+            unpaired.extend(ms)
+            continue
+        if len(qs) > 1 or len(ms) > 1:
+            # genuinely different files sharing one fingerprint (e.g. two
+            # 'June 2014' variants): guessing a pairing would fabricate a
+            # match — skip the group and ask for an explicit --pair
+            warn(f"ambiguous fingerprint '{fp}' ({len(qs)} distinct QP, "
+                 f"{len(ms)} distinct MS) — NOT auto-paired; pass the files "
+                 "explicitly:  --pair <qp.pdf> <ms.pdf>")
+            unpaired.extend(qs)
+            unpaired.extend(ms)
+            continue
+        pairs.append((qs[0], ms[0], pair_dir_name(qs[0])))
+
+    # resolve duplicate output names ('C1/January 2005' + 'C12/January 2005')
+    by_name: dict[str, list[tuple[Path, Path, str]]] = {}
+    for triple in pairs:
+        by_name.setdefault(triple[2], []).append(triple)
+    resolved: list[tuple[Path, Path, str]] = []
+    for name, group in by_name.items():
+        if len(group) == 1:
+            resolved.extend(group)
+            continue
+        renamed = [(qp, ms, f"{qp.parent.name} {name}") for qp, ms, name in group]
+        new_names = [n for _, _, n in renamed]
+        if len(set(new_names)) != len(new_names):
+            raise PaperError(
+                "duplicate pair output names even after folder-name prefix: "
+                f"{sorted(set(new_names))} — scan a narrower directory or "
+                "use --out-name")
+        warn(f"multiple pairs named '{name}' — prefixed with their folder "
+             "names")
+        resolved.extend(renamed)
+    return resolved, unpaired
+
+
 def print_summary(rows: list[dict]) -> None:
     print("\n" + "=" * 78)
     for r in rows:
         if r["status"] == "OK":
-            print(f"OK      {Path(r['file']).name}  ->  {r['outDir']}")
+            role = f"[{r['role']}] " if r.get("role") else ""
+            print(f"OK      {role}{Path(r['file']).name}  ->  {r['outDir']}")
             print(f"        pages={r.get('pages')} assets={r.get('assets')} "
                   f"unfetched={r.get('unfetched')} mdBytes={r.get('mdBytes')} "
                   f"({r.get('seconds')}s)")
@@ -903,7 +1239,9 @@ def build_parser() -> argparse.ArgumentParser:
                "  export ZAI_API_KEY=sk-...\n"
                "  python3 ocr_batch.py paper.pdf -o out/                    # api\n"
                "  python3 ocr_batch.py papers/ -o out/ --backend ollama     # local\n"
-               "  python3 ocr_batch.py paper.pdf -o out/ --start-page 1 --end-page 4\n",
+               "  python3 ocr_batch.py paper.pdf -o out/ --start-page 1 --end-page 4\n"
+               "  python3 ocr_batch.py --pair qp.pdf ms.pdf -o out/         # QP+MS pair\n"
+               "  python3 ocr_batch.py --pair 'IAL/Edexcel/Physics/Unit 4' -o out/\n",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("inputs", nargs="+",
                    help="PDF files and/or directories containing PDFs")
@@ -939,15 +1277,151 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--timeout", type=float, default=600.0, metavar="S",
                    help="per-request timeout seconds (default 600)")
     p.add_argument("--limit", type=int, default=None, metavar="N",
-                   help="process at most N PDFs (smoke tests)")
+                   help="process at most N PDFs (smoke tests; single mode)")
+    p.add_argument("--pair", action="store_true",
+                   help="treat inputs as question-paper + mark-scheme pairs "
+                        "and write the manual-corpus layout per pair (QP.md, "
+                        "MS.md, shared assets/); pass exactly two PDFs or "
+                        "directory(ies) to auto-pair by filename")
+    p.add_argument("--out-name", default=None, metavar="NAME",
+                   help="pair mode: output folder name for the pair "
+                        "(default: QP filename minus the role token)")
     p.add_argument("--dry-run", action="store_true",
-                   help="list the PDFs that would be processed and exit")
+                   help="list the PDFs/pairs that would be processed and exit")
     p.add_argument("--verbose", action="store_true")
     return p
 
 
+def _main_pair(args: argparse.Namespace) -> int:
+    """--pair: QP+MS pairs -> manual-corpus layout (one folder per pair)."""
+    try:
+        files, dirs = _partition_inputs(args.inputs)
+    except PaperError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    if files and dirs:
+        print("error: --pair accepts either exactly two PDF files (QP + MS) "
+              "or directory(ies) to auto-pair — not both", file=sys.stderr)
+        return 2
+
+    if args.limit is not None:
+        print("error: --limit is not supported with --pair", file=sys.stderr)
+        return 2
+
+    if files:
+        if len(files) != 2:
+            print("error: --pair with files needs exactly two PDFs (QP + "
+                  "MS); pass directory(ies) for auto-pairing", file=sys.stderr)
+            return 2
+        role_a, role_b = detect_role(files[0].name), detect_role(files[1].name)
+        if role_a == "QP" and role_b == "MS":
+            qp, ms = files
+        elif role_a == "MS" and role_b == "QP":
+            qp, ms = files[1], files[0]
+            warn("input order looks reversed (mark scheme given first) — "
+                 "QP/MS assigned from the filenames")
+        elif role_a is None and role_b is None:
+            qp, ms = files
+            warn("cannot detect QP/MS from the filenames — using positional "
+                 "order (first = QP, second = MS)")
+        else:
+            print("error: ambiguous QP/MS roles from the filenames "
+                  f"({role_a or 'unknown'} / {role_b or 'unknown'}); rename "
+                  "the files or pass a directory to auto-pair",
+                  file=sys.stderr)
+            return 2
+        pairs: list[tuple[Path, Path, str]] = [
+            (qp, ms, args.out_name or pair_dir_name(qp))]
+        unpaired: list[Path] = []
+    else:
+        try:
+            pairs, unpaired = scan_pairs(dirs)
+        except PaperError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        if args.out_name and len(pairs) > 1:
+            print(f"error: --out-name applies to a single pair but "
+                  f"{len(pairs)} pairs were detected", file=sys.stderr)
+            return 2
+
+    names = [name for _, _, name in pairs]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates:
+        print("error: duplicate pair output names (use --out-name or "
+              "distinct filenames): " + ", ".join(duplicates), file=sys.stderr)
+        return 2
+
+    if not pairs:
+        print("error: no QP/MS pairs found", file=sys.stderr)
+        for p in unpaired:
+            print(f"  unpaired: {p}", file=sys.stderr)
+        return 2
+
+    if args.dry_run:
+        print(f"dry run — {len(pairs)} pair(s), backend={args.backend}:")
+        for qp, ms, name in pairs:
+            print(f"  {name}")
+            print(f"    QP: {qp}")
+            print(f"    MS: {ms}")
+        for p in unpaired:
+            print(f"  unpaired (skipped): {p}")
+        return 0
+
+    cfg = Config(
+        backend=args.backend,
+        api_url=args.api_url,
+        model=args.model or (DEFAULT_MODEL_API if args.backend == "api"
+                             else DEFAULT_MODEL_OLLAMA),
+        ollama_url=args.ollama_url,
+        num_ctx=args.num_ctx,
+        dpi=args.dpi,
+        start_page=args.start_page,
+        end_page=args.end_page,
+        return_crop_images=not args.no_crop_images,
+        retries=args.retries,
+        request_timeout=args.timeout,
+        keep_remote_urls=args.keep_urls,
+        out_dir=Path(args.out).expanduser().resolve(),
+        verbose=args.verbose,
+    )
+
+    if cfg.backend == "api":
+        try:
+            cfg.api_key, cfg.api_key_source = resolve_api_key(args.api_key)
+        except PaperError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+
+    print(f"{TOOL_NAME} {TOOL_VERSION}: {len(pairs)} pair(s), "
+          f"backend={cfg.backend}, out={cfg.out_dir}")
+
+    rows: list[dict] = []
+    for index, (qp, ms, name) in enumerate(pairs, 1):
+        print(f"[{index}/{len(pairs)}] pair {name}")
+        pair_rows = process_pair(qp, ms, name, cfg)
+        rows.extend(pair_rows)
+        for row in pair_rows:
+            if row["status"] == "OK":
+                print(f"    ok [{row.get('role')}] pages={row.get('pages')} "
+                      f"assets={row.get('assets')} "
+                      f"unfetched={row.get('unfetched')} "
+                      f"({row.get('seconds')}s)")
+            else:
+                print(f"    FAILED [{row.get('role')}]: {row.get('error')}",
+                      file=sys.stderr)
+    for p in unpaired:
+        warn(f"unpaired (no matching QP/MS): {p.name} — skipped")
+
+    print_summary(rows)
+    return 1 if any(r["status"] != "OK" for r in rows) else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.pair:
+        return _main_pair(args)
 
     try:
         inputs = collect_inputs(args.inputs)
