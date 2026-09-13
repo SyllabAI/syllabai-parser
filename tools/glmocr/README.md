@@ -43,7 +43,7 @@ ids, question numbers, parts, marks, QWC markers, MarkScheme entries,
 MarkPoints, image references, warnings (validation findings) and provenance.
 
 Status: **FULL CONFORMANCE** — Java production and Python reference agree on
-every field of every fixture in every mode (12/12 file-mode combinations).
+every field of every fixture in every mode (16/16 file-mode combinations).
 The `conformance` job in `.github/workflows/ci.yml` keeps it enforced.
 
 ## Change protocol

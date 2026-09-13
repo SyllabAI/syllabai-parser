@@ -18,18 +18,18 @@ SyllabAI content pipeline — **offline, polyglot document processing** that tur
 | GLM-OCR Markdown adapter (Session 8/9) | ✅ real-corpus verified — headings, HTML islands (image divs w/ signed URLs, tables incl. rowspan), centered divs, `$$` math, entity decoding recorded in provenance, pageCount=1 honesty, deterministic identity |
 | GLM-OCR QP + MS extraction | ✅ both numbering styles (`1:`/`1 `), `*N`/`*(a)` QWC, MCQ hindsight validation, mark points w/ dependent-on/ecf/Or/any-two-from vocabulary, IC tables (3 shapes), both total placements, QP/MS reconciliation (D6: mismatches → review, never silent merges) |
 | GLM-OCR image reality | ✅ expired signed URLs preserved (full URL + decoded path + ownership + failure state); local-asset pipeline (`img:<sha256>`, MIME sniffing, dimensions) ready for re-exports |
-| Python/Java conformance | ✅ `tools/glmocr/` reference implementation + harness — 12/12 fixture-mode combinations agree field-for-field; enforced in CI |
+| Python/Java conformance | ✅ `tools/glmocr/` reference implementation + harness — 16/16 fixture-mode combinations agree field-for-field (4 pairs incl. the pathological pair); enforced in CI |
 
 ## Build & test
 
 ```bash
-mvn verify          # Java 25; 68 unit tests incl. full PDF→canonical→draft chain
+mvn verify          # Java 25; 89 unit tests incl. full PDF→canonical→draft chain
                     # + real-spec outline extraction + GLM-OCR QP/MS extraction,
                     # determinism, reconciliation and image-reality tests pinned
                     # against the 6 real GLM-OCR fixtures
 
 # cross-language conformance (after mvn compile)
-python3 tools/glmocr/conformance.py   # 12/12 fixture-mode combinations, enforced in CI
+python3 tools/glmocr/conformance.py   # 16/16 fixture-mode combinations, enforced in CI
 ```
 
 ## Workbench CLI

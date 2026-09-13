@@ -20,7 +20,15 @@ import java.util.TreeMap;
 public final class GlmOcrMarkReconciliation {
 
     /**
-     * @param severity "match" | "mismatch" | "qp-only" | "ms-only" | "gap"
+     * @param questionNumber question the finding is about
+     * @param qpMarks        QP-side total (null when the QP side has no value)
+     * @param msMarks        MS-side total (null when the MS side has no value)
+     * @param severity "match" | "mismatch" | "qp-only" | "ms-only" | "gap",
+     *                 named for where the value EXISTS: "qp-only" = the total
+     *                 is present on the QP and missing from the MS (qpMarks !=
+     *                 null, msMarks == null); "ms-only" = the mirror case;
+     *                 "gap" = neither side yields a value for a question the
+     *                 QP opened.
      */
     public record Finding(String questionNumber, Integer qpMarks, Integer msMarks,
                           String severity) {
@@ -40,9 +48,14 @@ public final class GlmOcrMarkReconciliation {
             boolean paperTotalConflict,
             int mismatchCount) {
 
-        /** True when any mismatch or paper-total conflict exists → review required. */
+        /** True when anything needs human eyes: a totals mismatch, a paper-total
+         * conflict, or any one-sided/missing coverage finding ("qp-only",
+         * "ms-only", "gap") — one-sided evidence is a coverage gap the operator
+         * must see, never silently OK (audit: June carried 4+ one-sided
+         * findings while reviewRequired stayed false). */
         public boolean reviewRequired() {
-            return mismatchCount > 0 || paperTotalConflict;
+            return mismatchCount > 0 || paperTotalConflict
+                    || findings.stream().anyMatch(f -> !f.severity().equals("match"));
         }
     }
 
@@ -70,7 +83,8 @@ public final class GlmOcrMarkReconciliation {
             Integer qpMarks = e.getValue();
             Integer msMarks = msTotals.get(number);
             if (msMarks == null) {
-                findings.add(new Finding(number, qpMarks, null, "ms-only"));
+                // the value exists only on the QP side → qp-only
+                findings.add(new Finding(number, qpMarks, null, "qp-only"));
             } else if (qpMarks.equals(msMarks)) {
                 findings.add(new Finding(number, qpMarks, msMarks, "match"));
             } else {
@@ -80,7 +94,8 @@ public final class GlmOcrMarkReconciliation {
         }
         for (Map.Entry<String, Integer> e : msTotals.entrySet()) {
             if (!qpTotals.containsKey(e.getKey())) {
-                findings.add(new Finding(e.getKey(), null, e.getValue(), "qp-only"));
+                // the value exists only on the MS side → ms-only
+                findings.add(new Finding(e.getKey(), null, e.getValue(), "ms-only"));
             }
         }
         // advisory: MS has entries for a question the QP never opened (and vice versa)

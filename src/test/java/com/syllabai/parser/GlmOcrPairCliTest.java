@@ -65,9 +65,11 @@ class GlmOcrPairCliTest {
         assertThat(msDraft.paper().canonicalDocumentId())
                 .isEqualTo(CanonicalJson.read(out.resolve("ms-canonical.json")).documentId());
 
-        // known June facts: 20 questions, clean 80/80 reconciliation
+        // known June facts: 20 questions, 80/80 totals agreeing, but one-sided
+        // coverage findings exist (MS lacks 17's total; QP lacks 12/15) —
+        // fail-closed: review required (audit: used to read false)
         assertThat(qpDraft.questions()).hasSize(20);
-        assertThat(reconciliation.reviewRequired()).isFalse();
+        assertThat(reconciliation.reviewRequired()).isTrue();
         assertThat(reconciliation.mismatchCount()).isZero();
         assertThat(reconciliation.paperTotalConflict()).isFalse();
         assertThat(reconciliation.qpPaperTotal()).isEqualTo(80);

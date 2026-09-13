@@ -40,7 +40,7 @@ class GlmOcrMarkReconciliationTest {
     }
 
     @Test
-    @DisplayName("June 2025 pair: every shared question total agrees; no mismatches")
+    @DisplayName("June 2025 pair: every shared question total agrees; gaps force review")
     void junePairMatches() throws IOException {
         Reconciliation june = reconcile("june-2025-wph11-01-qp.md", "june-2025-wph11-01-ms.md");
         assertThat(count(june, "match")).isGreaterThanOrEqualTo(7);
@@ -48,10 +48,45 @@ class GlmOcrMarkReconciliationTest {
         assertThat(june.paperTotalConflict()).isFalse();
         assertThat(june.qpPaperTotal()).isEqualTo(80);
         assertThat(june.msPaperTotal()).isEqualTo(80);
-        assertThat(june.reviewRequired()).isFalse();
-        // QP-only totals: the MS genuinely lacks 17's total; QP lacks 12/15 — honest gaps
-        assertThat(count(june, "qp-only")).isGreaterThanOrEqualTo(1);
-        assertThat(count(june, "ms-only")).isGreaterThanOrEqualTo(3);
+        // severity labels are named for where the value EXISTS (the audit found
+        // them inverted): "qp-only" = MS genuinely lacks 17's total; "ms-only" =
+        // QP lacks 12/15 — honest one-sided evidence
+        assertThat(count(june, "qp-only")).isGreaterThanOrEqualTo(3);
+        assertThat(count(june, "ms-only")).isGreaterThanOrEqualTo(1);
+        // one-sided coverage gaps force review (audit: 4+ such findings while
+        // reviewRequired stayed false)
+        assertThat(june.reviewRequired()).isTrue();
+    }
+
+    @Test
+    @DisplayName("severity always agrees with which side carries the value")
+    void severityLabelsAreSelfConsistent() throws IOException {
+        for (Reconciliation r : List.of(
+                reconcile("june-2025-wph11-01-qp.md", "june-2025-wph11-01-ms.md"),
+                reconcile("october-2025-wph11-01-qp.md", "october-2025-wph11-01-ms.md"),
+                reconcile("october-2025-wph11-01a-qp.md", "october-2025-wph11-01a-ms.md"))) {
+            for (Finding f : r.findings()) {
+                switch (f.severity()) {
+                    case "qp-only" -> {
+                        assertThat(f.qpMarks()).as("qp-only needs a QP value: %s", f).isNotNull();
+                        assertThat(f.msMarks()).as("qp-only must lack an MS value: %s", f).isNull();
+                    }
+                    case "ms-only" -> {
+                        assertThat(f.msMarks()).as("ms-only needs an MS value: %s", f).isNotNull();
+                        assertThat(f.qpMarks()).as("ms-only must lack a QP value: %s", f).isNull();
+                    }
+                    case "gap" -> {
+                        assertThat(f.qpMarks()).as("gap carries no QP value: %s", f).isNull();
+                        assertThat(f.msMarks()).as("gap carries no MS value: %s", f).isNull();
+                    }
+                    case "match", "mismatch" -> {
+                        assertThat(f.qpMarks()).as("%s needs both values: %s", f.severity(), f).isNotNull();
+                        assertThat(f.msMarks()).as("%s needs both values: %s", f.severity(), f).isNotNull();
+                    }
+                    default -> throw new AssertionError("unknown severity: " + f.severity());
+                }
+            }
+        }
     }
 
     @Test
@@ -62,7 +97,8 @@ class GlmOcrMarkReconciliationTest {
         assertThat(count(october, "match")).isGreaterThanOrEqualTo(8);
         assertThat(october.mismatchCount()).isZero();
         assertThat(october.paperTotalConflict()).isFalse();
-        assertThat(october.reviewRequired()).isFalse();
+        // one-sided totals exist on this pair too → review (fail-closed)
+        assertThat(october.reviewRequired()).isTrue();
     }
 
     @Test
