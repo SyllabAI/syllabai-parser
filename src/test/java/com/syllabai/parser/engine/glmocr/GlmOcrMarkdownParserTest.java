@@ -157,7 +157,7 @@ class GlmOcrMarkdownParserTest {
     @DisplayName("engine identity and markdown support")
     void engineIdentity() {
         assertThat(parser.engineName()).isEqualTo("glm-ocr-markdown");
-        assertThat(parser.engineVersion()).isEqualTo("1.0.0");
+        assertThat(parser.engineVersion()).isEqualTo("1.1.0");
         assertThat(parser.supports("text/markdown")).isTrue();
         assertThat(parser.supports("application/pdf")).isFalse();
     }

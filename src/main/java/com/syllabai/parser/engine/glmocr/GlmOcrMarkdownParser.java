@@ -54,7 +54,7 @@ import java.util.regex.Pattern;
 public final class GlmOcrMarkdownParser implements DocumentParser {
 
     public static final String ENGINE_NAME = "glm-ocr-markdown";
-    public static final String ENGINE_VERSION = "1.0.0";
+    public static final String ENGINE_VERSION = "1.1.0"; // 1.1.0: <br> -> newline in table cells
 
     private static final String MARKDOWN_MIME = "text/markdown";
 
@@ -69,6 +69,7 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
     private static final Pattern TR_TAG = Pattern.compile("<tr[^>]*>(.*?)</tr>", Pattern.DOTALL);
     private static final Pattern CELL_TAG = Pattern.compile("<t[dh][^>]*>(.*?)</t[dh]>", Pattern.DOTALL);
     private static final Pattern ANY_TAG = Pattern.compile("<[^>]+>");
+    private static final Pattern BR_TAG = Pattern.compile("<br\\s*/?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern ENTITY = Pattern.compile(
             "&#x([0-9a-fA-F]+);|&#(\\d+);|&gt;|&lt;|&amp;|&quot;|&apos;");
 
@@ -556,9 +557,16 @@ public final class GlmOcrMarkdownParser implements DocumentParser {
         return new ParsedTable(rows, decodes);
     }
 
-    /** Strips inner tags, decodes entities, trims outer whitespace, keeps inner newlines. */
+    /**
+     * Strips inner tags, decodes entities, trims outer whitespace, keeps inner
+     * newlines. {@code <br>} variants become newlines FIRST — they ARE printed
+     * line breaks in the original (e.g. "Paper Reference<br>KCH0/1C 4CH0/1C");
+     * dropping them glues separate printed lines into one token soup ("…1C4CH0/1C…")
+     * that then defeats every line-based identity regex downstream.
+     */
     private static String cleanCell(String rawCell) {
-        String noTags = ANY_TAG.matcher(rawCell).replaceAll("");
+        String brs = BR_TAG.matcher(rawCell).replaceAll("\n");
+        String noTags = ANY_TAG.matcher(brs).replaceAll("");
         String decoded = decodeEntities(noTags);
         return decoded.strip();
     }
