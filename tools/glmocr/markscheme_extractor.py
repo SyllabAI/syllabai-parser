@@ -28,7 +28,9 @@ OR_SPLIT = re.compile(r"\bor\b", re.I)
 PAPER_REF = re.compile(r"\b(W[A-Z]{2}\d{2}/\d{1,2}[A-Z]?)\b")
 LOG_NUMBER = re.compile(r"log\s+number\s+(P\d{5,6}[A-Z])\b", re.I)
 PUBLICATION_CODE = re.compile(r"publications?\s+code\s+(\S+)", re.I)
-SESSION_LINE = re.compile(r"^(Summer|January|June|October|May|March)\s+20\d{2}$", re.I)
+SESSION_LINE = re.compile(
+    r"^(Summer|Autumn|Winter|January|February|March|April|May|June|July|August|"
+    r"September|October|November|December)\s+20\d{2}$", re.I)
 IC_HEADER_CELL = re.compile(r"^(ic points|number of indicative marking points.*)$", re.I)
 IC_VALUE = re.compile(r"^\d{1,2}([–—-]\d{1,2})?$")
 BARE_INT = re.compile(r"^\d{1,3}$")

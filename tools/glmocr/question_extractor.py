@@ -25,7 +25,11 @@ TOTAL_FOR_QUESTION = re.compile(
     r"\s*marks?\)?\.?$", re.I)
 TOTAL_FOR_PAPER = re.compile(r"TOTAL FOR PAPER\s*=\s*(\d{1,3})\s*MARKS", re.I)
 TOTAL_FOR_SECTION = re.compile(r"TOTAL FOR SECTION\s*([A-Z])\s*=\s*(\d{1,3})\s*MARKS", re.I)
-PAPER_REF = re.compile(r"\b(W[A-Z]{2}\d{2}/\d{1,2}[A-Z]?)\b")
+# Paper reference codes. Two printed families (engine parity with the Java
+# twin's widened pattern):
+#  - IAL unit codes  : WCH11/1C  (W + 2 letters + 2 digits)
+#  - IGCSE codes     : 4CH0/1C, 4CH1/1CR, KCH0/2C (4 chars + / + number + up to 2 letters)
+PAPER_REF = re.compile(r"\b((?:W[A-Z]{2}\d{2}|[A-Z0-9]{4})/\d{1,2}[A-Z]{0,2})\b")
 LOG_NUMBER = re.compile(r"log\s+number\s+(P\d{5,6}[A-Z])\b", re.I)
 PUBLICATION_CODE = re.compile(r"publications?\s+code\s+(\S+)", re.I)
 LOG_TOTAL = re.compile(r"total mark for this paper is\s*(\d{1,3})", re.I)
@@ -33,13 +37,38 @@ TURN_OVER = re.compile(r"^Turn over\s*$", re.I)
 NOISE = re.compile(
     r"^(Not to scale|\*NOT TO SCALE\*|See next page|End of Question Paper)\s*$", re.I)
 SOURCE_NOTE = re.compile(r"^\(Source: ?(.*)\)\s*$")
-SESSION_LINE = re.compile(r"^(Summer|January|June|October|May|March)\s+20\d{2}$", re.I)
+# months accepted on a printed session line (e.g. "Summer 2013", "November 2021")
+SESSION_MONTHS = ("January|February|March|April|May|June|July|"
+                  "August|September|October|November|December")
+SESSION_LINE = re.compile(r"^(Summer|Autumn|Winter|" + SESSION_MONTHS + r")\s+20\d{2}$", re.I)
 DATE_LINE = re.compile(
     r"^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}\s+"
-    r"(January|February|March|April|May|June|July|August|September|October|"
-    r"November|December)\s+20\d{2}$", re.I)
+    r"(" + SESSION_MONTHS + r")\s+20\d{2}"
+    # newer covers append the sitting time to the same line:
+    # "Wednesday 18 January 2017 – Afternoon"
+    r"(\s*[–—-]\s*(Morning|Afternoon|Evening))?$", re.I)
+SPECIMEN_YEAR = re.compile(r"Sample Assessment Materials.*?(20\d{2})", re.I)
+MONTH_YEAR = re.compile(r"(" + SESSION_MONTHS + r")\s+(20\d{2})", re.I)
 
 FIGURE_UNAVAILABLE = "unavailable-signed-url"
+
+
+def table_cell_lines(table_html):
+    """splits an HTML-table blob into printed cell lines, tags stripped
+    (port of the Java ``tableCellLines`` helper)."""
+    lines = []
+    if not table_html or "<table" not in table_html.lower():
+        return lines
+    for cell in re.split(r"</t[dh]>|<tr[^>]*>|</tr>", table_html):
+        # cells keep raw internal newlines (e.g. "Wednesday 18 January 2017 – Afternoon\nTime: 1 hour");
+        # each printed line is matched separately so the ^...$ identity regexes survive
+        for line in re.sub(r"<[^>]+>", " ", cell).split("\n"):
+            stripped = (line.replace("&amp;", "&").replace("&nbsp;", " ")
+                        .replace("&#39;", "'").replace("&lt;", "<").replace("&gt;", ">"))
+            stripped = re.sub(r"[ \t\r]+", " ", stripped).strip()
+            if stripped:
+                lines.append(stripped)
+    return lines
 
 
 class _RawPart:
@@ -85,6 +114,11 @@ class _State:
         self.meta = [None] * 7  # board, qual, subject, paperRef, session, date, duration
         self.log_number = None
         self.publication_code = None
+        self.specimen_year = None
+        # every printed paper-reference code, in reading order (covers print 2-3:
+        # the Edexcel-Certificate twin KCH0/1C, the International GCSE 4CH0/1C and
+        # the Double Award 4SC0/1C)
+        self.paper_ref_candidates = []
         self.paper_total = None
         self.section = None
         self.in_formula_appendix = False
@@ -337,9 +371,22 @@ class GlmOcrQuestionExtractor:
         state.totals[int(total.group(1))] = int(total.group(2))
 
     def _extract_meta(self, text, state):
-        paper_ref = PAPER_REF.search(text)
-        if paper_ref and state.meta[3] is None:
-            state.meta[3] = paper_ref.group(1)
+        if "<" in text and "<table" in text.lower():
+            # Cover metadata on newer templates lives inside HTML table cells; a
+            # whole-table element defeats the ^...$ line regexes. Run the same
+            # matchers against each printed cell line (tags split, entities kept
+            # simple). Plain-line extraction below still runs first.
+            for candidate in table_cell_lines(text):
+                self._meta_from_line(candidate, state)
+        self._meta_from_line(text, state)
+
+    def _meta_from_line(self, text, state):
+        for match in PAPER_REF.finditer(text):
+            code = match.group(1)
+            if state.meta[3] is None:
+                state.meta[3] = code
+            if code not in state.paper_ref_candidates:
+                state.paper_ref_candidates.append(code)
         log_number = LOG_NUMBER.search(text)
         if log_number and state.log_number is None:
             state.log_number = log_number.group(1)
@@ -354,8 +401,37 @@ class GlmOcrQuestionExtractor:
             state.meta[6] = re.sub(r"\s+", " ", text).strip()
         if state.meta[5] is None and DATE_LINE.fullmatch(text):
             state.meta[5] = text
+        if state.specimen_year is None:
+            specimen = SPECIMEN_YEAR.search(text)
+            if specimen:
+                state.specimen_year = specimen.group(1)
         if state.meta[1] is None and "international advanced" in text.lower():
             state.meta[1] = "IAL"
+
+    def _session_label(self, state):
+        """Session label resolution, first evidence wins: printed session line,
+        then the printed exam date (month mapped to the session name — May and
+        June sittings are the "June" session, Pearson's own session naming),
+        then "Specimen <year>" for Sample Assessment Materials covers."""
+        if state.meta[4] is not None:
+            return state.meta[4]
+        if state.meta[5] is not None:
+            m = MONTH_YEAR.search(state.meta[5])
+            if m:
+                month = m.group(1)
+                month = "June" if month.lower() == "may" \
+                    else month[0].upper() + month[1:].lower()
+                return month + " " + m.group(2)
+        return None if state.specimen_year is None else "Specimen " + state.specimen_year
+
+    def _paper_reference(self, state):
+        """Paper-reference choice: prefer the FIRST 4-prefixed code — the
+        International GCSE series this pipeline ingests — falling back to the
+        first printed code. Deterministic and printed-faithful."""
+        for code in state.paper_ref_candidates:
+            if code.startswith("4"):
+                return code
+        return state.paper_ref_candidates[0] if state.paper_ref_candidates else None
 
     def _paper_meta(self, doc, state):
         board = state.meta[0]
@@ -365,10 +441,10 @@ class GlmOcrQuestionExtractor:
             "board": board,
             "qualification": state.meta[1],
             "subject": state.meta[2],
-            "paperReference": state.meta[3],
+            "paperReference": self._paper_reference(state),
             "logNumber": state.log_number,
             "publicationCode": state.publication_code,
-            "session": state.meta[4],
+            "session": self._session_label(state),
             "examDate": state.meta[5],
             "duration": state.meta[6],
             "canonicalDocumentId": doc["documentId"],
@@ -396,6 +472,18 @@ class GlmOcrQuestionExtractor:
             q.parts[-1].figures.append(ref)
 
     def _handle_table(self, table, state):
+        # Front-matter cover tables carry the printed paper identity (paper
+        # reference, exam date, session line). Extract it BEFORE the
+        # current-question early return — that return skips everything else in
+        # a cover table, and the identity regexes need printed cell lines, not
+        # the element as a whole.
+        for row in table["rows"]:
+            for cell in row:
+                for line in cell.split("\n"):
+                    self._meta_from_line(re.sub(r"[ \t\r]+", " ", line).strip(), state)
+        if not table["rows"] and table.get("text"):
+            for candidate in table_cell_lines(table["text"]):
+                self._meta_from_line(candidate, state)
         q = state.current
         if q is None:
             return  # front-matter cover table (1A variant)

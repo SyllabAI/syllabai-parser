@@ -56,6 +56,7 @@ INLINE_DISPLAY_MATH = re.compile(r"^\$\$(.+)\$\$\s*$")
 TR_TAG = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S)
 CELL_TAG = re.compile(r"<t[dh][^>]*>(.*?)</t[dh]>", re.S)
 ANY_TAG = re.compile(r"<[^>]+>")
+BR_TAG = re.compile(r"<br\s*/?>", re.I)
 ENTITY = re.compile(r"&#x([0-9a-fA-F]+);|&#(\d+);|&gt;|&lt;|&amp;|&quot;|&apos;")
 
 # ── bounded-block hardening (structural-boundary predicates) ─────────────────
@@ -140,7 +141,13 @@ def _parse_html_table(html: str):
             cell = cell_match.group(1)
             if ENTITY.search(cell):
                 decodes += 1
-            no_tags = ANY_TAG.sub("", cell)
+            # <br> variants become newlines FIRST — they ARE printed line
+            # breaks in the original (e.g. "Paper Reference<br>4CH1/1C");
+            # dropping them glues separate printed lines into one token soup
+            # that then defeats every line-based identity regex downstream
+            # (engine 1.1.0, mirrors the Java cleanCell order).
+            brs = BR_TAG.sub("\n", cell)
+            no_tags = ANY_TAG.sub("", brs)
             cells.append(decode_entities(no_tags).strip())
         if cells:
             rows.append(cells)
