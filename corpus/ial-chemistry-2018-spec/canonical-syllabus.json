@@ -1,13 +1,13 @@
 {
-  "documentId" : "805b4411-2be2-40e1-a831-9591f79dd6f1",
+  "documentId" : "22f55093-456e-53a6-b4ce-36b1415eb45e",
   "schemaVersion" : "1.0",
   "version" : 1,
   "source" : {
-    "uri" : "ial-chemistry-spec.pdf",
+    "uri" : "spec.pdf",
     "checksum" : "1e68fdf7d854f7a61b7d505456fc00eb6727b92bd003d03226963bd8ea6f832c",
     "checksumAlgorithm" : "SHA-256",
     "mimeType" : "application/pdf",
-    "fileName" : "input.pdf"
+    "fileName" : "spec.pdf"
   },
   "pageCount" : 108,
   "pages" : [ {
@@ -13714,7 +13714,7 @@
   "provenance" : {
     "engine" : "opendataloader-pdf",
     "engineVersion" : "2.5.7",
-    "extractedAt" : "2026-09-04T08:13:26.092607295Z",
+    "extractedAt" : "2026-09-13T13:47:06.449609473Z",
     "extractionParams" : {
       "mode" : "fast",
       "readingOrder" : "xycut",

@@ -4,14 +4,14 @@
     "board" : "Edexcel",
     "qualification" : "IGCSE",
     "subject" : "Chemistry",
-    "unit" : "Paper 1C",
-    "sessionLabel" : "January 2012",
-    "paperCode" : "4CH0/1C",
-    "questionPaperDocumentId" : "7aad8474-029c-43ad-b34f-9fa03b1a4b57",
-    "markSchemeDocumentId" : "6c2ccae2-63d0-4130-b317-9988d8c50c64"
+    "unit" : "",
+    "sessionLabel" : "",
+    "paperCode" : "",
+    "questionPaperDocumentId" : "13b69d5c-138a-50a1-81f0-f9ba77e60ca1",
+    "markSchemeDocumentId" : "4fb90d20-2766-593c-8bd5-d2337cf2f1b7"
   },
   "questions" : [ {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "Iron is a useful metal. One problem with using iron is that it can rust.",
     "commandWord" : null,
@@ -33,7 +33,7 @@
       "confidence" : 0.7999999999999999
     } ]
   }, {
-    "externalRef" : "q1-7aad8474",
+    "externalRef" : "q1-13b69d5c",
     "questionNumber" : "1",
     "prompt" : "..........................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -43,7 +43,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "..........................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -83,7 +83,7 @@
       "confidence" : 0.7999999999999999
     } ]
   }, {
-    "externalRef" : "q1-7aad8474",
+    "externalRef" : "q1-13b69d5c",
     "questionNumber" : "1",
     "prompt" : "..........................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -93,7 +93,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "........................................................................................................................................................................................................................................... ................................................................................................................................................................................................................................................ 7 *P40126A0728* Turn over",
     "commandWord" : null,
@@ -103,7 +103,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q3-7aad8474",
+    "externalRef" : "q3-13b69d5c",
     "questionNumber" : "3",
     "prompt" : "Ammonium chloride contains oppositely charged ions.",
     "commandWord" : null,
@@ -155,7 +155,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q4-7aad8474",
+    "externalRef" : "q4-13b69d5c",
     "questionNumber" : "4",
     "prompt" : "A student set up the following apparatus. hydrochloric acid cold water flame magnesium anhydrous copper(II) sulfate",
     "commandWord" : null,
@@ -201,7 +201,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q5-7aad8474",
+    "externalRef" : "q5-13b69d5c",
     "questionNumber" : "5",
     "prompt" : "These are the displayed formulae of six organic compounds. H C H H H H C C H H H H H H C C C H H H H H H H P Q R H C Br H H C=C H H H H C=C H C H H H H H S T U",
     "commandWord" : null,
@@ -253,7 +253,7 @@
       "confidence" : 0.7999999999999999
     } ]
   }, {
-    "externalRef" : "q1-7aad8474",
+    "externalRef" : "q1-13b69d5c",
     "questionNumber" : "1",
     "prompt" : "...........................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -263,7 +263,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "........................................................................................................................................................................................................................................... ................................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -279,7 +279,7 @@
       "confidence" : 0.5
     } ]
   }, {
-    "externalRef" : "q6-7aad8474",
+    "externalRef" : "q6-13b69d5c",
     "questionNumber" : "6",
     "prompt" : "The diagram shows how the electrons are arranged in an atom of oxygen. Oxygen atoms form both covalent and ionic bonds. (a) Water is formed when two atoms of hydrogen combine with one atom of oxygen. (i) Draw a dot and cross diagram of a molecule of water. You need only show the electrons in the outer shells. (ii) Explain how the covalent bonds in the water molecule hold the hydrogen and oxygen atoms together. (2) ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ 14 *P40126A01428*",
     "commandWord" : null,
@@ -325,7 +325,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q7-7aad8474",
+    "externalRef" : "q7-13b69d5c",
     "questionNumber" : "7",
     "prompt" : "Bromine, chlorine and iodine are elements in Group 7 of the Periodic Table.",
     "commandWord" : null,
@@ -359,7 +359,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q8-7aad8474",
+    "externalRef" : "q8-13b69d5c",
     "questionNumber" : "8",
     "prompt" : "Some students investigated displacement reactions involving three different metals and solutions of their salts. This equation represents one of these reactions: Zn(s) + CuSO4(aq) → ZnSO4(aq) + Cu(s) This reaction occurs because zinc is more reactive than copper. When a displacement reaction occurs, there is a temperature rise. The bigger the difference in reactivity between the two metals, the bigger the temperature rise. (a) What word is used to describe reactions in which there is a temperature rise? (1) ................................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -381,7 +381,7 @@
       "confidence" : 0.7999999999999999
     } ]
   }, {
-    "externalRef" : "q1-7aad8474",
+    "externalRef" : "q1-13b69d5c",
     "questionNumber" : "1",
     "prompt" : "...........................................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -391,7 +391,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "........................................................................................................................................................................................................................................... ................................................................................................................................................................................................................................................ 17 *P40126A01728* Turn over (ii) The diagrams show the thermometer readings at the start and at the end of one of the experiments. start end 20 25 15 20 (3) Temperature at start ..........................................................................................................................................................................................°C Temperature at end ...........................................................................................................................................................................................°C Temperature rise .................................................................................................................................................................................................°C 18 *P40126A01828* (iii) Each experiment was repeated twice. The table shows the average temperatures obtained. Metal and metal salt used Average temperature rise in °C Zn + CuSO4 12.2 X + CuSO4 8.3 X + ZnSO4 0.0 Cu + ZnSO4 0.0 Zn + XSO4 2.7 Cu + XSO4 0.0 Use these results to identify the more reactive metal in each of the following pairs. (2) Zn and X ........................................................................................................................................................................................................................ Cu and X ........................................................................................................................................................................................................................",
     "commandWord" : null,
@@ -413,7 +413,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q9-7aad8474",
+    "externalRef" : "q9-13b69d5c",
     "questionNumber" : "9",
     "prompt" : "AmmoFert Chemicals is a company that manufactures fertilisers. The flow chart shows how the company manufactures a fertiliser called AmmoBoost. nitrogen gas nitric acid heated catalyst separator mixer AmmoBoost hydrogen gas",
     "commandWord" : null,
@@ -495,7 +495,7 @@
       "confidence" : 0.5
     } ]
   }, {
-    "externalRef" : "q10-7aad8474",
+    "externalRef" : "q10-13b69d5c",
     "questionNumber" : "10",
     "prompt" : "Like other metals, iron is malleable and is a good conductor of electricity.",
     "commandWord" : null,
@@ -529,7 +529,7 @@
       "confidence" : 0.6
     } ]
   }, {
-    "externalRef" : "q11-7aad8474",
+    "externalRef" : "q11-13b69d5c",
     "questionNumber" : "11",
     "prompt" : "Some students investigated the rate of reaction between sodium thiosulfate solution and hydrochloric acid. The equation for the reaction is Na2S2O3(aq) + 2HCl(aq) → 2NaCl(aq) + H2O(l) + S(s) + SO2(g) The precipitate of sulfur makes the reaction mixture go cloudy. The students used this method. The students used 10 cm3 of dilute hydrochloric acid in each experiment. They carried out all the experiments at the same temperature. They used different volumes of sodium thiosulfate solution and water in each experiment. They were told to keep the total volume of sodium thiosulfate solution and water constant. The table shows their results. Student Volume of sodium thiosulfate solution in cm3 Volume of water in cm3 Time in s",
     "commandWord" : null,
@@ -539,7 +539,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q1-7aad8474",
+    "externalRef" : "q1-13b69d5c",
     "questionNumber" : "1",
     "prompt" : "50 0 26.6",
     "commandWord" : null,
@@ -549,7 +549,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q2-7aad8474",
+    "externalRef" : "q2-13b69d5c",
     "questionNumber" : "2",
     "prompt" : "40 10",
     "commandWord" : null,
@@ -559,7 +559,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q3-7aad8474",
+    "externalRef" : "q3-13b69d5c",
     "questionNumber" : "3",
     "prompt" : "35 15 76.4",
     "commandWord" : null,
@@ -569,7 +569,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q4-7aad8474",
+    "externalRef" : "q4-13b69d5c",
     "questionNumber" : "4",
     "prompt" : "30 20 105.6",
     "commandWord" : null,
@@ -579,7 +579,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q5-7aad8474",
+    "externalRef" : "q5-13b69d5c",
     "questionNumber" : "5",
     "prompt" : "25 25",
     "commandWord" : null,
@@ -589,7 +589,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q6-7aad8474",
+    "externalRef" : "q6-13b69d5c",
     "questionNumber" : "6",
     "prompt" : "20 30 223.5",
     "commandWord" : null,
@@ -599,7 +599,7 @@
     "confidence" : 0.7,
     "parts" : [ ]
   }, {
-    "externalRef" : "q7-7aad8474",
+    "externalRef" : "q7-13b69d5c",
     "questionNumber" : "7",
     "prompt" : "15 40 321.4",
     "commandWord" : null,
@@ -627,7 +627,7 @@
       "confidence" : 0.5
     } ]
   }, {
-    "externalRef" : "q20-7aad8474",
+    "externalRef" : "q20-13b69d5c",
     "questionNumber" : "20",
     "prompt" : "25 30 35 40 45 50 Volume of sodium thiosulfate solution in cm3 1000 time taken Calculate the rate of reaction for student 1’s experiment. Give your answer to one decimal place. rate of reaction = (2) ............................................... 25 *P40126A02528* Turn over",
     "commandWord" : "give",
@@ -643,7 +643,7 @@
       "confidence" : 0.5
     } ]
   }, {
-    "externalRef" : "q0-7aad8474",
+    "externalRef" : "q0-13b69d5c",
     "questionNumber" : "0",
     "prompt" : "10 20 30 40 50 Concentration of sodium thiosulfate solution 3 (i) Describe the relationship between rate and concentration as shown by the graph. (2) ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ (ii) Explain why increasing the concentration has this effect on the rate. (3) ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ ................................................................................................................................................................................................................................................ 26 *P40126A02628* *P40126A02728* 27 28 *P40126A02828*",
     "commandWord" : null,
@@ -655,7 +655,7 @@
   } ],
   "markScheme" : {
     "version" : "1",
-    "sourceDocumentId" : "6c2ccae2-63d0-4130-b317-9988d8c50c64",
+    "sourceDocumentId" : "4fb90d20-2766-593c-8bd5-d2337cf2f1b7",
     "points" : [ {
       "questionRef" : "1-a",
       "order" : 1,
