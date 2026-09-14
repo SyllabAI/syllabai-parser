@@ -49,6 +49,10 @@ public final class GlmOcrQuestionExtractor {
     private static final Pattern QUESTION_DOT = Pattern.compile("^(\\*?)(\\d{1,2})\\.\\s+(\\S.*)$");
     private static final Pattern COMBINED_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*\\(([ivx]+)\\)\\s*(.*)$");
     private static final Pattern LETTER_PART = Pattern.compile("^\\*?\\(([a-h])\\)\\s*(.*)$");
+    /** OCR-damaged part label: closing paren only ("b) Which of these…", the
+     * 2022-Jan-R 1(b) / 2024-Jun-R 11(d) shape). Only accepted when the letter
+     * continues the established part sequence — never as the first part. */
+    private static final Pattern LETTER_PART_TOLERANT = Pattern.compile("^\\*?([a-h])\\)\\s*(\\S.*)$");
     private static final Pattern ROMAN_PART = Pattern.compile("^\\(([ivx]+)\\)\\s*(.*)$");
     private static final Pattern OPTION = Pattern.compile("^([A-D])\\s+(\\S.*)$");
     private static final Pattern BARE_LETTER = Pattern.compile("^([A-D])$");
@@ -364,6 +368,34 @@ public final class GlmOcrQuestionExtractor {
             }
             q.parts.add(part);
             return;
+        }
+        // OCR-damaged part label "b)" (opening paren lost by the source OCR).
+        // Guarded: the letter must continue the established part sequence, so a
+        // random prose line starting "x)" can never become a part, and the first
+        // part of a question is never guessed. Fires loudly into warnings.
+        Matcher tolerant = LETTER_PART_TOLERANT.matcher(text);
+        if (tolerant.matches() && !q.parts.isEmpty()) {
+            String lastLetter = null;
+            for (int p = q.parts.size() - 1; p >= 0; p--) {
+                if (!q.parts.get(p).label.contains("-")) {
+                    lastLetter = q.parts.get(p).label;
+                    break;
+                }
+            }
+            String expected = lastLetter == null ? null
+                    : String.valueOf((char) (lastLetter.charAt(0) + 1));
+            if (tolerant.group(1).equals(expected)) {
+                RawPart part = new RawPart(tolerant.group(1));
+                part.text.append(tolerant.group(2));
+                if (text.startsWith("*")) {
+                    part.qwc = true;
+                    q.qwc = true;
+                }
+                q.parts.add(part);
+                state.warnings.add("Q" + q.number + ": OCR-damaged part label \""
+                        + tolerant.group(1) + ")\" recovered (closing paren only)");
+                return;
+            }
         }
         Matcher roman = ROMAN_PART.matcher(text);
         if (roman.matches() && !q.parts.isEmpty()) {

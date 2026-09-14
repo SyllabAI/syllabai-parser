@@ -73,3 +73,28 @@ baseline (63 entries / 0 warnings / 110 total marks). The IAL fixtures in
 the same suite contain zero continuation rows, so all pre-existing frozen
 assertions also hold. Any change to this extractor must keep that suite
 green or consciously amend this contract in the same commit.
+
+## 5. Session-66 amendment — batch-3 defect classes (2026-09-14)
+
+Four row-shape extensions, each driven by a defect class measured by the
+T-C04 Batch-3 review and pinned by
+`GlmOcrBatch3DefectTest` (11 tests). All §2 invariants hold; the amendment
+*strengthens* invariant 2 (totals can no longer leak into entry marks).
+
+| # | Row shape | Contract behavior |
+|---|-----------|-------------------|
+| 9 | **Table-start continuation row** — a table whose first content row is a bare sub-part label (`(iii)`, `(b)(i)`, `(d)`) | Opens a sub-part entry of the **carried** question/letter context (`lastQuestionNumber`/`lastPartLetter` persist across `closeEntry` at table end). Provenance: `marksCellSource = "table-start continuation row"`. Still no invention: bare romans need an established letter; a new question always opens with its own full label row, so the carried context names the same printed question (2019-Jan 5(d)(iii)/(iv) table split). Corpus impact: 177 entries. |
+| 10 | **Stacked marks cell** `1\n1` / `1\n1\n1` (multi-line, every line a bare integer, last non-empty cell of the row) | The printed per-line marks of a rowspan'd answer, stacked by the OCR into one cell → the entry's marks are the **sum**. Guards: 2–3 lines, sum ≤ 12; anything else (graph-axis data, reading values) stays `null` (2011-Jun 1(c)(ii) `"1\n1"` → 2, reconciling the printed "Total 8 marks"). Corpus impact: 63 cells. |
+| 11 | **Single-cell bare-integer row** `1` | A rowspan continuation's marks column rendered alone → delivered to the open entry per shape 7 semantics (marks-null entries receive it; already-marked entries keep the legacy ambiguity warning). **Never** a question-level label row — the 2011-Jun q11-tail stray entry `q1`/"1"/1-mark shape is a defect, not a label. Corpus impact: 5 rows. |
+| 12 | **Bare in-table total row** `… \| Total \| 9` (a non-last cell exactly `Total`, last cell a bare integer) | Recorded as the **current question's total** (`recordTotal`, placement `"in-table bare-total row"`), never as the open entry's marks. Closes the mis-attribution window where a question total was delivered to the last sub-part as rowspan marks (2013-Jun-2C 3(d)/7(c)(ii) "9-mark" defect; both are 2-mark sub-parts under 9-mark questions). Corpus impact: 132 rows recorded as totals. |
+
+QP-side companion (this commit, `GlmOcrQuestionExtractor`): an OCR-damaged
+part label with closing paren only (`b)` — 2022-Jan-R 1(b), 2024-Jun-R 11(d))
+is recovered **only when the letter continues the established part sequence**
+(never a first part, never a sequence mismatch), with a loud warning. The
+double-damaged `b)i)` form (2020-Jun-R) stays conservative by design.
+
+Measured corpus impact vs `408b8fb`: 312 entries recovered, 586 marks moved
+into entries, 2 QP parts recovered, 63→60 ms-drafts changed (18+3 unchanged
+incl. both frozen Specimen papers), canonical layer 0-diff, deterministic
+byte-identity on re-extraction.

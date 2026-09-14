@@ -118,6 +118,11 @@ public final class GlmOcrMarkSchemeExtractor {
         /** last part letter seen in the current question ("b" of "2(b)(i)");
          * letter context for bare-roman continuation labels */
         String lastPartLetter;
+        /** number of the most recently opened entry; question context for
+         * continuation-label rows that start a new table mid-question (the
+         * 2019-Jan 5(d)(iii) shape — closeEntry nulls `current` at table end
+         * but the printed layout continues the same question) */
+        Integer lastQuestionNumber;
 
         State(String docId) {
             this.docId = docId;
@@ -206,12 +211,48 @@ public final class GlmOcrMarkSchemeExtractor {
             }
         }
 
+        // bare in-table total row (old-spec layout): a non-last cell is exactly
+        // "Total" and the last cell carries the value — the question number is
+        // the current one (2013 papers print the row per question). Recording
+        // it as a total BOTH recovers the printed total for reconciliation AND
+        // closes the mis-attribution window where the total was delivered to
+        // the open entry as rowspan marks (the 2013-Jun-2C 3(d)/7(c)(ii)
+        // "9-mark" defect shape).
+        if (cells.size() >= 2 && BARE_INT.matcher(cells.get(cells.size() - 1).strip()).matches()) {
+            boolean totalCell = false;
+            for (int i = 0; i < cells.size() - 1; i++) {
+                String c = cells.get(i).strip();
+                if (c.equalsIgnoreCase("Total") || c.equalsIgnoreCase("Total marks")) {
+                    totalCell = true;
+                    break;
+                }
+                if (!c.isEmpty()) {
+                    break; // "Total" leads its cell group; anything else first is content
+                }
+            }
+            if (totalCell && state.lastQuestionNumber != null) {
+                recordTotal(Integer.toString(state.lastQuestionNumber),
+                        Integer.parseInt(cells.get(cells.size() - 1).strip()),
+                        "in-table bare-total row", state);
+                return;
+            }
+        }
+
         // two-level label row: the "Question number" column spans two cells —
         // cell 0 carries the question number, cell 1 the sub-part label
         // ("(a)(i)", "a (i)"); the answer starts at cell 2 (T-C04 repair)
         if (cells.size() >= 5 && SUB_LABEL.matcher(cells.get(1).strip()).matches()
                 && LABEL.matcher(cells.get(0).strip()).matches()) {
             openTwoLevelEntry(cells, state);
+            return;
+        }
+
+        // single-cell bare-integer row: a rowspan continuation's marks column
+        // rendered alone (2011-Jun q11 tail "<tr><td>1</td></tr>"). NEVER a
+        // question-level label — a printed bare "1" as cell 0 of a real label
+        // row does not occur, while the orphaned-marks shape does.
+        if (cells.size() == 1 && BARE_INT.matcher(cells.get(0).strip()).matches()) {
+            deliverContinuationMarks(Integer.parseInt(cells.get(0).strip()), state);
             return;
         }
 
@@ -226,8 +267,14 @@ public final class GlmOcrMarkSchemeExtractor {
         // "(iii)", "(b)(i)", "(c)") — a new sub-part of the current question,
         // never a rowspan continuation of the previous entry. A second label
         // in cell 1 marks the two-level group layout, which stays on the
-        // continuation path (T-C04 repair).
-        if (state.current != null && cells.size() >= 3
+        // continuation path (T-C04 repair). At a table start the current entry
+        // is null (closeEntry runs per table) — the carried question/letter
+        // context of the previous table associates the row (the 2019-Jan
+        // 5(d)(iii) table split); still never a guess: bare romans need an
+        // established letter, and a new question always opens with its own
+        // full label row.
+        if ((state.current != null || state.lastQuestionNumber != null)
+                && cells.size() >= 3
                 && CONT_LABEL.matcher(cells.get(0).strip()).matches()
                 && !CONT_LABEL.matcher(cells.get(1).strip()).matches()
                 && openContinuationEntry(cells, state)) {
@@ -256,8 +303,7 @@ public final class GlmOcrMarkSchemeExtractor {
             if (last && BARE_INT.matcher(cell.strip()).matches() && cells.size() >= 3
                     && current.marks == null) {
                 // rowspan-deferred marks arriving on a later row (e.g. Q11 October)
-                current.marks = Integer.parseInt(cell.strip());
-                current.marksCellSource = "rowspan continuation row";
+                deliverContinuationMarks(Integer.parseInt(cell.strip()), state);
                 continue;
             }
             if (BARE_INT.matcher(cell.strip()).matches()) {
@@ -270,6 +316,25 @@ public final class GlmOcrMarkSchemeExtractor {
             } else {
                 classifyGuidance(cell.strip(), current.guidance);
             }
+        }
+    }
+
+    /** Delivers a printed integer that belongs to the open entry's marks
+     * column (rowspan-deferred or rendered as its own row). Fail-closed when
+     * no entry is open or the entry is already marked — the extra value stays
+     * a warning, never a silent overwrite and never invented marks. */
+    private void deliverContinuationMarks(int value, State state) {
+        RawEntry current = state.current;
+        if (current == null) {
+            state.warnings.add("orphan marks row: " + value);
+            return;
+        }
+        if (current.marks == null) {
+            current.marks = value;
+            current.marksCellSource = "rowspan continuation row";
+        } else {
+            state.warnings.add(labelOf(state) + ": extra integer cell \""
+                    + value + "\" skipped (rubric/rowspan ambiguity)");
         }
     }
 
@@ -306,6 +371,7 @@ public final class GlmOcrMarkSchemeExtractor {
         // question-level label ("11") resets it — letters never cross questions
         state.lastPartLetter = part.isEmpty() ? null
                 : part.substring(0, 1);
+        state.lastQuestionNumber = number;
     }
 
     /**
@@ -351,6 +417,7 @@ public final class GlmOcrMarkSchemeExtractor {
         state.current = entry;
         state.entries.add(toEntry(entry));
         state.lastPartLetter = part.isEmpty() ? null : part.substring(0, 1);
+        state.lastQuestionNumber = number;
     }
 
     /**
@@ -384,9 +451,17 @@ public final class GlmOcrMarkSchemeExtractor {
         }
         String roman = romanGroup == null ? "" : romanGroup;
 
-        RawEntry current = state.current;
-        String printedLabel = current.number + "(" + letter + ")" + roman;
-        String entryId = "ms-" + shortId(state.docId) + "-q" + current.number
+        // mid-table the current entry names the question; at a table start the
+        // carried number of the previous table's last entry does (same printed
+        // question — a new question always opens with its own full label row)
+        boolean tableStart = state.current == null;
+        Integer number = tableStart ? state.lastQuestionNumber
+                : state.current.number;
+        if (number == null) {
+            return false; // no question context anywhere — do not guess
+        }
+        String printedLabel = number + "(" + letter + ")" + roman;
+        String entryId = "ms-" + shortId(state.docId) + "-q" + number
                 + letter + roman.replaceAll("[()]", "");
 
         String answer = cellAt(cells, 1);
@@ -402,13 +477,16 @@ public final class GlmOcrMarkSchemeExtractor {
         }
 
         closeEntry(state);
-        RawEntry entry = new RawEntry(entryId, printedLabel, current.number,
+        RawEntry entry = new RawEntry(entryId, printedLabel, number,
                 false, markPoints, answer == null ? "" : answer.strip());
         entry.marks = marks;
-        entry.marksCellSource = marks != null ? "continuation label row" : null;
+        entry.marksCellSource = marks != null
+                ? (tableStart ? "table-start continuation row"
+                        : "continuation label row") : null;
         entry.guidance.addAll(guidance);
         state.current = entry;
         state.entries.add(toEntry(entry));
+        state.lastQuestionNumber = number;
         return true;
     }
 
@@ -631,7 +709,28 @@ public final class GlmOcrMarkSchemeExtractor {
             if (cell.isEmpty()) {
                 continue;
             }
-            return BARE_INT.matcher(cell).matches() ? Integer.parseInt(cell) : null;
+            if (BARE_INT.matcher(cell).matches()) {
+                return Integer.parseInt(cell);
+            }
+            // multi-line marks cell ("1\n1"): the OCR stacked the printed
+            // per-line marks of a rowspan'd answer into one cell. Every line
+            // must be a bare integer and the stacked count/sum must stay in
+            // printed-marks range — otherwise the cell is data (graph axes,
+            // reading values), not marks, and stays null. (2011-Jun 1(c)(ii)
+            // "1\n1" → 2, reconciling the 8-mark total.)
+            String[] lines = cell.split("\\n");
+            if (lines.length < 2 || lines.length > 3) {
+                return null;
+            }
+            int sum = 0;
+            for (String line : lines) {
+                String l = line.strip();
+                if (!BARE_INT.matcher(l).matches()) {
+                    return null;
+                }
+                sum += Integer.parseInt(l);
+            }
+            return sum <= 12 ? sum : null;
         }
         return null;
     }
