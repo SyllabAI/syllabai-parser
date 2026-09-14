@@ -19,6 +19,7 @@ SyllabAI content pipeline — **offline, polyglot document processing** that tur
 | GLM-OCR QP + MS extraction | ✅ both numbering styles (`1:`/`1 `), `*N`/`*(a)` QWC, MCQ hindsight validation, mark points w/ dependent-on/ecf/Or/any-two-from vocabulary, IC tables (3 shapes), both total placements, QP/MS reconciliation (D6: mismatches → review, never silent merges) |
 | GLM-OCR image reality | ✅ expired signed URLs preserved (full URL + decoded path + ownership + failure state); local-asset pipeline (`img:<sha256>`, MIME sniffing, dimensions) ready for re-exports |
 | Python/Java conformance | ✅ `tools/glmocr/` reference implementation + harness — 16/16 fixture-mode combinations agree field-for-field (4 pairs incl. the pathological pair); enforced in CI |
+| OCR batch automation (OCR-Q1/Q2) | ✅ `tools/ocr_batch/` — official PDF → GLM-OCR markdown + **same-second image downloads** + md↔asset manifest; dual backend (**Z.ai API** / **local Ollama**), `--pair` QP+MS mode matching the manual-corpus layout; 32 unit tests enforced in CI — additive, the manual website workflow is unchanged |
 
 ## Build & test
 
@@ -30,6 +31,9 @@ mvn verify          # Java 25; 89 unit tests incl. full PDF→canonical→draft 
 
 # cross-language conformance (after mvn compile)
 python3 tools/glmocr/conformance.py   # 16/16 fixture-mode combinations, enforced in CI
+
+# batch OCR tool unit tests (mocked HTTP — no network, no API key needed)
+python3 tools/ocr_batch/test_ocr_batch.py -v   # 32 tests, enforced in CI on tools/ocr_batch/**
 ```
 
 ## Workbench CLI
@@ -98,6 +102,35 @@ Real corpus: `SyllabAI/Past-Papers` -> `GLM-markdown-sample/` (6 Markdown files,
   (the `UUID.randomUUID()` bug was fixed at the canonical layer, not hidden
   in the adapter)
 
+## GLM-OCR batch automation (`tools/ocr_batch/` — OCR-Q1/Q2)
+
+Automates the one step the pipeline treats as external input: **official PDF QP/MS → GLM-OCR
+markdown with image assets saved at export time**. The audited `GLM-markdown-sample` corpus lost
+every image to signed-URL expiry (~1 week); this tool implements the documented lesson in code —
+every referenced crop is downloaded the same second it is produced, and a `manifest.json`
+(md ↔ asset map + SHA-256s + dimensions) closes the md↔image manifest gap.
+
+- **Two interchangeable backends, one output convention:** `--backend api` (default) hits the
+  same `glm-ocr` layout-parsing endpoint that fronts ocr.z.ai — API key only, stdlib-only,
+  ≤50 MB/≤100-page guardrails with automatic page-range chunking, seconds per page.
+  `--backend ollama` runs the MIT-licensed 0.9B model fully locally via Ollama's native
+  `/api/generate` (`Text Recognition:` prompt, temperature 0, `num_ctx` 8192 default to avoid
+  the known empty-output trap; ~0.5–2 min/page CPU-only, ~1 s/page on a GPU).
+- **`--pair` (OCR-Q2):** a question paper + mark scheme are processed as one unit and written
+  in the exact manual-corpus layout (`QP.md` + `MS.md` + shared `assets/` + version-2 manifest).
+  Roles are detected from filenames; directory auto-pairing is fingerprint-based (relative dir
+  + role-stripped name), so identical names in different unit folders never cross-pair.
+  **Ambiguous groups are skipped loudly, never guessed.**
+- **Byte-faithful markdown:** output is never rewritten — the parser derives `documentId` from
+  SHA-256(bytes) + engine + engineVersion. Failures are loud (failure `provenance.json`,
+  non-zero exit); dead image URLs are recorded under `unfetchedAssets` and never block text.
+- **GitHub Actions:** `.github/workflows/ocr-batch.yml` — `tool-tests` on every push/PR touching
+  the tool; manual `demo-api` (real end-to-end pair run, needs `ZAI_API_KEY` secret) and
+  `demo-ollama` (no key, CPU-only smoke) demos with artifact upload. Standard `ubuntu-latest`
+  (4 vCPU / 16 GB RAM / ~14 GB disk) fits both routes; CI runs should prefer the API backend.
+
+Full usage, output layout, and pairing rules: [`tools/ocr_batch/README.md`](tools/ocr_batch/README.md).
+
 ## Polyglot policy (ADR-011)
 
 Java is preferred where the choice is a tie; other languages are welcome where they are clearly better. This repo is the sanctioned home for non-Java code:
@@ -110,6 +143,7 @@ Java is preferred where the choice is a tie; other languages are welcome where t
 | PDF classification/routing | **pdf-inspector** | Rust CLI | MIT |
 | KG candidate mining | **Hyper-Extract** / **Graphify** patterns; LLM-assisted structuring | Python | Apache-2.0 |
 | Examiner-report misconception mining | NotebookLM/Gemini Notebook (internal, human-curated) | — | — |
+| Scanned PDF OCR automation | **GLM-OCR** via Z.ai layout-parsing API / local Ollama (`tools/ocr_batch/`); model MIT, SDK vision budget honored | Python (stdlib + `pypdfium2`) | Apache-2.0 (pypdfium2); MIT (Ollama model); API endpoint proprietary — no code redistributed |
 
 ## License wall (ADR-013)
 

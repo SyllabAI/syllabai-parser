@@ -59,3 +59,13 @@ The parser remains a content-operations workbench. It should emit stable, proven
 ## Storage rule
 
 Do not make the Next.js frontend depend on parser filesystem paths. The application should receive stable content/asset references through `syllabai-core`; large binaries should ultimately be stored in object storage such as the project's Cloudflare R2 layer.
+
+## Addendum (2026-09-13): automated re-export
+
+The "images retained alongside each Markdown file" promise — unmet by the
+original sample corpus, whose images were all lost to signed-URL expiry —
+is now enforced by tooling: `tools/ocr_batch/` turns official PDF QP/MS into
+GLM-OCR markdown with **image assets downloaded at export time** and a
+md↔asset `manifest.json`, against either the Z.ai API (same engine as the
+website) or a fully local Ollama `glm-ocr` model. The manually-OCRed website
+workflow remains fully valid and unchanged; see `tools/ocr_batch/README.md`.

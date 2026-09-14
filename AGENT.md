@@ -11,3 +11,4 @@ Parser-specific rules:
 5. Record task ID, base commit and contract impact before substantial work.
 6. Label completion claims VERIFIED / INFERRED / REPORTED / UNVERIFIED and retain durable evidence for material milestones.
 7. If main advances and touched parser/core contract files overlap, reconcile before completion and rerun parser + contract tests.
+8. The OCR step that produces GLM-OCR markdown from official PDFs is an external input boundary, served two ways: the manual ocr.z.ai website workflow (primary, unchanged) and the `tools/ocr_batch/` automation (additive; dual backend api/ollama, `--pair` QP+MS). Markdown bytes are the contract — batch output is never rewritten downstream, referenced images are downloaded at export time (signed URLs expire in ~1 week), and every export carries a md↔asset `manifest.json`.

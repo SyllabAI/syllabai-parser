@@ -97,3 +97,22 @@ contain), **NEWLY DISCOVERED** (real-corpus fact absent from the design).
   `SyllabAI/syllabai EXAM_CONTENT_ARCHITECTURE.md` (propositions 4, 5, 13–15
   above), `GLM_OCR_CONTENT.md` (pipeline role + storage rule),
   `syllabai-web/docs/QUESTION_CONTENT_RENDERING.md` (rendering boundary).
+
+## 5. Addendum (2026-09-13): the re-export pipeline now exists
+
+The open items above are no longer hypothetical — `tools/ocr_batch/`
+(commits `b285526` + `9968263`, task IDs OCR-Q1/OCR-Q2) implements the
+re-export pipeline this document asked for. Status per item:
+
+| Open item | Status |
+|---|---|
+| NEWLY DISCOVERED #1 — signed-URL expiry, "any future re-export must save images locally at export time" | **Implemented** — the batch tool downloads every referenced crop the same second it is produced (`assets/`, website crop naming); a dead URL is recorded under `unfetchedAssets` and never blocks the text pipeline |
+| NEWLY DISCOVERED #9 — "a future re-export pipeline should emit a manifest linking Markdown files to their image files" | **Implemented** — every export writes `manifest.json` (v1 single document / v2 pair) mapping markdown ↔ assets with SHA-256s, dimensions and warnings |
+| D2 — page association restored "only when a re-export … provides it" | **Partially restored** — per-page markdown is preserved under `pages/` when produced page-by-page (API page-range chunks, Ollama per-page rasterization); sources without page markers still get the `pageBoundaries: none-in-source` honesty flag |
+| D6 / row 16 — pairing "derived and verified, mismatch → review, never silent merge" | **Implemented for extraction-side pairing** — `--pair` derives QP/MS roles from filenames with fingerprint-based directory auto-pairing; ambiguous variant groups are skipped loudly, never guessed (real case: M1/M2 June 2014 variants) |
+
+Honesty note: this addendum does **not** change any verdict above for the
+audited `GLM-markdown-sample` corpus — its images were already lost and its
+markdown remains as-is (the parser still reports `unavailable-signed-url`
+for it). The tool prevents recurrence for future exports; it does not
+retroactively fix the old ones.
