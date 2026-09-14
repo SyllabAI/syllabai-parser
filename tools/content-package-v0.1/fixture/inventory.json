@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "0.1",
+  "revisionNote": {
+    "id": "rn-chem-states-of-matter",
+    "resourceId": "resource-chem-states-of-matter",
+    "version": "1",
+    "title": "States of Matter",
+    "status": "VALIDATED",
+    "subject": "Chemistry",
+    "qualification": "IGCSE",
+    "curriculumVersion": "proof",
+    "contentPath": "revision-note.md",
+    "provenance": {
+      "id": "prov-rn-chem-states-of-matter-v1",
+      "sourceType": "AUTHORED_MARKDOWN",
+      "sourceUri": "fixture://revision-note.md",
+      "sourceSha256": "3bf83938a157a4f822004355f6f3bb506d0211da4d5184f06cf44e2fece52d94",
+      "parser": "fixture",
+      "parserVersion": "1",
+      "importedAt": "1970-01-01T00:00:00Z"
+    },
+    "specificationPoints": [
+      {
+        "id": "sp-proof-states-of-matter",
+        "specificationId": "spec-proof-chemistry",
+        "externalRef": "1.1",
+        "title": "States of Matter",
+        "mappingStatus": "VALIDATED"
+      }
+    ]
+  },
+  "paper": {
+    "id": "paper-proof-0001",
+    "status": "VALIDATED",
+    "qualification": "IGCSE",
+    "subject": "Chemistry",
+    "session": "proof",
+    "questionPaperPath": "question-paper.md",
+    "markSchemePath": "mark-scheme.md",
+    "questionPaperSha256": "0f505e94a61fae03e25f571923bad2538a58bc1278c0405df8265af1ed303bb9",
+    "markSchemeSha256": "4f6150e12519894dfdba17f36bb37c19ec09d9a79ee6190eaa372a9c161dc3b4",
+    "markSchemeId": "ms-proof-0001",
+    "questions": [
+      {
+        "id": "q-proof-0001-1",
+        "ordinal": 1,
+        "anchor": "1",
+        "status": "VALIDATED",
+        "parts": [
+          {
+            "id": "q-proof-0001-1a",
+            "anchor": "1(a)",
+            "ordinal": 1,
+            "text": "Define diffusion.",
+            "status": "VALIDATED",
+            "markPoints": [
+              {
+                "id": "mp-proof-0001-1a-1",
+                "anchor": "1(a)-M1",
+                "marks": 1,
+                "text": "particles move from high to low concentration",
+                "status": "VALIDATED"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
