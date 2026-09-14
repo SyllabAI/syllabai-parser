@@ -1,0 +1,76 @@
+{
+  "provenanceSchema": "syllabai-content-package-real-corpus-provenance/1.0",
+  "capturedAt": "2026-09-15",
+  "positiveCase": {
+    "paperId": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+    "title": "Summer 2019",
+    "sessionLabel": "Summer 2019",
+    "board": "Edexcel",
+    "qualificationSubject": "International GCSE Chemistry",
+    "validationState": "VALIDATED",
+    "versions": 7,
+    "completeMarkingContract": "every question version carries a VALIDATED mark scheme (verified live at export time)"
+  },
+  "provenanceChain": [
+    {
+      "link": 1,
+      "claim": "original source PDFs",
+      "artifact": "SyllabAI/syllabai-pastpapers past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2019-06/4CH1-2CR/{qp.pdf,ms.pdf}",
+      "identity": {
+        "paperId": "pearson-edexcel:international-gcse:chemistry:4ch1:2019-06:4CH1/2CR",
+        "questionPaperSha256": "4e0bd25cb81f959be8794017f6b7a28df788ff6c818ef9cc44edb28130cc3ab1",
+        "questionPaperFileName": "4CH1_2CR_June19_QP-IGCSE-Edexcel-Chemistry.pdf",
+        "markSchemeSha256": "b9bf54a2d92717ff8d34fe208a33c67548c6fa0a4fc066cd6a40d9dad10a9b3b",
+        "manifestCommitted": "audit-verified 0-mismatch (INGESTION_REPORT.md)"
+      },
+      "status": "IDENTITY_INFERRED",
+      "note": "the corpus-bundle directory naming (igcse-chemistry-4ch0-2c-2019junr) and the reconciliation marks (Q1=5, Q2=7, Q3=8, Q4=15, Q5=11, total 70) match this sitting/variant; no cryptographic digest of the PDF itself is embedded in the OCR bundle"
+    },
+    {
+      "link": 2,
+      "claim": "OCR canonical documents (deterministic parser identity)",
+      "artifact": "SyllabAI/syllabai-teacher-workbench download/protective-snapshot-r3/protective-snapshot-20260913/corpus-bundles/igcse-chemistry-4ch0-2c-2019junr/{qp,ms}-canonical.json",
+      "identity": {
+        "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+        "questionPaperCanonicalSourceSha256": "b5524ad345abad0fe9765a0a508fb9ba4be38fea11e55e8d9d67774f925f6063",
+        "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+        "markSchemeCanonicalSourceSha256": "bd1bc88542ba6c3928296ff742647404592389d52988f037e57143f4c85e7639",
+        "engine": "glm-ocr-markdown",
+        "engineVersion": "1.0.0",
+        "snapshotLedger": "SHA256SUMS lines verified for all 5 bundle files (2026-09-15)"
+      },
+      "status": "DETERMINISTIC",
+      "note": "documentId = CanonicalIdentity('sha256:<checksum>|engine:<engine>|version:<engineVersion>') — enforced by CanonicalDocumentValidator at ingestion; BOTH document ids equal the production paper's question_paper_document_id / mark_scheme_document_id"
+    },
+    {
+      "link": 3,
+      "claim": "production paper record (canonical operational state)",
+      "artifact": "SyllabAI/syllabai-core production Neon, exported via the sanctioned teacher API (workflow run SyllabAI/syllabai-web 34899656801, job log; export schema syllabai-content-package-inputs/1.0)",
+      "identity": {
+        "paperId": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+        "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+        "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+        "exportedReview": "7 question versions, 7 VALIDATED schemes, full mark points + acceptance criteria"
+      },
+      "status": "DETERMINISTIC",
+      "note": "paper → document binding via the exam_papers document-id columns; the review records are the validated truth the package must reproduce"
+    }
+  ],
+  "revisionNote": {
+    "source": "SyllabAI/syllabai-resources 'Chemistry IGCSE Revision Notes/1. Principles of Chemistry/c. Atomic Structure/Relative atomic mass - IGCSE Chemistry Revision Notes.md'",
+    "sha256": "88d99b91f0f7cbf4cb399cc0f5cb7be164af55367ba415c2551eabd918058e1a",
+    "specificationPoints": ["4CH1-1.16", "4CH1-1.17"],
+    "mappingStatus": "HUMAN_VALIDATED by operator 2026-09-11 (corpus frontmatter; CONTENT_CORPUS_ARCHITECTURE.md §7 equates HUMAN_VALIDATED with the authoritative/VALIDATED lifecycle)",
+    "status": "IDENTITY_DETERMINISTIC"
+  },
+  "negativeCase": {
+    "paperId": "118e7ed4-5448-4fc9-93e8-0c06a6886a07",
+    "title": "4CH0/2CR June 2014",
+    "state": "SUGGESTED",
+    "schemelessVersionIds": "see content-package-export.json negativeCase.schemelessVersionIds (6 real scheme-less versions)"
+  },
+  "knownGaps": [
+    "production documents table has no rows for campaign-imported papers (the campaign importer carried paper/question provenance strings but not content-store document rows) — the provenance endpoint fail-closed 404s for them; source identity is therefore served by the snapshot bundle (link 2) rather than the production content store",
+    "link 1 is identity-inferred, not cryptographic — recorded as such rather than promoted"
+  ]
+}

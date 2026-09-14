@@ -113,7 +113,10 @@ CREATE TABLE mark_scheme (
 CREATE TABLE mark_point (
     mark_point_id TEXT PRIMARY KEY,
     mark_scheme_id TEXT NOT NULL,
-    question_part_id TEXT NOT NULL,
+    -- nullable: a question-level mark point (ref without a part suffix, e.g.
+    -- "1") belongs to the question, not any single part — mirrors the
+    -- production mark_points.question_part_id NULL case
+    question_part_id TEXT,
     anchor TEXT NOT NULL,
     marks INTEGER,
     text TEXT,

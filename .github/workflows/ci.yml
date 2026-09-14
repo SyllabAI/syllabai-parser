@@ -39,3 +39,5 @@ jobs:
         with:
           python-version: '3.12'
       - run: python3 tools/content-package-v0.1/test_proof.py
+      - name: real-corpus reconstruction proof (real Revision Note + real VALIDATED QP/MS pair)
+        run: python3 tools/content-package-v0.1/real_corpus/run_proof.py

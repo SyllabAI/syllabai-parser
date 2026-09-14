@@ -1,0 +1,681 @@
+{
+  "paper": {
+    "canonicalIdentity": {
+      "engine": "glm-ocr-markdown",
+      "engineVersion": "1.0.0",
+      "markSchemeCanonicalSourceSha256": "bd1bc88542ba6c3928296ff742647404592389d52988f037e57143f4c85e7639",
+      "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+      "questionPaperCanonicalSourceSha256": "b5524ad345abad0fe9765a0a508fb9ba4be38fea11e55e8d9d67774f925f6063",
+      "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+      "sourcePdfBinding": "IDENTITY_INFERRED",
+      "sourcePdfMsSha256": "b9bf54a2d92717ff8d34fe208a33c67548c6fa0a4fc066cd6a40d9dad10a9b3b",
+      "sourcePdfSha256": "4e0bd25cb81f959be8794017f6b7a28df788ff6c818ef9cc44edb28130cc3ab1"
+    },
+    "id": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+    "markSchemePath": "generated/ms.md",
+    "markSchemeSha256": "8c3adc266a8777d5f64657ffaa4ab408c54d26d9f812b66bcc99d0090fe87363",
+    "markSchemes": [
+      {
+        "id": "mscheme-fb0cd4c3-a9e6-4128-a4c1-f4d8cbd79f4e",
+        "questionId": "df6a0f70-2b12-4aca-94ba-2ad13b0175d5",
+        "sourceSchemeId": "fb0cd4c3-a9e6-4128-a4c1-f4d8cbd79f4e",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-afada395-9591-4226-a4ab-780e8e62e499",
+        "questionId": "f62fd30c-6cd4-40ad-8047-6a060bbf8c28",
+        "sourceSchemeId": "afada395-9591-4226-a4ab-780e8e62e499",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-472f3153-f247-42a8-8fe8-025200aad45c",
+        "questionId": "6e469f0d-4322-4318-b18a-caec2364c506",
+        "sourceSchemeId": "472f3153-f247-42a8-8fe8-025200aad45c",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-abf58b34-b612-4bef-aa96-c9f6c87e4b79",
+        "questionId": "b5bbc7d3-9249-4ab8-a421-57e2db997aac",
+        "sourceSchemeId": "abf58b34-b612-4bef-aa96-c9f6c87e4b79",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-bcab09f8-f134-4735-9def-f4eaca7b8a02",
+        "questionId": "29812383-d3fa-4f62-bf3f-df8cd9dfed5a",
+        "sourceSchemeId": "bcab09f8-f134-4735-9def-f4eaca7b8a02",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-f3b1d242-fbd0-4e9a-a822-8799b0cf028f",
+        "questionId": "e087bf19-c1de-410d-bdc9-375540991aba",
+        "sourceSchemeId": "f3b1d242-fbd0-4e9a-a822-8799b0cf028f",
+        "status": "VALIDATED"
+      },
+      {
+        "id": "mscheme-1298f87f-c047-42ef-bacd-f3393dd5bf48",
+        "questionId": "ac829fe7-e479-4bee-b29e-2df5b916104c",
+        "sourceSchemeId": "1298f87f-c047-42ef-bacd-f3393dd5bf48",
+        "status": "VALIDATED"
+      }
+    ],
+    "qualification": "international-gcse",
+    "questionPaperPath": "generated/qp.md",
+    "questionPaperSha256": "41e990f4f78003ed8d88f14843463c12dccdb920afbb0ab9c47d16736136b57e",
+    "questions": [
+      {
+        "anchor": "q01-97798258",
+        "commandWord": null,
+        "externalRef": "q01-97798258",
+        "id": "df6a0f70-2b12-4aca-94ba-2ad13b0175d5",
+        "markPoints": [
+          {
+            "anchor": "1",
+            "id": "dafd5da8-c1e3-409f-9e98-8ba2f56464fc",
+            "marks": 1,
+            "partAnchor": null,
+            "status": "VALIDATED",
+            "text": "(a)(i)"
+          }
+        ],
+        "markSchemeId": "fb0cd4c3-a9e6-4128-a4c1-f4d8cbd79f4e",
+        "marks": 5,
+        "ordinal": 1,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "fcaaf39c-385e-413e-8bc5-5186695c8f34",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "The box gives the names of some gases in the atmosphere. argon carbon dioxide helium nitrogen oxygen Use gases from the box to answer the questions. Each gas may be used once, more than once or not at all."
+          },
+          {
+            "anchor": "a-i",
+            "id": "f01f42de-6f8a-42c2-8a30-c8bac2979094",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "Identify the two noble gases."
+          },
+          {
+            "anchor": "a-ii",
+            "id": "388d9e48-5f22-49fb-ab04-f89b8c8c1a51",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "Identify the gas that is a compound."
+          },
+          {
+            "anchor": "a-iii",
+            "id": "6d045c77-05c5-4c43-85a7-4070c41cebb0",
+            "ordinal": 4,
+            "status": "VALIDATED",
+            "text": "Identify the most abundant gas in the atmosphere."
+          },
+          {
+            "anchor": "a-iv",
+            "id": "f9f0f014-58b9-47f1-b4d0-ff3d62733106",
+            "ordinal": 5,
+            "status": "VALIDATED",
+            "text": "Identify the greenhouse gas."
+          },
+          {
+            "anchor": "b",
+            "id": "e18c599e-ef2b-455f-acc6-7416bf743ef5",
+            "ordinal": 6,
+            "status": "VALIDATED",
+            "text": "Describe the test for oxygen."
+          }
+        ],
+        "questionId": "4412246d-27bc-4f7b-aa32-7f2315bdec0f",
+        "status": "VALIDATED",
+        "stem": "This question is about gases in the atmosphere.",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q02-97798258",
+        "commandWord": null,
+        "externalRef": "q02-97798258",
+        "id": "f62fd30c-6cd4-40ad-8047-6a060bbf8c28",
+        "markPoints": [
+          {
+            "anchor": "2-a",
+            "id": "e81e0768-bb13-48a6-b677-35d513d8f298",
+            "marks": 5,
+            "partAnchor": "a",
+            "status": "VALIDATED",
+            "text": "atomic number5\nmass number11\nnumber of neutrons6\ngroup in the Periodic table that contains boron3\nperiod in the Periodic table that contains boron2\nelectronic configuration of an atom of boron2,3"
+          }
+        ],
+        "markSchemeId": "afada395-9591-4226-a4ab-780e8e62e499",
+        "marks": 7,
+        "ordinal": 2,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "2aa77dc6-f503-4baf-a3bf-8d56f8d73976",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "Use information from the diagram to complete the table. The first row has been done for you."
+          },
+          {
+            "anchor": "b",
+            "id": "c3cc5521-8426-493f-a55b-478603ac0d22",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "Boron has two isotopes, boron-10 and boron-11. A sample of boron contains 18.7% of boron-10 and 81.3% of boron-11. Calculate the relative atomic mass of this sample of boron."
+          },
+          {
+            "anchor": "a.2",
+            "id": "465fe680-ce35-49a3-93d8-22e0fc5118ff",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "The diagram shows crude oil being separated into different fractions."
+          }
+        ],
+        "questionId": "68459eda-92b1-40aa-9abc-213287291888",
+        "status": "VALIDATED",
+        "stem": "The diagram represents an atom of boron.",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q03-97798258",
+        "commandWord": null,
+        "externalRef": "q03-97798258",
+        "id": "6e469f0d-4322-4318-b18a-caec2364c506",
+        "markPoints": [
+          {
+            "anchor": "3",
+            "id": "0b7a2a7e-2674-4e1d-a39a-9100070e22e9",
+            "marks": 1,
+            "partAnchor": null,
+            "status": "VALIDATED",
+            "text": "(a)(i)"
+          }
+        ],
+        "markSchemeId": "472f3153-f247-42a8-8fe8-025200aad45c",
+        "marks": 8,
+        "ordinal": 3,
+        "parts": [
+          {
+            "anchor": "b",
+            "id": "0ff122f8-6b08-4dc3-9a5e-628a4f390824",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "Crude oil often contains sulfur as an impurity. Explain why this is a problem when using crude oil fractions as fuels."
+          }
+        ],
+        "questionId": "d85f598d-7f8b-4751-a7eb-783193aad594",
+        "status": "VALIDATED",
+        "stem": "Crude oil is an important source of organic compounds. (i) Name the process used to separate crude oil into different fractions. (ii) State what happens to the crude oil at X. (iii) Describe the differences between fraction B and fraction E. In your answer, refer to size of the molecules boiling point colour viscosity",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q04-97798258",
+        "commandWord": null,
+        "externalRef": "q04-97798258",
+        "id": "b5bbc7d3-9249-4ab8-a421-57e2db997aac",
+        "markPoints": [
+          {
+            "anchor": "4-a",
+            "id": "d4f01135-bcd8-479c-b9f2-7b0308e8c138",
+            "marks": 2,
+            "partAnchor": "a",
+            "status": "VALIDATED",
+            "text": "M1fluorine- gasM2astatine- black"
+          },
+          {
+            "anchor": "4-c",
+            "id": "e3ed895a-79e4-45b9-8889-9640af14a7c6",
+            "marks": 3,
+            "partAnchor": "c",
+            "status": "VALIDATED",
+            "text": "M1 correct structure of potassium ion\nK+"
+          },
+          {
+            "anchor": "4-d",
+            "id": "481ff279-0211-49f5-84aa-4e26cca16ac7",
+            "marks": 5,
+            "partAnchor": "d",
+            "status": "VALIDATED",
+            "text": "An planation linking the following five points\nM1water is covalently bonded/has a simple molecular structure\nM2water does not contain any free (moving) charged parti es(so does not conduct electricity)\nM3sodium chloride has a giant ionic structure/has an ionic lattice structure/is ionically bonded\nM4the ions are in fixed positions/cannot move(so does not conduct electricity)\nM5in solution/aqueous sodium chloride the ions are free to flow/move(so the solution does conduct electricity)"
+          }
+        ],
+        "markSchemeId": "abf58b34-b612-4bef-aa96-c9f6c87e4b79",
+        "marks": 15,
+        "ordinal": 4,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "92913900-3fcc-42c8-8ce3-487998ff9413",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "The table gives the colour and physical state at room temperature of the halogens. Complete the table by predicting the colour of astatine and the physical state of fluorine at room temperature."
+          },
+          {
+            "anchor": "b",
+            "id": "3165e048-7fd2-4f97-952f-177952592cd7",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "Chlorine gas is bubbled into a colourless solution of potassium bromide. Explain why the solution turns orange."
+          },
+          {
+            "anchor": "c",
+            "id": "67fa7606-3c32-40b6-bd6b-39d655f0e5df",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "Potassium bromide is an ionic compound. Draw diagrams to show the outer electrons in a potassium ion and in a bromide ion Include the charges on the ions."
+          },
+          {
+            "anchor": "d",
+            "id": "0390b778-0b0b-4479-928a-333ee9715798",
+            "ordinal": 4,
+            "status": "VALIDATED",
+            "text": "A student sets up a circuit to test the electrical conductivity of water, solid sodium chloride and aqueous sodium chloride. The table shows the student's results. Explain these results, with reference to the structure and bonding of the substances."
+          },
+          {
+            "anchor": "e",
+            "id": "dcff2fa0-ca69-449f-9e86-a3c557de2d3b",
+            "ordinal": 5,
+            "status": "VALIDATED",
+            "text": "A concentrated aqueous solution of sodium chloride is electrolysed using graphite electrodes. Chlorine is formed at the positive electrode (anode)."
+          },
+          {
+            "anchor": "e-i",
+            "id": "af2ad65a-562d-4a1e-bcba-5f01fd763877",
+            "ordinal": 6,
+            "status": "VALIDATED",
+            "text": "Give an ionic half-equation for the formation of chlorine at the positive electrode."
+          },
+          {
+            "anchor": "e-ii",
+            "id": "9d830a77-d8cf-4b0d-8c2a-8e633586df2d",
+            "ordinal": 7,
+            "status": "VALIDATED",
+            "text": "State why this ionic half-equation represents an oxidation reaction."
+          },
+          {
+            "anchor": "e-iii",
+            "id": "66ca57a2-45ce-4e88-8ec5-b2434a6cee4c",
+            "ordinal": 8,
+            "status": "VALIDATED",
+            "text": "Which substance is formed at the negative electrode (cathode)? A hydrogen B oxygen C sodium D water"
+          }
+        ],
+        "questionId": "7f818348-1023-46fc-848e-bc5348abe0eb",
+        "status": "VALIDATED",
+        "stem": "This question is about the halogens and their compounds.",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q05-97798258",
+        "commandWord": null,
+        "externalRef": "q05-97798258",
+        "id": "29812383-d3fa-4f62-bf3f-df8cd9dfed5a",
+        "markPoints": [
+          {
+            "anchor": "5",
+            "id": "92fcab4a-e9d5-4142-89e8-5d1f27260cfc",
+            "marks": 2,
+            "partAnchor": null,
+            "status": "VALIDATED",
+            "text": "(a)(i)"
+          },
+          {
+            "anchor": "5-c-i",
+            "id": "79bca152-42f0-4800-8e9b-ac11d33f5b54",
+            "marks": 3,
+            "partAnchor": "c-i",
+            "status": "VALIDATED",
+            "text": "H\nH-C-O-H\nH\nH-C-C-C\nH H O-H\nwater"
+          }
+        ],
+        "markSchemeId": "bcab09f8-f134-4735-9def-f4eaca7b8a02",
+        "marks": 11,
+        "ordinal": 5,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "5b5c6525-2ec0-4c1d-bb2a-6a97a5272731",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "Carboxylic acids react with solutions of metal carbonates."
+          },
+          {
+            "anchor": "a-i",
+            "id": "6e305f0b-579b-4d51-a469-153f8ea2d26e",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "Complete the chemical equation for the reaction of ethanoic acid, $ \\mathrm{C H_{3} C O O H} $ with potassium carbonate solution. $2 \\mathrm {C H} _ {3} \\mathrm {C O O H} + \\mathrm {K} _ {2} \\mathrm {C O} _ {3} \\rightarrow$"
+          },
+          {
+            "anchor": "a-ii",
+            "id": "225566b0-1176-480b-b1bd-bccbbf3fa4fc",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "State what you would see in this reaction."
+          },
+          {
+            "anchor": "b",
+            "id": "b772e792-7634-4739-9205-f3e93c580f74",
+            "ordinal": 4,
+            "status": "VALIDATED",
+            "text": "The ester, ethyl ethanoate, can be prepared by reacting ethanol with ethanoic acid. This is the method for the preparation. mix equal amounts of ethanoic acid and ethanol in a boiling tube add a few drops of concentrated sulfuric acid place the boiling tube in a hot water bath for several minutes"
+          },
+          {
+            "anchor": "b-i",
+            "id": "d9e2c384-9349-426f-ad83-e241f875ccea",
+            "ordinal": 5,
+            "status": "VALIDATED",
+            "text": "State the role of concentrated sulfuric acid in this reaction."
+          },
+          {
+            "anchor": "b-ii",
+            "id": "346b059a-eb6e-4ca6-9bb0-f48ba0cc96b9",
+            "ordinal": 6,
+            "status": "VALIDATED",
+            "text": "Suggest why the mixture is heated in a water bath rather than directly with a Bunsen burner flame."
+          },
+          {
+            "anchor": "b-iii",
+            "id": "726cb449-e5c5-4a65-8457-1b361acc5f81",
+            "ordinal": 7,
+            "status": "VALIDATED",
+            "text": "State how you would know that ethyl ethanoate has formed."
+          },
+          {
+            "anchor": "c",
+            "id": "3ce0e690-7522-4000-8022-a12caa2c5dc5",
+            "ordinal": 8,
+            "status": "VALIDATED",
+            "text": "Another ester, methyl propanoate, can be prepared by reacting methanol with propanoic acid."
+          },
+          {
+            "anchor": "c-i",
+            "id": "f5f9aa77-908e-4da5-a26f-fc2090f94a74",
+            "ordinal": 9,
+            "status": "VALIDATED",
+            "text": "Draw the displayed formulae of methanol, propanoic acid and the ester, methyl propanoate. methyl propanoate"
+          },
+          {
+            "anchor": "c-ii",
+            "id": "e34e5431-98fc-46b5-96a6-84238ac340a4",
+            "ordinal": 10,
+            "status": "VALIDATED",
+            "text": "Give the name of the other product of this reaction."
+          },
+          {
+            "anchor": "d",
+            "id": "07df97dc-e69b-4f76-8540-57baaae59c35",
+            "ordinal": 11,
+            "status": "VALIDATED",
+            "text": "Give one use of esters."
+          }
+        ],
+        "questionId": "d996a132-4144-4b68-b23f-702e0a9614db",
+        "status": "VALIDATED",
+        "stem": "This question is about the reactions of carboxylic acids.",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q06-97798258",
+        "commandWord": null,
+        "externalRef": "q06-97798258",
+        "id": "e087bf19-c1de-410d-bdc9-375540991aba",
+        "markPoints": [
+          {
+            "anchor": "6",
+            "id": "33d82896-a185-4bd9-981f-0ae8dd6f6c01",
+            "marks": 1,
+            "partAnchor": null,
+            "status": "VALIDATED",
+            "text": "(a)"
+          }
+        ],
+        "markSchemeId": "f3b1d242-fbd0-4e9a-a822-8799b0cf028f",
+        "marks": 1,
+        "ordinal": 6,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "f1eaf95a-f303-47c4-bfe5-0aace382d99e",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "A scientist uses a titration method to investigate how much ethanoic acid is formed if a bottle of white wine is left open for one week. She uses this method. fill a burette with the white wine and record the reading add $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution to a conical flask add a few drops of phenolphthalein indicator to the flask swirl the flask continuously while adding wine from the burette add the wine drop by drop near the end point record the reading at the end point"
+          },
+          {
+            "anchor": "a-i",
+            "id": "21ba84e2-598d-4d9b-b50d-d9b01909682c",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "Name the piece of apparatus that would be most suitable for measuring the $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution."
+          },
+          {
+            "anchor": "a-ii",
+            "id": "f160e6a0-6701-4fa4-9121-68cddacc399c",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "Suggest why red wine would not be suitable to use for this investigation."
+          },
+          {
+            "anchor": "a-iii",
+            "id": "8a2d4146-278c-4640-92ac-5c152cc7daaf",
+            "ordinal": 4,
+            "status": "VALIDATED",
+            "text": "State why she swirls the flask continuously."
+          },
+          {
+            "anchor": "a-iv",
+            "id": "af2a0bcd-d592-4912-93cf-67133976e699",
+            "ordinal": 5,
+            "status": "VALIDATED",
+            "text": "State why she adds the wine drop by drop near the end point."
+          },
+          {
+            "anchor": "b",
+            "id": "2ecc6d09-a3c0-45b7-88d7-6f30d3db7d01",
+            "ordinal": 6,
+            "status": "VALIDATED",
+            "text": "The diagram shows the burette readings at the start and end of one of the titrations. Use the readings to complete the table. Give your values to the nearest 0.05 $ cm^{3}. $"
+          },
+          {
+            "anchor": "c",
+            "id": "5bc321fd-f4ca-4bce-96f4-511747fe698f",
+            "ordinal": 7,
+            "status": "VALIDATED",
+            "text": "The scientist repeats the titration four more times. The table shows her results for these four titrations. Concordant results are those within $ 0. 2 0 \\mathrm{c m}^{3} $ of each other."
+          },
+          {
+            "anchor": "c-i",
+            "id": "5cec6009-78cc-420c-b03f-c07a12c78727",
+            "ordinal": 8,
+            "status": "VALIDATED",
+            "text": "Add ticks ( $ \\surd $ ) to the table to show the concordant results."
+          },
+          {
+            "anchor": "c-ii",
+            "id": "dc59f67e-96d1-4a8e-af05-2048cbb12262",
+            "ordinal": 9,
+            "status": "VALIDATED",
+            "text": "Use your ticked results to calculate the mean (average) volume of wine added."
+          },
+          {
+            "anchor": "d",
+            "id": "26b69848-2777-4c23-b931-7b54ad37a66f",
+            "ordinal": 10,
+            "status": "VALIDATED",
+            "text": "Another scientist repeats the titration with a different bottle of white wine that has been left open for a week. The equation for the reaction that occurs in this titration is $\\mathrm {C H} _ {3} \\mathrm {C O O H} + \\mathrm {N a O H} \\rightarrow \\mathrm {C H} _ {3} \\mathrm {C O O N a} + \\mathrm {H} _ {2} \\mathrm {O}$ The mean volume of wine added is $ 1 9. 5 0 \\mathrm{c m}^{3}. $"
+          },
+          {
+            "anchor": "d-i",
+            "id": "e150f33a-9892-4e8d-9cfd-61dc41207684",
+            "ordinal": 11,
+            "status": "VALIDATED",
+            "text": "The concentration of the sodium hydroxide solution is $ 0. 0 5 0 0 \\mathrm{m o l} / \\mathrm{d m}^{3}. $ Calculate the amount, in moles, of NaOH in $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution. $\\mathrm {a m o u n t o f N a O H} =$"
+          },
+          {
+            "anchor": "d-ii",
+            "id": "72d904ac-0f86-4fd3-b488-abb6b77ed09f",
+            "ordinal": 12,
+            "status": "VALIDATED",
+            "text": "Deduce the amount, in moles, of $ \\mathrm{C H_{3} C O O H} $ in $ 1 9. 5 0 \\mathrm{c m}^{3} $ of the wine. $\\mathrm {a m o u n t o f C H _ {3} C O O H} =$"
+          },
+          {
+            "anchor": "d-iii",
+            "id": "807358d5-2243-4a13-859e-7b48b68d2fff",
+            "ordinal": 13,
+            "status": "VALIDATED",
+            "text": "Calculate the concentration, in mol/dm $ ^{3} $ , of $ \\mathrm{C H_{3} C O O H} $ in the wine. concentration of $ \\mathrm{C H_{3} C O O H}= $ $\\mathrm {m o l / d m ^ {3}}$ $(\\mathrm {T o t a l f o r Q u e s t i o n 6 = 1 5 m a r k s})$"
+          }
+        ],
+        "questionId": "0f2c1b42-8bcb-431b-a89e-84b7d4aa0715",
+        "status": "VALIDATED",
+        "stem": "When a bottle of wine is left open for several days, some of the ethanol in the wine turns to ethanoic acid, $ \\mathrm{C H_{3} C O O H} $",
+        "type": "STRUCTURED"
+      },
+      {
+        "anchor": "q07-97798258",
+        "commandWord": null,
+        "externalRef": "q07-97798258",
+        "id": "ac829fe7-e479-4bee-b29e-2df5b916104c",
+        "markPoints": [
+          {
+            "anchor": "7",
+            "id": "55f16472-6867-4a6b-ad50-4ffcd7bb568d",
+            "marks": 1,
+            "partAnchor": null,
+            "status": "VALIDATED",
+            "text": "(a)\nALLOW the reaction goes both ways\nALLOW the reaction can go forwards and backwards\nM2(equilibrium shifts to the right as the forward) reaction is endothermic\nM2 dep on M1 correct or missing\nM2(equilibrium shifts to the left as) fewer moles/molecules(of gas) on lhs/more moles/molecules(of gas) on rhs OWTTE\nIGNORE references to Le Chatelier e.g. an increase in pressure favours the side with fewer moles\nM2 dep on M1 correct or missing"
+          },
+          {
+            "anchor": "7-c",
+            "id": "058ade29-ebfa-4859-9fc6-3a3cd5b83d7d",
+            "marks": 4,
+            "partAnchor": "c",
+            "status": "VALIDATED",
+            "text": "calculate the amount, in moles, of methane\nuse the equation to calculate the amount of hydrogen\nmultiply amount by 24 to find the volume of hydrogen\nfinal answer in standard form\nM110,000,000 OR 625,00016\nM2625,000 x 3 OR 1,875,000\nM31,875,000 x 24 OR 45,000,000(dm3)\nM44.5 x 107(dm3)"
+          }
+        ],
+        "markSchemeId": "1298f87f-c047-42ef-bacd-f3393dd5bf48",
+        "marks": 1,
+        "ordinal": 7,
+        "parts": [
+          {
+            "anchor": "a",
+            "id": "59c5bc0d-6cb4-4cdc-b195-696817d59885",
+            "ordinal": 1,
+            "status": "VALIDATED",
+            "text": "What does the symbol $ \\rightleftharpoons $ represent?"
+          },
+          {
+            "anchor": "b",
+            "id": "1d4002e1-0583-4e0b-b965-ff8d266fe572",
+            "ordinal": 2,
+            "status": "VALIDATED",
+            "text": "The mixture of methane and steam is heated to a temperature greater than $ 7 0 0^{\\circ} \\mathrm{C} $ but the pressure is kept at 5 atmospheres. Predict the effect of this change on the yield of hydrogen at equilibrium, giving a reason for your answer."
+          },
+          {
+            "anchor": "b-ii",
+            "id": "78c74ddb-f064-4e1d-879a-523b4333f24b",
+            "ordinal": 3,
+            "status": "VALIDATED",
+            "text": "The mixture of methane and steam is kept at the same temperature of $ 7 0 0^{\\circ} \\mathrm{C} $ but the pressure is increased to more than 5 atmospheres. Predict the effect of this change on the yield of hydrogen at equilibrium, giving a reason for your answer."
+          },
+          {
+            "anchor": "c",
+            "id": "afd67c73-9727-4adc-afa4-395fc2c0ebfa",
+            "ordinal": 4,
+            "status": "VALIDATED",
+            "text": "Calculate the volume, in $ \\mathrm{d m}^{3} $ of hydrogen gas at rtp that is produced when 10 tonnes of methane gas completely react with steam."
+          }
+        ],
+        "questionId": "de25ce3d-dff1-465a-b9d4-411c1837e232",
+        "status": "VALIDATED",
+        "stem": "Hydrogen gas can be produced by reacting a mixture of methane and steam in the presence of a nickel catalyst. The reaction conditions are a temperature of $ 7 0 0^{\\circ} \\mathrm{C} $ and a pressure of 5 atmospheres. The equation for the reaction is $\\mathrm {C H} _ {4} (\\mathrm {g}) + \\mathrm {H} _ {2} \\mathrm {O} (\\mathrm {g}) \\rightleftharpoons \\mathrm {C O} (\\mathrm {g}) + 3 \\mathrm {H} _ {2} (\\mathrm {g}) \\quad \\Delta H = + 2 0 6 \\mathrm {k J / m o l}$",
+        "type": "STRUCTURED"
+      }
+    ],
+    "session": "Summer 2019",
+    "status": "VALIDATED",
+    "subject": "chemistry"
+  },
+  "provenanceChain": [
+    {
+      "artifact": "SyllabAI/syllabai-pastpapers past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2019-06/4CH1-2CR/{qp.pdf,ms.pdf}",
+      "claim": "original source PDFs",
+      "identity": {
+        "manifestCommitted": "audit-verified 0-mismatch (INGESTION_REPORT.md)",
+        "markSchemeSha256": "b9bf54a2d92717ff8d34fe208a33c67548c6fa0a4fc066cd6a40d9dad10a9b3b",
+        "paperId": "pearson-edexcel:international-gcse:chemistry:4ch1:2019-06:4CH1/2CR",
+        "questionPaperFileName": "4CH1_2CR_June19_QP-IGCSE-Edexcel-Chemistry.pdf",
+        "questionPaperSha256": "4e0bd25cb81f959be8794017f6b7a28df788ff6c818ef9cc44edb28130cc3ab1"
+      },
+      "link": 1,
+      "note": "the corpus-bundle directory naming (igcse-chemistry-4ch0-2c-2019junr) and the reconciliation marks (Q1=5, Q2=7, Q3=8, Q4=15, Q5=11, total 70) match this sitting/variant; no cryptographic digest of the PDF itself is embedded in the OCR bundle",
+      "status": "IDENTITY_INFERRED"
+    },
+    {
+      "artifact": "SyllabAI/syllabai-teacher-workbench download/protective-snapshot-r3/protective-snapshot-20260913/corpus-bundles/igcse-chemistry-4ch0-2c-2019junr/{qp,ms}-canonical.json",
+      "claim": "OCR canonical documents (deterministic parser identity)",
+      "identity": {
+        "engine": "glm-ocr-markdown",
+        "engineVersion": "1.0.0",
+        "markSchemeCanonicalSourceSha256": "bd1bc88542ba6c3928296ff742647404592389d52988f037e57143f4c85e7639",
+        "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+        "questionPaperCanonicalSourceSha256": "b5524ad345abad0fe9765a0a508fb9ba4be38fea11e55e8d9d67774f925f6063",
+        "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+        "snapshotLedger": "SHA256SUMS lines verified for all 5 bundle files (2026-09-15)"
+      },
+      "link": 2,
+      "note": "documentId = CanonicalIdentity('sha256:<checksum>|engine:<engine>|version:<engineVersion>') \u2014 enforced by CanonicalDocumentValidator at ingestion; BOTH document ids equal the production paper's question_paper_document_id / mark_scheme_document_id",
+      "status": "DETERMINISTIC"
+    },
+    {
+      "artifact": "SyllabAI/syllabai-core production Neon, exported via the sanctioned teacher API (workflow run SyllabAI/syllabai-web 34899656801, job log; export schema syllabai-content-package-inputs/1.0)",
+      "claim": "production paper record (canonical operational state)",
+      "identity": {
+        "exportedReview": "7 question versions, 7 VALIDATED schemes, full mark points + acceptance criteria",
+        "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+        "paperId": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+        "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368"
+      },
+      "link": 3,
+      "note": "paper \u2192 document binding via the exam_papers document-id columns; the review records are the validated truth the package must reproduce",
+      "status": "DETERMINISTIC"
+    }
+  ],
+  "revisionNote": {
+    "contentPath": "source/revision-note.md",
+    "curriculumVersion": "4CH1-2017",
+    "id": "rn-relative-atomic-mass",
+    "provenance": {
+      "id": "prov-sme-igcse-chemistry-1-3-2-calculate-relative-atomic-mass",
+      "importedAt": "2026-09-10T16:41:21+06:00",
+      "parser": "scripts/c10_map_notes.py",
+      "parserVersion": "operator-validated 2026-09-11 (c10/c12 promotion records)",
+      "sourceSha256": "88d99b91f0f7cbf4cb399cc0f5cb7be164af55367ba415c2551eabd918058e1a",
+      "sourceType": "WEB_IMPORT",
+      "sourceUri": "https://www.savemyexams.com/igcse/chemistry/edexcel/19/revision-notes/1-principles-of-chemistry/1-3-atomic-structure/1-3-2-calculate-relative-atomic-mass/"
+    },
+    "qualification": "international-gcse",
+    "resourceId": "res-igcse-chemistry-relative-atomic-mass",
+    "specificationPoints": [
+      {
+        "externalRef": "1.17",
+        "id": "4CH1-1.17",
+        "mappingStatus": "VALIDATED",
+        "specificationId": "4CH1-2017",
+        "title": "be able to calculate the relative atomic mass of an element Ar from isotopic abundances"
+      },
+      {
+        "externalRef": "1.16",
+        "id": "4CH1-1.16",
+        "mappingStatus": "VALIDATED",
+        "specificationId": "4CH1-2017",
+        "title": "know what is meant by the terms atomic number, mass number, isotopes and relative atomic mass"
+      }
+    ],
+    "status": "VALIDATED",
+    "subject": "chemistry",
+    "title": "Relative atomic mass",
+    "version": 1
+  },
+  "schemaVersion": "0.1"
+}

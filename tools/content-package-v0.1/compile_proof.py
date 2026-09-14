@@ -49,7 +49,7 @@ def validate_inventory(inv: dict, root: Path):
     if sha256(rn_path) != rn["provenance"]["sourceSha256"]:
         fail("revisionNote: provenance sourceSha256 does not match content")
 
-    for key in ("id", "status", "questionPaperPath", "markSchemePath", "questionPaperSha256", "markSchemeSha256", "markSchemeId", "questions"):
+    for key in ("id", "status", "questionPaperPath", "markSchemePath", "questionPaperSha256", "markSchemeSha256", "questions"):
         require(paper, key, "paper")
     if paper["status"] != "VALIDATED":
         fail(f"paper: learner-serving proof requires VALIDATED, got {paper['status']}")
@@ -61,6 +61,24 @@ def validate_inventory(inv: dict, root: Path):
         fail("paper: questionPaperSha256 mismatch")
     if sha256(ms) != paper["markSchemeSha256"]:
         fail("paper: markSchemeSha256 mismatch")
+
+    per_version_schemes = "markSchemes" in paper
+    if per_version_schemes:
+        # real-corpus shape: one mark scheme per question version; points live
+        # at question level with an optional part anchor (question-level points
+        # mirror the production mark_points.question_part_id NULL case)
+        for key in ("markSchemes",):
+            require(paper, key, "paper")
+        scheme_ids = set()
+        for s in paper["markSchemes"]:
+            for key in ("id", "questionId", "status"):
+                require(s, key, "markScheme")
+            if s["id"] in scheme_ids:
+                fail(f"paper: duplicate mark scheme id {s['id']}")
+            scheme_ids.add(s["id"])
+            if s["status"] != "VALIDATED":
+                fail(f"markScheme {s['id']}: status {s['status']} is not learner-serving")
+        scheme_ids_by_question = {s["questionId"]: s["id"] for s in paper["markSchemes"]}
     seen_q, seen_parts, seen_marks = set(), set(), set()
     for q in paper["questions"]:
         for key in ("id", "ordinal", "anchor", "status", "parts"):
@@ -70,24 +88,39 @@ def validate_inventory(inv: dict, root: Path):
         seen_q.add(q["id"])
         if q["status"] != "VALIDATED":
             fail(f"question {q['id']}: status {q['status']} is not learner-serving")
+        if per_version_schemes:
+            if scheme_ids_by_question.get(q["id"]) is None:
+                fail(f"question {q['id']}: no mark scheme (marking contract incomplete)")
+            if not q.get("markPoints"):
+                fail(f"question {q['id']}: missing mark points (scheme-less)")
+        else:
+            require(paper, "markSchemeId", "paper")
         for p in q["parts"]:
-            for key in ("id", "anchor", "ordinal", "text", "status", "markPoints"):
+            for key in ("id", "anchor", "ordinal", "text", "status"):
                 require(p, key, f"part {p.get('id', '?')}")
             if p["id"] in seen_parts:
                 fail(f"paper: duplicate part id {p['id']}")
             seen_parts.add(p["id"])
             if p["status"] != "VALIDATED":
                 fail(f"part {p['id']}: status {p['status']} is not learner-serving")
-            if not p["markPoints"]:
-                fail(f"part {p['id']}: missing mark points")
-            for mp in p["markPoints"]:
-                for key in ("id", "anchor", "status", "text"):
-                    require(mp, key, f"markPoint {mp.get('id', '?')}")
-                if mp["id"] in seen_marks:
-                    fail(f"paper: duplicate mark point id {mp['id']}")
-                seen_marks.add(mp["id"])
-                if mp["status"] != "VALIDATED":
-                    fail(f"markPoint {mp['id']}: status {mp['status']} is not learner-serving")
+            if not per_version_schemes:
+                if not p.get("markPoints"):
+                    fail(f"part {p['id']}: missing mark points")
+                for mp in p["markPoints"]:
+                    require_mark_point(mp, seen_marks)
+        if per_version_schemes:
+            for mp in q.get("markPoints") or []:
+                require_mark_point(mp, seen_marks)
+
+
+def require_mark_point(mp: dict, seen_marks: set):
+    for key in ("id", "anchor", "status", "text"):
+        require(mp, key, f"markPoint {mp.get('id', '?')}")
+    if mp["id"] in seen_marks:
+        fail(f"paper: duplicate mark point id {mp['id']}")
+    seen_marks.add(mp["id"])
+    if mp["status"] != "VALIDATED":
+        fail(f"markPoint {mp['id']}: status {mp['status']} is not learner-serving")
 
 
 def read_schema(repo_root: Path) -> str:
@@ -98,6 +131,10 @@ def compile_package(repo_root: Path, inventory_path: Path, out_dir: Path):
     root = inventory_path.parent
     inv = load_json(inventory_path)
     validate_inventory(inv, root)
+    paper = inv["paper"]
+    per_version_schemes = "markSchemes" in paper
+    scheme_ids_by_question = (
+        {s["questionId"]: s["id"] for s in paper["markSchemes"]} if per_version_schemes else {})
     out_dir.mkdir(parents=True, exist_ok=False)
     (out_dir / "content/revision-notes").mkdir(parents=True)
     (out_dir / f"content/papers/{inv['paper']['id']}").mkdir(parents=True)
@@ -127,15 +164,26 @@ def compile_package(repo_root: Path, inventory_path: Path, out_dir: Path):
         for sp in rn.get("specificationPoints", []):
             con.execute("INSERT INTO revision_note_specification_point VALUES (?,?,?)", (rn["id"], sp["id"], sp.get("mappingStatus", "VALIDATED")))
         con.execute("INSERT INTO paper VALUES (?,?,?,?,?,?,?)", (paper["id"], paper.get("qualification"), paper.get("subject"), paper.get("session"), paper["status"], paper["questionPaperSha256"], paper["markSchemeSha256"]))
+        # mark schemes BEFORE their points (FK order)
+        if per_version_schemes:
+            for s in paper["markSchemes"]:
+                con.execute("INSERT INTO mark_scheme VALUES (?,?,?,?,?)", (s["id"], paper["id"], f"content/papers/{paper['id']}/mark-scheme.md", sha256(ms_dst), s["status"]))
+        else:
+            con.execute("INSERT INTO mark_scheme VALUES (?,?,?,?,?)", (paper["markSchemeId"], paper["id"], f"content/papers/{paper['id']}/mark-scheme.md", sha256(ms_dst), paper["status"]))
+        parts_by_anchor: dict[tuple, str] = {}
         for q in paper["questions"]:
             con.execute("INSERT INTO paper_question VALUES (?,?,?,?,?)", (q["id"], paper["id"], q["ordinal"], q["anchor"], q["status"]))
             for p in q["parts"]:
                 con.execute("INSERT INTO question_part VALUES (?,?,?,?,?,?)", (p["id"], q["id"], p["anchor"], p["ordinal"], p["text"], p["status"]))
-        con.execute("INSERT INTO mark_scheme VALUES (?,?,?,?,?)", (paper["markSchemeId"], paper["id"], f"content/papers/{paper['id']}/mark-scheme.md", sha256(ms_dst), paper["status"]))
-        for q in paper["questions"]:
-            for part in q["parts"]:
-                for mp in part["markPoints"]:
-                    con.execute("INSERT INTO mark_point VALUES (?,?,?,?,?,?,?)", (mp["id"], paper["markSchemeId"], part["id"], mp["anchor"], mp.get("marks"), mp["text"], mp["status"]))
+                parts_by_anchor[(q["id"], p["anchor"])] = p["id"]
+                if not per_version_schemes:
+                    for mp in p["markPoints"]:
+                        con.execute("INSERT INTO mark_point VALUES (?,?,?,?,?,?,?)", (mp["id"], paper["markSchemeId"], p["id"], mp["anchor"], mp.get("marks"), mp["text"], mp["status"]))
+            if per_version_schemes:
+                scheme_id = scheme_ids_by_question[q["id"]]
+                for mp in q.get("markPoints") or []:
+                    part_id = parts_by_anchor.get((q["id"], mp.get("partAnchor"))) if mp.get("partAnchor") is not None else None
+                    con.execute("INSERT INTO mark_point VALUES (?,?,?,?,?,?,?)", (mp["id"], scheme_id, part_id, mp["anchor"], mp.get("marks"), mp["text"], mp["status"]))
         con.commit()
     finally:
         con.close()

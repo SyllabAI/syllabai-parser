@@ -1,0 +1,1141 @@
+{
+  "capturedAt": null,
+  "exportSchema": "syllabai-content-package-inputs/1.0",
+  "negativeCase": {
+    "queueSummary": {
+      "avgExtractionConfidence": 0.6,
+      "board": "Edexcel",
+      "createdAt": "2026-09-14T11:54:21.484921Z",
+      "findingCount": 62,
+      "flaggedVersions": 0,
+      "id": "118e7ed4-5448-4fc9-93e8-0c06a6886a07",
+      "paperCode": "4CH0/2CR",
+      "qualification": "unknown",
+      "reconciliationStatus": "OK",
+      "rejectedVersions": 0,
+      "sessionLabel": "June 2014",
+      "subjectId": "e56dc9ee-aa74-426f-94a6-4b72d3dc346b",
+      "suggestedSchemes": 0,
+      "title": "4CH0/2CR June 2014",
+      "validatedVersions": 0,
+      "validationState": "SUGGESTED",
+      "versionCount": 6
+    },
+    "review": {
+      "paper": {
+        "board": "Edexcel",
+        "id": "118e7ed4-5448-4fc9-93e8-0c06a6886a07",
+        "paperCode": "4CH0/2CR",
+        "qualification": "unknown",
+        "sessionLabel": "June 2014",
+        "subjectId": "e56dc9ee-aa74-426f-94a6-4b72d3dc346b",
+        "title": "4CH0/2CR June 2014",
+        "validationState": "SUGGESTED"
+      },
+      "versions": [
+        {
+          "commandWord": null,
+          "externalRef": "q01-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 10,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "c3c33944-dcd4-4eeb-a6bd-a0c275ed6ddd",
+              "label": "a",
+              "marks": 0,
+              "prompt": "Which sub-atomic particles are present in the nucleus of a neon atom? A electrons and neutrons B electrons and protons C electrons and neutrons and protons D neutrons and protons"
+            },
+            {
+              "commandWord": null,
+              "id": "f7ffd94c-001a-430f-b120-458f24b09eb4",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Use words from the box to complete the sentences about the particles in a neon atom. Each word may be used once, more than once or not at all. The particles with the smallest mass are ... An atom of neon has no overall charge because it contains equal numbers of ... and ... The chemical properties of neon depend on the number of ... in the outer shell."
+            },
+            {
+              "commandWord": null,
+              "id": "37f68988-537c-4ebb-9449-98874727819d",
+              "label": "c",
+              "marks": 0,
+              "prompt": "What is the electronic configuration of a neon atom? A 2.8 B 2.2.6 C 2.8.8 D 2.8.8.2"
+            },
+            {
+              "commandWord": null,
+              "id": "4471f902-d0b6-4175-bb97-60e9dc3c074d",
+              "label": "d",
+              "marks": 0,
+              "prompt": "Neon has two main isotopes that can be represented as $ ^{2 0} \\mathrm{N e} $ and $ ^{2 2} \\mathrm{N e}. $"
+            },
+            {
+              "commandWord": null,
+              "id": "5995bf4f-8ffd-4b9a-bb91-79f755d28b66",
+              "label": "d-i",
+              "marks": 0,
+              "prompt": "Explain, with reference to sub-atomic particles, what is meant by the term isotopes."
+            },
+            {
+              "commandWord": null,
+              "id": "6557f73e-7e1a-43df-939a-8c555f00b9e7",
+              "label": "d-ii",
+              "marks": 0,
+              "prompt": "The relative atomic mass of neon is 20.2 How does this information support the fact that a sample of neon contains more $ ^{20} $Ne than $ ^{22} $Ne?"
+            },
+            {
+              "commandWord": null,
+              "id": "876d83df-f1d4-4a79-8299-c15ab26ff0d9",
+              "label": "e",
+              "marks": 0,
+              "prompt": "Neon belongs to the family of noble gases and is inert."
+            },
+            {
+              "commandWord": null,
+              "id": "74ecd20b-97d3-40ae-8ae2-aa2865779a07",
+              "label": "e-i",
+              "marks": 0,
+              "prompt": "What is meant by the term inert?"
+            },
+            {
+              "commandWord": null,
+              "id": "08a5afbb-c349-4d70-af3a-00aecc7298ce",
+              "label": "e-ii",
+              "marks": 0,
+              "prompt": "Why are noble gases inert?"
+            }
+          ],
+          "points": [],
+          "questionId": "00f19dc8-207a-4d08-b65d-e30169e269ac",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "Neon is an element with atomic number 10.",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "2a09d7f7-ea86-4da6-9336-118e3d20c990"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q02-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 7,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "81c97e14-6e11-42eb-aa90-b261b281fcd6",
+              "label": "a",
+              "marks": 0,
+              "prompt": "A student adds a sample of four metals R, S, T and U separately to water and to dilute sulfuric acid. The table shows the observations in each experiment."
+            },
+            {
+              "commandWord": null,
+              "id": "f7e76c3f-547d-48af-90c1-f0585ffa896d",
+              "label": "a-i",
+              "marks": 0,
+              "prompt": "State two properties of the metals that the student should keep the same in all of the experiments in order to compare their reactivity."
+            },
+            {
+              "commandWord": null,
+              "id": "8b5511a6-6bd1-46d5-aa18-b9a1f56ca39a",
+              "label": "a-ii",
+              "marks": 0,
+              "prompt": "Which is the least reactive metal? A metal R B metal S C metal T D metal U"
+            },
+            {
+              "commandWord": null,
+              "id": "ec4a9fc3-7b3f-4549-a174-fb23346a377c",
+              "label": "a-iii",
+              "marks": 0,
+              "prompt": "Which gas forms during the reactions with dilute sulfuric acid? A carbon dioxide B hydrogen C oxygen D sulfur dioxide"
+            },
+            {
+              "commandWord": null,
+              "id": "d9b6911e-2830-4d41-9679-10b956742b16",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The student carries out a test to show that the solution formed when metal U reacts with dilute sulfuric acid contains sulfate ions. Use words from the box to complete the sentence about this test. Each word may be used once, more than once or not at all. He adds a ... and observes the formation of a ..."
+            },
+            {
+              "commandWord": null,
+              "id": "447eec9f-9dfe-4304-97b1-4f588134934a",
+              "label": "c",
+              "marks": 0,
+              "prompt": "The student observes a lilac colour in a flame test on a small sample of a different metal compound. Which metal ions cause the formation of this colour? A copper B magnesium C potassium D zinc"
+            }
+          ],
+          "points": [],
+          "questionId": "36d31473-ac99-453c-9783-2d94fdfabac6",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "This question is about the reactions of some metals and their compounds.",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "18175ee6-42c7-48d0-8e6d-89d92d5dd415"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q03-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 5,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "bce03562-9b2c-458c-a65d-6335c2b91bd4",
+              "label": "a",
+              "marks": 0,
+              "prompt": "What does this reaction show about the reactivity of iron compared to the reactivity of aluminium?"
+            },
+            {
+              "commandWord": null,
+              "id": "f8a82f89-f21f-419e-b8ce-1ccf83fa81b4",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Why is this reaction described as displacement?"
+            },
+            {
+              "commandWord": null,
+              "id": "2494e0c1-3ea8-4918-8d6d-4d4961aab8f0",
+              "label": "c",
+              "marks": 0,
+              "prompt": "State two reasons why the term oxidation applies to aluminium in this reaction."
+            },
+            {
+              "commandWord": null,
+              "id": "1ae6153b-11d2-483c-a12d-7d590145946d",
+              "label": "d",
+              "marks": 0,
+              "prompt": "Although the thermite reaction is exothermic, it only begins after a lot of heat energy is supplied. How is this heat energy supplied?"
+            }
+          ],
+          "points": [],
+          "questionId": "4eefd338-1f26-49c1-a2cb-ebaf1aacae32",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "The thermite reaction is used on railways to produce molten iron for joining rails together. The diagram shows how this is done. The equation for this thermite reaction is $2 \\mathrm {A l} + \\mathrm {F e} _ {2} \\mathrm {O} _ {3} \\rightarrow \\mathrm {A l} _ {2} \\mathrm {O} _ {3} + 2 \\mathrm {F e}$",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "19399d62-f028-4c9b-80b7-e7ab5eb7a91e"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q04-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 14,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "ea45aa74-e552-42f9-810e-980793eb5037",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The table shows the displayed formulae of four organic compounds. Ethanol and compound D are members of the homologous series of alcohols."
+            },
+            {
+              "commandWord": null,
+              "id": "3c0701f1-53c1-4ed3-a507-4d0b58276b2b",
+              "label": "b-i",
+              "marks": 0,
+              "prompt": "The first member of this homologous series is methanol. Draw the displayed formula of methanol."
+            },
+            {
+              "commandWord": null,
+              "id": "47ea7ea1-5d46-40ef-9be1-11939a9389af",
+              "label": "b-ii",
+              "marks": 0,
+              "prompt": "Suggest the name of compound D."
+            },
+            {
+              "commandWord": null,
+              "id": "2ee00e07-221b-4646-bd7d-9d4f4c2e97c9",
+              "label": "c",
+              "marks": 0,
+              "prompt": "In industry, the conversion of propene to compound D uses the same conditions as those used in the conversion of ethene to ethanol. Identify a suitable catalyst and temperature for these conversions. catalyst temperature ... \u00b0C"
+            },
+            {
+              "commandWord": null,
+              "id": "900a7195-829f-48fc-a5af-b348e91d185f",
+              "label": "d",
+              "marks": 0,
+              "prompt": "Ethene and acetylene can both be used for welding metals. The equations for the reactions of these gases in welding are ethene acetylene $\\mathrm {C} _ {2} \\mathrm {H} _ {4} + 3 \\mathrm {O} _ {2} \\rightarrow 2 \\mathrm {C O} _ {2} + 2 \\mathrm {H} _ {2} \\mathrm {O}$ $\\mathrm {C} _ {2} \\mathrm {H} _ {2} + 2. 5 \\mathrm {O} _ {2} \\rightarrow 2 \\mathrm {C O} _ {2} + \\mathrm {H} _ {2} \\mathrm {O}$ One problem with using hydrocarbons as fuels is incomplete combustion."
+            },
+            {
+              "commandWord": null,
+              "id": "f3652971-0704-4b10-b31b-3271eadb874c",
+              "label": "d-i",
+              "marks": 0,
+              "prompt": "Incomplete combustion is a bigger problem with ethene than with acetylene. Suggest why."
+            },
+            {
+              "commandWord": null,
+              "id": "0424ff8f-a96f-416f-b276-878af4814c0f",
+              "label": "d-ii",
+              "marks": 0,
+              "prompt": "One of the gases produced during incomplete combustion is dangerous to humans. Identify this gas and explain how it is dangerous."
+            },
+            {
+              "commandWord": null,
+              "id": "f0196162-cf82-4ac3-9b20-d7cf3e07e8e3",
+              "label": "e",
+              "marks": 0,
+              "prompt": "Ethene can be used to ripen bananas. Bananas are placed in a large container and ethene is added. The ethene can be added in two different ways."
+            },
+            {
+              "commandWord": null,
+              "id": "e4daebdd-fa65-4dbd-9425-1e02c289cbf0",
+              "label": "e-i",
+              "marks": 0,
+              "prompt": "In method 1, ethene is stored under pressure and passed through a pipe into the container. Suggest one risk in using this method."
+            },
+            {
+              "commandWord": null,
+              "id": "153f5290-dec3-4ffd-9f25-d60ddcab5fab",
+              "label": "e-ii",
+              "marks": 0,
+              "prompt": "In method 2, the generator contains a known quantity of ethanol that is slowly decomposed to ethene using a catalyst. Write a chemical equation for this decomposition."
+            }
+          ],
+          "points": [],
+          "questionId": "74923488-ddb5-4db4-a346-1150f2e36f09",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "(a) Ethanol can be manufactured by two different processes. Process 1 sucrose $ \\xrightarrow[]{stage1} $ glucose $ \\xrightarrow[]{stage2} $ ethanol Process 2 ethene $ \\longrightarrow $ ethanol (i) What is the general name for compounds such as sucrose and glucose? (ii) What type of reaction occurs in stage 2? (iii) What is the catalyst used in stage 2? (iv) What type of reaction occurs in process 2?",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "25482260-6860-47b7-904d-113cfe253884"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q05-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 9,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "87e1b55d-eddc-4339-a995-13f1fd55cd42",
+              "label": "a",
+              "marks": 0,
+              "prompt": "A student wrote this plan to prepare a pure dry sample of lead(II) sulfate. step1 pour some lead(II) nitrate solution into a beaker step 2 add sodium sulfate solution until the reaction is complete step3 filter the mixture step4 heat the filtrate to evaporate some of the water step 5 cool the filtrate and remove the crystals"
+            },
+            {
+              "commandWord": null,
+              "id": "681c2f06-444d-4687-a456-c5183ea6c381",
+              "label": "a-i",
+              "marks": 0,
+              "prompt": "How will the student know when the reaction in step 2 is complete?"
+            },
+            {
+              "commandWord": null,
+              "id": "3d3a6a26-9731-4ffd-ba9e-24fca8da0733",
+              "label": "a-ii",
+              "marks": 0,
+              "prompt": "Which compound could the student use in this preparation instead of sodium sulfate? A lead(II) hydroxide B nitric acid C sodium hydroxide D sulfuric acid"
+            },
+            {
+              "commandWord": null,
+              "id": "6a3dea98-4ba4-4ee6-a844-d94871ea044d",
+              "label": "a-iii",
+              "marks": 0,
+              "prompt": "State why the student should not have included steps 4 and 5 in his plan."
+            },
+            {
+              "commandWord": null,
+              "id": "aaa02b05-fdef-4321-b447-52900e87aa73",
+              "label": "a-iv",
+              "marks": 0,
+              "prompt": "Suggest replacement steps to obtain a pure dry sample of lead(II) sulfate. step 4 step 5"
+            },
+            {
+              "commandWord": null,
+              "id": "351b4987-f2bc-4c9a-a59c-1265a738bd76",
+              "label": "a-v",
+              "marks": 0,
+              "prompt": "Lead(II) carbonate cannot be used instead of lead(II) nitrate in this preparation. This is because lead(II) carbonate A contains ionic bonding B has a high relative formula mass C is insoluble in water D is toxic"
+            },
+            {
+              "commandWord": null,
+              "id": "e36b32d1-aea0-4cb6-9f62-df363a194cf3",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The equation for the reaction in the student's plan is $\\mathrm {P b} \\left(\\mathrm {N O} _ {3}\\right) _ {2} (\\mathrm {a q}) + \\mathrm {N a} _ {2} \\mathrm {S O} _ {4} (\\mathrm {a q}) \\rightarrow \\mathrm {P b S O} _ {4} (\\mathrm {s}) + 2 \\mathrm {N a N O} _ {3} (\\mathrm {a q})$"
+            },
+            {
+              "commandWord": null,
+              "id": "1c4d5909-a356-4b43-9ed9-29cc095baca1",
+              "label": "b-i",
+              "marks": 0,
+              "prompt": "Deduce the amount of each reactant needed to form 0.150 mol of lead(II) sulfate. $ \\mathrm{P b} \\left( \\mathrm{N O}_{3} \\right)_{2} $ mol $ \\mathrm{N a}_{2} \\mathrm{S O}_{4} $ mol"
+            },
+            {
+              "commandWord": null,
+              "id": "c1d7884b-e891-4ed4-a40d-6a45a95d8e1b",
+              "label": "b-ii",
+              "marks": 0,
+              "prompt": "What volume of $ 0. 5 0 0 \\mathrm{m o l} / \\mathrm{d m}^{3} $ lead(II) nitrate solution is needed to form 0.150 mol of lead(II) sulfate?"
+            }
+          ],
+          "points": [],
+          "questionId": "94e8347d-51a5-41b2-8945-bf6bf1c0ddaf",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "Solutions of lead(II) nitrate and sodium sulfate react together to form the insoluble salt lead(II) sulfate.",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "1a422fd2-42b7-4765-a919-f62e7141dc23"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q06-d5815b70",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 15,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "1d43f450-c7d8-484e-9054-4aff8846760e",
+              "label": "a",
+              "marks": 0,
+              "prompt": "The diagram shows the thermometer readings in one of her experiments. Use these readings to complete the table, entering all values to the nearest 0.1 $ ^{\\circ} \\mathrm{C}. $"
+            },
+            {
+              "commandWord": null,
+              "id": "e6cf9479-35da-47d3-bc01-4dc45d238e88",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The student repeats the experiment three times. The table shows her results."
+            },
+            {
+              "commandWord": null,
+              "id": "9f0114dc-1dde-4fbe-bb78-a76b9ec2cd0c",
+              "label": "b-i",
+              "marks": 0,
+              "prompt": "Calculate the amount, in moles, at room temperature and pressure, of methane burned in experiment 1. Assume that natural gas contains only methane. (The volume of 1 mol of a gas at room temperature and pressure is $ 2 4 0 0 0 \\mathrm{c m}^{3} $)"
+            },
+            {
+              "commandWord": null,
+              "id": "9cac7620-dbff-4e32-8fb5-27abea0bdc59",
+              "label": "b-ii",
+              "marks": 0,
+              "prompt": "The quantity of heat energy released in experiment 1 is 29200 J. Calculate the molar enthalpy change, in kJ/mol, for the combustion of methane. molar enthalpy change = ... kJ/mol"
+            },
+            {
+              "commandWord": null,
+              "id": "812a2b1d-eedc-464f-9e30-9bdf13b15ae4",
+              "label": "b-iii",
+              "marks": 0,
+              "prompt": "The temperature rise in experiment 2 is $ 4 1. 2 \\mathrm{~} ^ {\\circ} \\mathrm{C}. $ Calculate the heat energy change in experiment 2 using the expressio heat energy change = volume of water $ \\times $ 4.2 $ \\times $ temperature change (in J) (in $ cm^{3} $) (in $ ^{\\circ} C $) heat energy change = ... J"
+            },
+            {
+              "commandWord": null,
+              "id": "50ab1326-ba19-46c9-a4e9-7969edbf7689",
+              "label": "b-iv",
+              "marks": 0,
+              "prompt": "The student uses the results from experiment 3 to calculate the molar enthalpy change, in kJ/mol, for the combustion of methane. She compares her value with the value in a data book. Which is the best explanation for the large difference between these two values? B not all of the heat energy is transferred to the water A natural gas contains other gases that release heat energy when burned C some of the water evaporates during the experiment D the student measures the gas by volume instead of by mass"
+            },
+            {
+              "commandWord": null,
+              "id": "dc6a252c-7838-4ae8-acb1-b8264334e536",
+              "label": "c",
+              "marks": 0,
+              "prompt": "The student uses a table of average bond energies to calculate another value for the molar enthalpy of combustion of methane. The equation for the combustion can be shown using displayed formulae. $\\mathrm {H} - \\mathrm {C} - \\mathrm {H} + 2 \\mathrm {O} = \\mathrm {O} \\rightarrow \\mathrm {O} = \\mathrm {C} = \\mathrm {O} + 2 \\mathrm {H} - \\mathrm {O} - \\mathrm {H}$"
+            },
+            {
+              "commandWord": null,
+              "id": "b7593adc-9413-40de-a4cd-a3dcdf8eb603",
+              "label": "c-i",
+              "marks": 0,
+              "prompt": "Use values from the table to calculate the energy taken in when the bonds in the reactants are broken. energy taken in = ... kJ"
+            },
+            {
+              "commandWord": null,
+              "id": "630107ee-e1ae-4103-a923-fa739eb3c29d",
+              "label": "c-ii",
+              "marks": 0,
+              "prompt": "Use values from the table to calculate the energy given out when the bonds in the products are formed. energy given out = ... kJ"
+            },
+            {
+              "commandWord": null,
+              "id": "054ad899-2714-4542-ab84-1e1b35263076",
+              "label": "c-iii",
+              "marks": 0,
+              "prompt": "Use your answers to (i) and (ii) to calculate the molar enthalpy change for the combustion of methane. molar enthalpy change = kJ/mol"
+            }
+          ],
+          "points": [],
+          "questionId": "34b0f16a-e841-4bcb-8c12-f950d2864f87",
+          "schemeId": null,
+          "schemeState": null,
+          "sourceDocumentId": "d5815b70-20fe-54a9-b359-b2192a6a4790",
+          "stem": "A student does some experiments to find the heat energy released when natural gas burns. She uses this apparatus.",
+          "type": "STRUCTURED",
+          "validationState": "SUGGESTED",
+          "version": 1,
+          "versionId": "9bc33855-de6a-45ba-8b95-f4f749f63e0e"
+        }
+      ]
+    },
+    "schemelessVersionIds": [
+      "2a09d7f7-ea86-4da6-9336-118e3d20c990",
+      "18175ee6-42c7-48d0-8e6d-89d92d5dd415",
+      "19399d62-f028-4c9b-80b7-e7ab5eb7a91e",
+      "25482260-6860-47b7-904d-113cfe253884",
+      "1a422fd2-42b7-4765-a919-f62e7141dc23",
+      "9bc33855-de6a-45ba-8b95-f4f749f63e0e"
+    ]
+  },
+  "notes": {
+    "selectionRule": "newest paper with validationState=VALIDATED and a complete marking contract (every version has a VALIDATED scheme)",
+    "servingProof": "papers in this state are learner-servable (V20 battery B12)"
+  },
+  "positiveCase": {
+    "papersListItem": {
+      "board": "Edexcel",
+      "id": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+      "markSchemeDocumentId": "ef754010-89ac-5153-9092-195666bb2e9d",
+      "paperCode": null,
+      "provenance": "PAST_PAPER",
+      "qualification": "unknown",
+      "questionPaperDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+      "sessionLabel": "Summer 2019",
+      "title": "Summer 2019",
+      "unit": null,
+      "validationState": "VALIDATED"
+    },
+    "provenance": null,
+    "review": {
+      "paper": {
+        "board": "Edexcel",
+        "id": "cfccc663-8aef-4a20-90b4-1205b3e740b5",
+        "paperCode": null,
+        "qualification": "unknown",
+        "sessionLabel": "Summer 2019",
+        "subjectId": "e56dc9ee-aa74-426f-94a6-4b72d3dc346b",
+        "title": "Summer 2019",
+        "validationState": "VALIDATED"
+      },
+      "versions": [
+        {
+          "commandWord": null,
+          "externalRef": "q01-97798258",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 5,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "fcaaf39c-385e-413e-8bc5-5186695c8f34",
+              "label": "a",
+              "marks": 0,
+              "prompt": "The box gives the names of some gases in the atmosphere. argon carbon dioxide helium nitrogen oxygen Use gases from the box to answer the questions. Each gas may be used once, more than once or not at all."
+            },
+            {
+              "commandWord": null,
+              "id": "f01f42de-6f8a-42c2-8a30-c8bac2979094",
+              "label": "a-i",
+              "marks": 0,
+              "prompt": "Identify the two noble gases."
+            },
+            {
+              "commandWord": null,
+              "id": "388d9e48-5f22-49fb-ab04-f89b8c8c1a51",
+              "label": "a-ii",
+              "marks": 0,
+              "prompt": "Identify the gas that is a compound."
+            },
+            {
+              "commandWord": null,
+              "id": "6d045c77-05c5-4c43-85a7-4070c41cebb0",
+              "label": "a-iii",
+              "marks": 0,
+              "prompt": "Identify the most abundant gas in the atmosphere."
+            },
+            {
+              "commandWord": null,
+              "id": "f9f0f014-58b9-47f1-b4d0-ff3d62733106",
+              "label": "a-iv",
+              "marks": 0,
+              "prompt": "Identify the greenhouse gas."
+            },
+            {
+              "commandWord": null,
+              "id": "e18c599e-ef2b-455f-acc6-7416bf743ef5",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Describe the test for oxygen."
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "dafd5da8-c1e3-409f-9e98-8ba2f56464fc",
+              "marks": 1,
+              "ref": "1",
+              "text": "(a)(i)"
+            }
+          ],
+          "questionId": "4412246d-27bc-4f7b-aa32-7f2315bdec0f",
+          "schemeId": "fb0cd4c3-a9e6-4128-a4c1-f4d8cbd79f4e",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "This question is about gases in the atmosphere.",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "df6a0f70-2b12-4aca-94ba-2ad13b0175d5"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q02-97798258",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 7,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "2aa77dc6-f503-4baf-a3bf-8d56f8d73976",
+              "label": "a",
+              "marks": 5,
+              "prompt": "Use information from the diagram to complete the table. The first row has been done for you."
+            },
+            {
+              "commandWord": null,
+              "id": "c3cc5521-8426-493f-a55b-478603ac0d22",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Boron has two isotopes, boron-10 and boron-11. A sample of boron contains 18.7% of boron-10 and 81.3% of boron-11. Calculate the relative atomic mass of this sample of boron."
+            },
+            {
+              "commandWord": null,
+              "id": "465fe680-ce35-49a3-93d8-22e0fc5118ff",
+              "label": "a.2",
+              "marks": 0,
+              "prompt": "The diagram shows crude oil being separated into different fractions."
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "e81e0768-bb13-48a6-b677-35d513d8f298",
+              "marks": 5,
+              "ref": "2-a",
+              "text": "atomic number5\nmass number11\nnumber of neutrons6\ngroup in the Periodic table that contains boron3\nperiod in the Periodic table that contains boron2\nelectronic configuration of an atom of boron2,3"
+            }
+          ],
+          "questionId": "68459eda-92b1-40aa-9abc-213287291888",
+          "schemeId": "afada395-9591-4226-a4ab-780e8e62e499",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "The diagram represents an atom of boron.",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "f62fd30c-6cd4-40ad-8047-6a060bbf8c28"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q03-97798258",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 8,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "0ff122f8-6b08-4dc3-9a5e-628a4f390824",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Crude oil often contains sulfur as an impurity. Explain why this is a problem when using crude oil fractions as fuels."
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "0b7a2a7e-2674-4e1d-a39a-9100070e22e9",
+              "marks": 1,
+              "ref": "3",
+              "text": "(a)(i)"
+            }
+          ],
+          "questionId": "d85f598d-7f8b-4751-a7eb-783193aad594",
+          "schemeId": "472f3153-f247-42a8-8fe8-025200aad45c",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "Crude oil is an important source of organic compounds. (i) Name the process used to separate crude oil into different fractions. (ii) State what happens to the crude oil at X. (iii) Describe the differences between fraction B and fraction E. In your answer, refer to size of the molecules boiling point colour viscosity",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "6e469f0d-4322-4318-b18a-caec2364c506"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q04-97798258",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 15,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "92913900-3fcc-42c8-8ce3-487998ff9413",
+              "label": "a",
+              "marks": 0,
+              "prompt": "The table gives the colour and physical state at room temperature of the halogens. Complete the table by predicting the colour of astatine and the physical state of fluorine at room temperature."
+            },
+            {
+              "commandWord": null,
+              "id": "3165e048-7fd2-4f97-952f-177952592cd7",
+              "label": "b",
+              "marks": 0,
+              "prompt": "Chlorine gas is bubbled into a colourless solution of potassium bromide. Explain why the solution turns orange."
+            },
+            {
+              "commandWord": null,
+              "id": "67fa7606-3c32-40b6-bd6b-39d655f0e5df",
+              "label": "c",
+              "marks": 3,
+              "prompt": "Potassium bromide is an ionic compound. Draw diagrams to show the outer electrons in a potassium ion and in a bromide ion Include the charges on the ions."
+            },
+            {
+              "commandWord": null,
+              "id": "0390b778-0b0b-4479-928a-333ee9715798",
+              "label": "d",
+              "marks": 0,
+              "prompt": "A student sets up a circuit to test the electrical conductivity of water, solid sodium chloride and aqueous sodium chloride. The table shows the student's results. Explain these results, with reference to the structure and bonding of the substances."
+            },
+            {
+              "commandWord": null,
+              "id": "dcff2fa0-ca69-449f-9e86-a3c557de2d3b",
+              "label": "e",
+              "marks": 0,
+              "prompt": "A concentrated aqueous solution of sodium chloride is electrolysed using graphite electrodes. Chlorine is formed at the positive electrode (anode)."
+            },
+            {
+              "commandWord": null,
+              "id": "af2ad65a-562d-4a1e-bcba-5f01fd763877",
+              "label": "e-i",
+              "marks": 0,
+              "prompt": "Give an ionic half-equation for the formation of chlorine at the positive electrode."
+            },
+            {
+              "commandWord": null,
+              "id": "9d830a77-d8cf-4b0d-8c2a-8e633586df2d",
+              "label": "e-ii",
+              "marks": 0,
+              "prompt": "State why this ionic half-equation represents an oxidation reaction."
+            },
+            {
+              "commandWord": null,
+              "id": "66ca57a2-45ce-4e88-8ec5-b2434a6cee4c",
+              "label": "e-iii",
+              "marks": 0,
+              "prompt": "Which substance is formed at the negative electrode (cathode)? A hydrogen B oxygen C sodium D water"
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "d4f01135-bcd8-479c-b9f2-7b0308e8c138",
+              "marks": 2,
+              "ref": "4-a",
+              "text": "M1fluorine- gasM2astatine- black"
+            },
+            {
+              "acceptanceCriteria": [],
+              "id": "e3ed895a-79e4-45b9-8889-9640af14a7c6",
+              "marks": 3,
+              "ref": "4-c",
+              "text": "M1 correct structure of potassium ion\nK+"
+            },
+            {
+              "acceptanceCriteria": [],
+              "id": "481ff279-0211-49f5-84aa-4e26cca16ac7",
+              "marks": 5,
+              "ref": "4-d",
+              "text": "An planation linking the following five points\nM1water is covalently bonded/has a simple molecular structure\nM2water does not contain any free (moving) charged parti es(so does not conduct electricity)\nM3sodium chloride has a giant ionic structure/has an ionic lattice structure/is ionically bonded\nM4the ions are in fixed positions/cannot move(so does not conduct electricity)\nM5in solution/aqueous sodium chloride the ions are free to flow/move(so the solution does conduct electricity)"
+            }
+          ],
+          "questionId": "7f818348-1023-46fc-848e-bc5348abe0eb",
+          "schemeId": "abf58b34-b612-4bef-aa96-c9f6c87e4b79",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "This question is about the halogens and their compounds.",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "b5bbc7d3-9249-4ab8-a421-57e2db997aac"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q05-97798258",
+          "extractionConfidence": 0.6,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 11,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "5b5c6525-2ec0-4c1d-bb2a-6a97a5272731",
+              "label": "a",
+              "marks": 0,
+              "prompt": "Carboxylic acids react with solutions of metal carbonates."
+            },
+            {
+              "commandWord": null,
+              "id": "6e305f0b-579b-4d51-a469-153f8ea2d26e",
+              "label": "a-i",
+              "marks": 0,
+              "prompt": "Complete the chemical equation for the reaction of ethanoic acid, $ \\mathrm{C H_{3} C O O H} $ with potassium carbonate solution. $2 \\mathrm {C H} _ {3} \\mathrm {C O O H} + \\mathrm {K} _ {2} \\mathrm {C O} _ {3} \\rightarrow$"
+            },
+            {
+              "commandWord": null,
+              "id": "225566b0-1176-480b-b1bd-bccbbf3fa4fc",
+              "label": "a-ii",
+              "marks": 0,
+              "prompt": "State what you would see in this reaction."
+            },
+            {
+              "commandWord": null,
+              "id": "b772e792-7634-4739-9205-f3e93c580f74",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The ester, ethyl ethanoate, can be prepared by reacting ethanol with ethanoic acid. This is the method for the preparation. mix equal amounts of ethanoic acid and ethanol in a boiling tube add a few drops of concentrated sulfuric acid place the boiling tube in a hot water bath for several minutes"
+            },
+            {
+              "commandWord": null,
+              "id": "d9e2c384-9349-426f-ad83-e241f875ccea",
+              "label": "b-i",
+              "marks": 0,
+              "prompt": "State the role of concentrated sulfuric acid in this reaction."
+            },
+            {
+              "commandWord": null,
+              "id": "346b059a-eb6e-4ca6-9bb0-f48ba0cc96b9",
+              "label": "b-ii",
+              "marks": 0,
+              "prompt": "Suggest why the mixture is heated in a water bath rather than directly with a Bunsen burner flame."
+            },
+            {
+              "commandWord": null,
+              "id": "726cb449-e5c5-4a65-8457-1b361acc5f81",
+              "label": "b-iii",
+              "marks": 0,
+              "prompt": "State how you would know that ethyl ethanoate has formed."
+            },
+            {
+              "commandWord": null,
+              "id": "3ce0e690-7522-4000-8022-a12caa2c5dc5",
+              "label": "c",
+              "marks": 0,
+              "prompt": "Another ester, methyl propanoate, can be prepared by reacting methanol with propanoic acid."
+            },
+            {
+              "commandWord": null,
+              "id": "f5f9aa77-908e-4da5-a26f-fc2090f94a74",
+              "label": "c-i",
+              "marks": 0,
+              "prompt": "Draw the displayed formulae of methanol, propanoic acid and the ester, methyl propanoate. methyl propanoate"
+            },
+            {
+              "commandWord": null,
+              "id": "e34e5431-98fc-46b5-96a6-84238ac340a4",
+              "label": "c-ii",
+              "marks": 0,
+              "prompt": "Give the name of the other product of this reaction."
+            },
+            {
+              "commandWord": null,
+              "id": "07df97dc-e69b-4f76-8540-57baaae59c35",
+              "label": "d",
+              "marks": 0,
+              "prompt": "Give one use of esters."
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "92fcab4a-e9d5-4142-89e8-5d1f27260cfc",
+              "marks": 2,
+              "ref": "5",
+              "text": "(a)(i)"
+            },
+            {
+              "acceptanceCriteria": [],
+              "id": "79bca152-42f0-4800-8e9b-ac11d33f5b54",
+              "marks": 3,
+              "ref": "5-c-i",
+              "text": "H\nH-C-O-H\nH\nH-C-C-C\nH H O-H\nwater"
+            }
+          ],
+          "questionId": "d996a132-4144-4b68-b23f-702e0a9614db",
+          "schemeId": "bcab09f8-f134-4735-9def-f4eaca7b8a02",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "This question is about the reactions of carboxylic acids.",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "29812383-d3fa-4f62-bf3f-df8cd9dfed5a"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q06-97798258",
+          "extractionConfidence": 0.45,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 1,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "f1eaf95a-f303-47c4-bfe5-0aace382d99e",
+              "label": "a",
+              "marks": 0,
+              "prompt": "A scientist uses a titration method to investigate how much ethanoic acid is formed if a bottle of white wine is left open for one week. She uses this method. fill a burette with the white wine and record the reading add $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution to a conical flask add a few drops of phenolphthalein indicator to the flask swirl the flask continuously while adding wine from the burette add the wine drop by drop near the end point record the reading at the end point"
+            },
+            {
+              "commandWord": null,
+              "id": "21ba84e2-598d-4d9b-b50d-d9b01909682c",
+              "label": "a-i",
+              "marks": 0,
+              "prompt": "Name the piece of apparatus that would be most suitable for measuring the $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution."
+            },
+            {
+              "commandWord": null,
+              "id": "f160e6a0-6701-4fa4-9121-68cddacc399c",
+              "label": "a-ii",
+              "marks": 0,
+              "prompt": "Suggest why red wine would not be suitable to use for this investigation."
+            },
+            {
+              "commandWord": null,
+              "id": "8a2d4146-278c-4640-92ac-5c152cc7daaf",
+              "label": "a-iii",
+              "marks": 0,
+              "prompt": "State why she swirls the flask continuously."
+            },
+            {
+              "commandWord": null,
+              "id": "af2a0bcd-d592-4912-93cf-67133976e699",
+              "label": "a-iv",
+              "marks": 0,
+              "prompt": "State why she adds the wine drop by drop near the end point."
+            },
+            {
+              "commandWord": null,
+              "id": "2ecc6d09-a3c0-45b7-88d7-6f30d3db7d01",
+              "label": "b",
+              "marks": 3,
+              "prompt": "The diagram shows the burette readings at the start and end of one of the titrations. Use the readings to complete the table. Give your values to the nearest 0.05 $ cm^{3}. $"
+            },
+            {
+              "commandWord": null,
+              "id": "5bc321fd-f4ca-4bce-96f4-511747fe698f",
+              "label": "c",
+              "marks": 0,
+              "prompt": "The scientist repeats the titration four more times. The table shows her results for these four titrations. Concordant results are those within $ 0. 2 0 \\mathrm{c m}^{3} $ of each other."
+            },
+            {
+              "commandWord": null,
+              "id": "5cec6009-78cc-420c-b03f-c07a12c78727",
+              "label": "c-i",
+              "marks": 0,
+              "prompt": "Add ticks ( $ \\surd $ ) to the table to show the concordant results."
+            },
+            {
+              "commandWord": null,
+              "id": "dc59f67e-96d1-4a8e-af05-2048cbb12262",
+              "label": "c-ii",
+              "marks": 0,
+              "prompt": "Use your ticked results to calculate the mean (average) volume of wine added."
+            },
+            {
+              "commandWord": null,
+              "id": "26b69848-2777-4c23-b931-7b54ad37a66f",
+              "label": "d",
+              "marks": 0,
+              "prompt": "Another scientist repeats the titration with a different bottle of white wine that has been left open for a week. The equation for the reaction that occurs in this titration is $\\mathrm {C H} _ {3} \\mathrm {C O O H} + \\mathrm {N a O H} \\rightarrow \\mathrm {C H} _ {3} \\mathrm {C O O N a} + \\mathrm {H} _ {2} \\mathrm {O}$ The mean volume of wine added is $ 1 9. 5 0 \\mathrm{c m}^{3}. $"
+            },
+            {
+              "commandWord": null,
+              "id": "e150f33a-9892-4e8d-9cfd-61dc41207684",
+              "label": "d-i",
+              "marks": 0,
+              "prompt": "The concentration of the sodium hydroxide solution is $ 0. 0 5 0 0 \\mathrm{m o l} / \\mathrm{d m}^{3}. $ Calculate the amount, in moles, of NaOH in $ 2 5. 0 \\mathrm{c m}^{3} $ of sodium hydroxide solution. $\\mathrm {a m o u n t o f N a O H} =$"
+            },
+            {
+              "commandWord": null,
+              "id": "72d904ac-0f86-4fd3-b488-abb6b77ed09f",
+              "label": "d-ii",
+              "marks": 0,
+              "prompt": "Deduce the amount, in moles, of $ \\mathrm{C H_{3} C O O H} $ in $ 1 9. 5 0 \\mathrm{c m}^{3} $ of the wine. $\\mathrm {a m o u n t o f C H _ {3} C O O H} =$"
+            },
+            {
+              "commandWord": null,
+              "id": "807358d5-2243-4a13-859e-7b48b68d2fff",
+              "label": "d-iii",
+              "marks": 0,
+              "prompt": "Calculate the concentration, in mol/dm $ ^{3} $ , of $ \\mathrm{C H_{3} C O O H} $ in the wine. concentration of $ \\mathrm{C H_{3} C O O H}= $ $\\mathrm {m o l / d m ^ {3}}$ $(\\mathrm {T o t a l f o r Q u e s t i o n 6 = 1 5 m a r k s})$"
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "33d82896-a185-4bd9-981f-0ae8dd6f6c01",
+              "marks": 1,
+              "ref": "6",
+              "text": "(a)"
+            }
+          ],
+          "questionId": "0f2c1b42-8bcb-431b-a89e-84b7d4aa0715",
+          "schemeId": "f3b1d242-fbd0-4e9a-a822-8799b0cf028f",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "When a bottle of wine is left open for several days, some of the ethanol in the wine turns to ethanoic acid, $ \\mathrm{C H_{3} C O O H} $",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "e087bf19-c1de-410d-bdc9-375540991aba"
+        },
+        {
+          "commandWord": null,
+          "externalRef": "q07-97798258",
+          "extractionConfidence": 0.45,
+          "extractionMethod": "glm-ocr-qp-v1+glm-ocr-ms-v1",
+          "marks": 1,
+          "options": [],
+          "parts": [
+            {
+              "commandWord": null,
+              "id": "59c5bc0d-6cb4-4cdc-b195-696817d59885",
+              "label": "a",
+              "marks": 0,
+              "prompt": "What does the symbol $ \\rightleftharpoons $ represent?"
+            },
+            {
+              "commandWord": null,
+              "id": "1d4002e1-0583-4e0b-b965-ff8d266fe572",
+              "label": "b",
+              "marks": 0,
+              "prompt": "The mixture of methane and steam is heated to a temperature greater than $ 7 0 0^{\\circ} \\mathrm{C} $ but the pressure is kept at 5 atmospheres. Predict the effect of this change on the yield of hydrogen at equilibrium, giving a reason for your answer."
+            },
+            {
+              "commandWord": null,
+              "id": "78c74ddb-f064-4e1d-879a-523b4333f24b",
+              "label": "b-ii",
+              "marks": 0,
+              "prompt": "The mixture of methane and steam is kept at the same temperature of $ 7 0 0^{\\circ} \\mathrm{C} $ but the pressure is increased to more than 5 atmospheres. Predict the effect of this change on the yield of hydrogen at equilibrium, giving a reason for your answer."
+            },
+            {
+              "commandWord": null,
+              "id": "afd67c73-9727-4adc-afa4-395fc2c0ebfa",
+              "label": "c",
+              "marks": 0,
+              "prompt": "Calculate the volume, in $ \\mathrm{d m}^{3} $ of hydrogen gas at rtp that is produced when 10 tonnes of methane gas completely react with steam."
+            }
+          ],
+          "points": [
+            {
+              "acceptanceCriteria": [],
+              "id": "55f16472-6867-4a6b-ad50-4ffcd7bb568d",
+              "marks": 1,
+              "ref": "7",
+              "text": "(a)\nALLOW the reaction goes both ways\nALLOW the reaction can go forwards and backwards\nM2(equilibrium shifts to the right as the forward) reaction is endothermic\nM2 dep on M1 correct or missing\nM2(equilibrium shifts to the left as) fewer moles/molecules(of gas) on lhs/more moles/molecules(of gas) on rhs OWTTE\nIGNORE references to Le Chatelier e.g. an increase in pressure favours the side with fewer moles\nM2 dep on M1 correct or missing"
+            },
+            {
+              "acceptanceCriteria": [],
+              "id": "058ade29-ebfa-4859-9fc6-3a3cd5b83d7d",
+              "marks": 4,
+              "ref": "7-c",
+              "text": "calculate the amount, in moles, of methane\nuse the equation to calculate the amount of hydrogen\nmultiply amount by 24 to find the volume of hydrogen\nfinal answer in standard form\nM110,000,000 OR 625,00016\nM2625,000 x 3 OR 1,875,000\nM31,875,000 x 24 OR 45,000,000(dm3)\nM44.5 x 107(dm3)"
+            }
+          ],
+          "questionId": "de25ce3d-dff1-465a-b9d4-411c1837e232",
+          "schemeId": "1298f87f-c047-42ef-bacd-f3393dd5bf48",
+          "schemeState": "VALIDATED",
+          "sourceDocumentId": "97798258-75f5-5012-91c5-8282e92d2368",
+          "stem": "Hydrogen gas can be produced by reacting a mixture of methane and steam in the presence of a nickel catalyst. The reaction conditions are a temperature of $ 7 0 0^{\\circ} \\mathrm{C} $ and a pressure of 5 atmospheres. The equation for the reaction is $\\mathrm {C H} _ {4} (\\mathrm {g}) + \\mathrm {H} _ {2} \\mathrm {O} (\\mathrm {g}) \\rightleftharpoons \\mathrm {C O} (\\mathrm {g}) + 3 \\mathrm {H} _ {2} (\\mathrm {g}) \\quad \\Delta H = + 2 0 6 \\mathrm {k J / m o l}$",
+          "type": "STRUCTURED",
+          "validationState": "VALIDATED",
+          "version": 1,
+          "versionId": "ac829fe7-e479-4bee-b29e-2df5b916104c"
+        }
+      ]
+    },
+    "topicRows": {
+      "0f2c1b42-8bcb-431b-a89e-84b7d4aa0715": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "4412246d-27bc-4f7b-aa32-7f2315bdec0f": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "68459eda-92b1-40aa-9abc-213287291888": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "7f818348-1023-46fc-848e-bc5348abe0eb": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "d85f598d-7f8b-4751-a7eb-783193aad594": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "d996a132-4144-4b68-b23f-702e0a9614db": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ],
+      "de25ce3d-dff1-465a-b9d4-411c1837e232": [
+        {
+          "code": "ING-SUMMER2019",
+          "nodeId": "b19b8ab6-1273-4c08-9d23-aa70ddaca2b1",
+          "primary": true,
+          "title": "Ingestion anchor: null"
+        }
+      ]
+    }
+  }
+}

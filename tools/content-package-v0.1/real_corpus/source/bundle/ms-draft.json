@@ -1,0 +1,627 @@
+{
+  "schemaVersion" : "1.0",
+  "extractionMethod" : "glm-ocr-ms-v1",
+  "reviewRequired" : true,
+  "paper" : {
+    "board" : "Edexcel",
+    "qualification" : null,
+    "subject" : null,
+    "paperReference" : null,
+    "logNumber" : null,
+    "publicationCode" : "4CH1_2CR_msc_20190822",
+    "session" : "Summer 2019",
+    "examDate" : null,
+    "duration" : null,
+    "canonicalDocumentId" : "ef754010-89ac-5153-9092-195666bb2e9d"
+  },
+  "entries" : [ {
+    "entryId" : "ms-ef754010-q1",
+    "label" : "1",
+    "number" : 1,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "(a)(i)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "argon and helium"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW Ar and He"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "carbon dioxide"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW CO2If both name and formula given both must be correct"
+    }, {
+      "kind" : "note",
+      "text" : "(iii)"
+    }, {
+      "kind" : "note",
+      "text" : "nitrogen"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW N2IGNORE N"
+    }, {
+      "kind" : "note",
+      "text" : "(iv)"
+    }, {
+      "kind" : "note",
+      "text" : "carbon dioxide"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW CO2If both name and formula given both must be correct"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "relights a glowing spill/splint"
+    }, {
+      "kind" : "note",
+      "text" : "1Total 5"
+    } ],
+    "marks" : 1,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q2a",
+    "label" : "2(a)",
+    "number" : 2,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "atomic number5\nmass number11\nnumber of neutrons6\ngroup in the Periodic table that contains boron3\nperiod in the Periodic table that contains boron2\nelectronic configuration of an atom of boron2,3",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "ACCEPT"
+    }, {
+      "kind" : "note",
+      "text" : "1s22s22p1"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "Sum of masses multiplied by percentages"
+    }, {
+      "kind" : "note",
+      "text" : "Division by 100 to give final answer"
+    }, {
+      "kind" : "note",
+      "text" : "M1(18.7x10)+(81.3x11)OR1081.3"
+    }, {
+      "kind" : "note",
+      "text" : "M210.8ORanswer fromM1divided by100"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT1080and1081"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT10.81and10.813"
+    }, {
+      "kind" : "note",
+      "text" : "Correct answer without working scores2"
+    }, {
+      "kind" : "note",
+      "text" : "11 without working scores0"
+    }, {
+      "kind" : "note",
+      "text" : "11 with correct working scores1"
+    }, {
+      "kind" : "note",
+      "text" : "Total7"
+    } ],
+    "marks" : 5,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q3",
+    "label" : "3",
+    "number" : 3,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "(a)(i)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "fractional distillation"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW fractionating/fractionation"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "crude oil/it is heated/vapourised"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW boiled"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE evaporates"
+    }, {
+      "kind" : "note",
+      "text" : "(iii)"
+    }, {
+      "kind" : "note",
+      "text" : "A description which refers to the following four points"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT reverse arguments for E"
+    }, {
+      "kind" : "note",
+      "text" : "M1 B contains larger/longer molecules"
+    }, {
+      "kind" : "note",
+      "text" : "M2 B has a higher boiling point"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW E is more volatile"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE melting point"
+    }, {
+      "kind" : "note",
+      "text" : "M3 B has a darker colour"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW arison giving specific colours e.g B is orange and E is pale yellow"
+    }, {
+      "kind" : "note",
+      "text" : "M4 B is more viscous/has greater viscosity"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW E is more runny"
+    }, {
+      "kind" : "note",
+      "text" : "MAX 2 marks if no reference to fractions E or B in the answer?"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "An planation which links the following two points"
+    }, {
+      "kind" : "note",
+      "text" : "M1 (when sulfur burns) sulfur dioxide/SO2 is formed"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW sulfur trioxide/SO3"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE sulfur oxides"
+    }, {
+      "kind" : "note",
+      "text" : "M2 causes acid rain"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW a specified harmful effect of acid rain"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT references to causing/acerbating respiratory problems"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW greenhouse gas/causes global warming/imate change"
+    }, {
+      "kind" : "note",
+      "text" : "Total 8"
+    } ],
+    "marks" : 1,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q4a",
+    "label" : "4(a)",
+    "number" : 4,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "M1fluorine- gasM2astatine- black",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "ACCEPTvery dark grey"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "An planation linking the following two pointsM1bromine/Br2is formed/displaced/producedM2as chlorine is more reactive(than bromine)"
+    }, {
+      "kind" : "note",
+      "text" : "REJECTbromide for bromineACCEPTbromine/Br2shown as the productin an equationIGNOREstate of bromineREJECTbromide/chloride"
+    } ],
+    "marks" : 2,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q4c",
+    "label" : "4(c)",
+    "number" : 4,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "M1 correct structure of potassium ion\nK+",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "ACCEPT any combination of dots and crosses."
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE inner shells even if incorrect"
+    }, {
+      "kind" : "note",
+      "text" : "M2 correct structure of bromide ion"
+    }, {
+      "kind" : "note",
+      "text" : "Br-"
+    }, {
+      "kind" : "note",
+      "text" : "M3 charges on both ions correct (with or without square brackets)."
+    } ],
+    "marks" : 3,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q4d",
+    "label" : "4(d)",
+    "number" : 4,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "An planation linking the following five points\nM1water is covalently bonded/has a simple molecular structure\nM2water does not contain any free (moving) charged parti es(so does not conduct electricity)\nM3sodium chloride has a giant ionic structure/has an ionic lattice structure/is ionically bonded\nM4the ions are in fixed positions/cannot move(so does not conduct electricity)\nM5in solution/aqueous sodium chloride the ions are free to flow/move(so the solution does conduct electricity)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "allow",
+      "text" : "ALLOWwater is a covalent ound"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPTwater does not contain any free ions/electrons or delocalised electrons"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOWsodium chloride is an ionic ound/contains ions"
+    }, {
+      "kind" : "note",
+      "text" : "REJECTmention of atoms/molecules/intermolecular forces in Na forM3only"
+    }, {
+      "kind" : "note",
+      "text" : "M4subsumesM3"
+    }, {
+      "kind" : "note",
+      "text" : "REJECTelectrons being unable to move forM4"
+    }, {
+      "kind" : "note",
+      "text" : "REJECTreference to electrons conducting electricity in aqueous sodium chloride forM5"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNOREreference to ions carrying charge/current"
+    }, {
+      "kind" : "note",
+      "text" : "(e)(i)"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "2-→2+2e(-)"
+    }, {
+      "kind" : "note",
+      "text" : "electrons are lost(by chloride ions/-)"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW2-2e→2"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPToxidation number of chlorine increases(by1)/changes from-1to0"
+    }, {
+      "kind" : "note",
+      "text" : "REJECTchlorine loses electrons"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNOREreferences to gain of oxygen"
+    }, {
+      "kind" : "note",
+      "text" : "1"
+    }, {
+      "kind" : "note",
+      "text" : "1"
+    } ],
+    "marks" : 5,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q5",
+    "label" : "5",
+    "number" : 5,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "(a)(i)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "$2\\text{CH}_{3}\\text{COOH}+\\text{K}_{2}\\text{CO}_{3}\\rightarrow 2\\text{CH}_{3}\\text{COOK}+\\text{CO}_{2}+\\text{H}_{2}\\text{O}$"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW multiples"
+    }, {
+      "kind" : "note",
+      "text" : "M1 2CH_{3}\\text{COOK}$"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT 2CH_{3}\\text{COO}^{-}\\text{K}^{+}$"
+    }, {
+      "kind" : "note",
+      "text" : "M2 CO_{2}+\\text{H}_{2}\\text{O}$"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW 2KCH_{3}\\text{COO}$"
+    }, {
+      "kind" : "note",
+      "text" : "(ii) effervescence / fizzing / bubbles"
+    }, {
+      "kind" : "note",
+      "text" : "If M1 not awarded any numbers before CO_{2}+\\text{H}_{2}\\text{O} can be ignored and M2 can be awarded."
+    }, {
+      "kind" : "note",
+      "text" : "For both marks to be awarded the equation must be correctly balanced"
+    }, {
+      "kind" : "note",
+      "text" : "(b)(i)"
+    }, {
+      "kind" : "note",
+      "text" : "(acts as a) catalyst"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE carbon dioxide/gas given off/evolved/formed /produced"
+    }, {
+      "kind" : "note",
+      "text" : "(ii) ethanol is flammable / might catch fire / might ignite"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT ethyl ethanoate /the mixture /it is flammable /might catch fire /might ignite"
+    }, {
+      "kind" : "note",
+      "text" : "(iii) ester has) sweet / fruity / distinctive smell"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW liquid (ester) floats on top of mixture OWTTE"
+    } ],
+    "marks" : 2,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q5ci",
+    "label" : "5(c)(i)",
+    "number" : 5,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "H\nH-C-O-H\nH\nH-C-C-C\nH H O-H\nwater",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "Penalise missing bond between O and H once only"
+    }, {
+      "kind" : "note",
+      "text" : "If incorrect number of carbon atoms in alcohol and or acid allow ECF for structure of ester formed from their alcohol and acid"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT H2O"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "(d)"
+    }, {
+      "kind" : "note",
+      "text" : "food flavourings/perfumes"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT any correct use"
+    }, {
+      "kind" : "note",
+      "text" : "e.g. in cosmetics/making soaps/making detergents/solvents"
+    }, {
+      "kind" : "note",
+      "text" : "(for paints/varnishes)"
+    }, {
+      "kind" : "note",
+      "text" : "Total 11"
+    } ],
+    "marks" : 3,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q6",
+    "label" : "6",
+    "number" : 6,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "(a)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "pipette"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "red wine would mask the colour of the indicator / difficult to see colour change (at end point)"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT indicator and red wine are a similar colour OWTTE"
+    }, {
+      "kind" : "note",
+      "text" : "(iii)"
+    }, {
+      "kind" : "note",
+      "text" : "to mix the contents (of the flask so that they can react) OWTTE"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT to ensure the colour change is permanent OWTTE"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW to speed up the reaction/ to ensure late reaction"
+    }, {
+      "kind" : "note",
+      "text" : "(iv)"
+    }, {
+      "kind" : "note",
+      "text" : "so as not to add more wine than is needed (for late reaction)/ so as not to overshoot the end point OWTTE"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT to find the act/precise point of neutralisation"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE to obtain an accurate reading"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "MAX2 if final and initial burette readings are reversed."
+    }, {
+      "kind" : "note",
+      "text" : "MAX2 if readings not given to 2 decimal places."
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW ECF for M3 on correct subtraction of M1-M2"
+    }, {
+      "kind" : "note",
+      "text" : "M1"
+    }, {
+      "kind" : "note",
+      "text" : "final burette reading in cm3"
+    }, {
+      "kind" : "note",
+      "text" : "22.70"
+    }, {
+      "kind" : "note",
+      "text" : "M2"
+    }, {
+      "kind" : "note",
+      "text" : "initial burette reading in cm3"
+    }, {
+      "kind" : "note",
+      "text" : "2.15"
+    }, {
+      "kind" : "note",
+      "text" : "M3"
+    }, {
+      "kind" : "note",
+      "text" : "volume of wine added in cm3"
+    }, {
+      "kind" : "note",
+      "text" : "20.55"
+    } ],
+    "marks" : 1,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q7",
+    "label" : "7",
+    "number" : 7,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "(a)\nALLOW the reaction goes both ways\nALLOW the reaction can go forwards and backwards\nM2(equilibrium shifts to the right as the forward) reaction is endothermic\nM2 dep on M1 correct or missing\nM2(equilibrium shifts to the left as) fewer moles/molecules(of gas) on lhs/more moles/molecules(of gas) on rhs OWTTE\nIGNORE references to Le Chatelier e.g. an increase in pressure favours the side with fewer moles\nM2 dep on M1 correct or missing",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "reversible reaction"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE references to equilibrium"
+    }, {
+      "kind" : "note",
+      "text" : "(b)"
+    }, {
+      "kind" : "note",
+      "text" : "(i)"
+    }, {
+      "kind" : "note",
+      "text" : "M1 yield increases"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT more hydrogen produced"
+    }, {
+      "kind" : "ignore",
+      "text" : "IGNORE references to Le Chatelier e.g. an increase in temperature favours the forward reaction"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "(ii)"
+    }, {
+      "kind" : "note",
+      "text" : "M1 yield decreases"
+    }, {
+      "kind" : "note",
+      "text" : "ACCEPT less hydrogen produced"
+    }, {
+      "kind" : "allow",
+      "text" : "ALLOW parti es"
+    }, {
+      "kind" : "note",
+      "text" : "REJECT atoms"
+    } ],
+    "marks" : 1,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  }, {
+    "entryId" : "ms-ef754010-q7c",
+    "label" : "7(c)",
+    "number" : 7,
+    "qwc" : false,
+    "mcq" : false,
+    "correctOption" : null,
+    "answerText" : "calculate the amount, in moles, of methane\nuse the equation to calculate the amount of hydrogen\nmultiply amount by 24 to find the volume of hydrogen\nfinal answer in standard form\nM110,000,000 OR 625,00016\nM2625,000 x 3 OR 1,875,000\nM31,875,000 x 24 OR 45,000,000(dm3)\nM44.5 x 107(dm3)",
+    "markPoints" : [ ],
+    "guidance" : [ {
+      "kind" : "note",
+      "text" : "Mark consequentially forM2,M3andM4."
+    }, {
+      "kind" : "note",
+      "text" : "45,000,000 without working scores 3"
+    }, {
+      "kind" : "note",
+      "text" : "Correct answer in standard form without working scores 4"
+    }, {
+      "kind" : "note",
+      "text" : "Common answers4.5 x 104(3)45,000(2)"
+    }, {
+      "kind" : "note",
+      "text" : "4.5 x 101(3)45(2)"
+    }, {
+      "kind" : "note",
+      "text" : "1.5 x 107(3)15,000,000(2)"
+    }, {
+      "kind" : "note",
+      "text" : "NOTE even if working is incorrect e.g. division by 24 instead of multiplicationM4can still be awarded for correct conversion to standard form"
+    }, {
+      "kind" : "note",
+      "text" : "Total 9"
+    } ],
+    "marks" : 4,
+    "marksCellSource" : "label row",
+    "confidence" : 0.75
+  } ],
+  "questionTotals" : { },
+  "paperTotal" : null,
+  "icTable" : null,
+  "warnings" : [ "1: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "1: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "1: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "2(a): bare integer cell \"2\" skipped (rubric/rowspan ambiguity)", "3: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "3: bare integer cell \"4\" skipped (rubric/rowspan ambiguity)", "3: bare integer cell \"2\" skipped (rubric/rowspan ambiguity)", "4(a): bare integer cell \"2\" skipped (rubric/rowspan ambiguity)", "orphan row before first entry: (iii)", "5: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "5: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "5(c)(i): bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "5(c)(i): bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "6: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "6: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "6: bare integer cell \"1\" skipped (rubric/rowspan ambiguity)", "6: bare integer cell \"3\" skipped (rubric/rowspan ambiguity)", "orphan row before first entry: 6(c)(i) ip(ii) ip", "orphan row before first entry: 20.40 without working scores2\n20.4 with or without working scores1\nIf no results ticked then only use of2 or3 concordant titres can score both marks in(ii)\nIf only one result ticked thenM2can be scored for averaging two or more titre values correctly\nM1CQ on results ticked\nM2CQ on correct calculation fromM1\nAnswer toM2must be correct to2dp", "orphan row before first entry: (d)(i)", "7: bare integer cell \"2\" skipped (rubric/rowspan ambiguity)", "7: bare integer cell \"2\" skipped (rubric/rowspan ambiguity)" ]
+}
