@@ -1,0 +1,191 @@
+name: ocr-batch
+
+# Automation for the GLM-OCR batch tool (tools/ocr_batch/).
+#
+# Three independent jobs:
+#   tool-tests  — unit tests (mocked HTTP) on every push/PR touching the tool
+#   demo-api    — real end-to-end PAIR run (QP + MS) against the Z.ai
+#                 layout_parsing API (workflow_dispatch; needs ZAI_API_KEY)
+#   demo-ollama — real end-to-end run against a local Ollama glm-ocr
+#                 (workflow_dispatch; no key needed, CPU-only, slow)
+#
+# Runner spec for the demo jobs: standard ubuntu-latest (4 vCPU, 16 GB RAM,
+# ~14 GB free disk) comfortably fits both routes. The api job is
+# network-bound (~1-3 min per paper). The ollama job pays model download
+# (~2 GB) plus CPU-only inference (~1-3 min per page) — smoke-test scale
+# only; bulk runs belong on the api backend or a GPU runner.
+
+on:
+  push:
+    paths:
+      - "tools/ocr_batch/**"
+      - ".github/workflows/ocr-batch.yml"
+  pull_request:
+    paths:
+      - "tools/ocr_batch/**"
+      - ".github/workflows/ocr-batch.yml"
+  workflow_dispatch:
+    inputs:
+      papers_repo:
+        description: "Repository holding the PDF corpus"
+        default: "SyllabAI/Past-Papers"
+      papers_ref:
+        description: "Ref of the papers repository"
+        default: "main"
+      sample_pdf:
+        description: "Path (inside the papers repo) of the demo QP PDF"
+        default: "IAL/Edexcel/Physics/Unit 4/January 2012 QP - Unit 4 Edexcel Physics A-level.pdf"
+      sample_ms_pdf:
+        description: "Path of the demo MS PDF; when it exists, demo-api runs --pair (QP + MS in one folder)"
+        default: "IAL/Edexcel/Physics/Unit 4/January 2012 MS - Unit 4 Edexcel Physics A-level.pdf"
+
+permissions:
+  contents: read
+
+jobs:
+  tool-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: unit tests (mocked HTTP, no network, no key)
+        run: python3 tools/ocr_batch/test_ocr_batch.py -v
+      - name: glmocr tool tests (health gate + atomizer, no network, no key)
+        run: |
+          python3 tools/glmocr/test_health.py -v
+          python3 tools/glmocr/test_atomize.py -v
+      - name: glmocr CLI direct invocation (README-documented path, no import errors)
+        run: |
+          set +e
+          python3 tools/glmocr/health.py \
+            src/test/resources/glm-ocr/june-2025-wph11-01-qp.md \
+            src/test/resources/glm-ocr/june-2025-wph11-01-ms.md > /dev/null 2>&1
+          # exit 0 = clean, exit 1 = expected FAIL-class findings on this pair; >=2 = broken
+          [ $? -le 1 ] || { echo "health.py CLI broken"; exit 1; }
+          python3 tools/glmocr/atomize.py \
+            src/test/resources/glm-ocr/june-2025-wph11-01-qp.md \
+            src/test/resources/glm-ocr/june-2025-wph11-01-ms.md --compact > /dev/null
+
+  demo-api:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: check for API key
+        id: key
+        run: |
+          if [ -n "${{ secrets.ZAI_API_KEY }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::secret ZAI_API_KEY is not set — add it in repo settings to run the api demo"
+          fi
+      - name: fetch the demo paper
+        if: steps.key.outputs.present == 'true'
+        run: |
+          # PAT when provided (private corpus); anonymous clone otherwise
+          # (works when the papers repository is public).
+          if [ -n "${{ secrets.PAPERS_PAT }}" ]; then
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://x-access-token:${{ secrets.PAPERS_PAT }}@github.com/${{ inputs.papers_repo }}.git" papers
+          else
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://github.com/${{ inputs.papers_repo }}.git" papers
+          fi
+      - name: run the batch tool (api backend)
+        if: steps.key.outputs.present == 'true'
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+        run: |
+          QP="papers/${{ inputs.sample_pdf }}"
+          MS="papers/${{ inputs.sample_ms_pdf }}"
+          if [ -n "${{ inputs.sample_ms_pdf }}" ] && [ -f "$MS" ]; then
+            # pair mode: QP + MS -> one folder (QP.md, MS.md, shared assets/)
+            python3 tools/ocr_batch/ocr_batch.py --pair "$QP" "$MS" \
+              -o ocr-demo-out --backend api
+          else
+            python3 tools/ocr_batch/ocr_batch.py "$QP" \
+              -o ocr-demo-out --backend api
+          fi
+      - name: run summary
+        if: steps.key.outputs.present == 'true'
+        run: |
+          find ocr-demo-out -type f | sort
+          echo "---- manifest ----"
+          cat ocr-demo-out/*/manifest.json
+      - uses: actions/upload-artifact@v4
+        if: steps.key.outputs.present == 'true'
+        with:
+          name: ocr-demo-api
+          path: ocr-demo-out/
+          retention-days: 14
+
+  demo-ollama:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pypdfium2
+      - name: install ollama
+        run: |
+          curl -fsSL https://ollama.ai/install.sh | sh
+          ollama --version
+      - name: pull the glm-ocr model
+        run: |
+          # q8_0 is the smallest official quant (1.6 GB, 128K context)
+          ollama pull glm-ocr:q8_0
+          ollama list
+      - name: start ollama serve
+        run: |
+          nohup ollama serve > ollama-serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:11434/api/tags > /dev/null; then
+              echo "ollama is up"; break
+            fi
+            sleep 1
+          done
+      - name: fetch the demo paper
+        run: |
+          if [ -n "${{ secrets.PAPERS_PAT }}" ]; then
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://x-access-token:${{ secrets.PAPERS_PAT }}@github.com/${{ inputs.papers_repo }}.git" papers
+          else
+            git clone --depth 1 --branch "${{ inputs.papers_ref }}" \
+              "https://github.com/${{ inputs.papers_repo }}.git" papers
+          fi
+      - name: run the batch tool (ollama backend, CPU-only smoke)
+        run: |
+          # NOTE: pair mode (--pair QP.pdf MS.pdf) works identically on this
+          # backend; kept single-file here to bound the CPU-only job time.
+          python3 tools/ocr_batch/ocr_batch.py \
+            "papers/${{ inputs.sample_pdf }}" \
+            -o ocr-demo-out \
+            --backend ollama \
+            --model glm-ocr:q8_0 \
+            --num-ctx 8192
+      - name: run summary
+        run: |
+          find ocr-demo-out -type f | sort
+          echo "---- manifest ----"
+          cat ocr-demo-out/*/manifest.json
+          echo "---- ollama ps ----"
+          ollama ps || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ocr-demo-ollama
+          path: |
+            ocr-demo-out/
+            ollama-serve.log
+          retention-days: 14
