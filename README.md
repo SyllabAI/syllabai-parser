@@ -34,6 +34,10 @@ python3 tools/glmocr/conformance.py   # 16/16 fixture-mode combinations, enforce
 
 # batch OCR tool unit tests (mocked HTTP — no network, no API key needed)
 python3 tools/ocr_batch/test_ocr_batch.py -v   # 32 tests, enforced in CI on tools/ocr_batch/**
+
+# corpus health gate + per-sitting atomizer (read-only over the extractors)
+python3 tools/glmocr/test_health.py -v         # 25 tests
+python3 tools/glmocr/test_atomize.py -v        # 15 tests
 ```
 
 ## Workbench CLI
@@ -130,6 +134,16 @@ every referenced crop is downloaded the same second it is produced, and a `manif
   (4 vCPU / 16 GB RAM / ~14 GB disk) fits both routes; CI runs should prefer the API backend.
 
 Full usage, output layout, and pairing rules: [`tools/ocr_batch/README.md`](tools/ocr_batch/README.md).
+
+Two downstream tools consume the reference extractors read-only (OCR-Q4):
+[`tools/glmocr/health.py`](tools/glmocr/health.py) is a zero-network **corpus
+health gate** (part-mark sums vs printed totals, QP↔MS total agreement,
+question↔entry mapping, offline asset integrity — FAIL/REVIEW/ok, deterministic
+JSON report), and [`tools/glmocr/atomize.py`](tools/glmocr/atomize.py) is a
+**per-sitting atomizer** (QP.md + MS.md → one self-contained `paper.json` with
+inherited stem context per part and matched mark-scheme entries; everything
+stays `reviewRequired`, unmatched items reported, never guessed). Both are
+additive tooling — no canonical-contract or Java change, 40 tests in CI.
 
 ## Polyglot policy (ADR-011)
 

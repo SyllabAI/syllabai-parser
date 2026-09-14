@@ -53,6 +53,10 @@ jobs:
       - run: pip install pypdfium2
       - name: unit tests (mocked HTTP, no network, no key)
         run: python3 tools/ocr_batch/test_ocr_batch.py -v
+      - name: glmocr tool tests (health gate + atomizer, no network, no key)
+        run: |
+          python3 tools/glmocr/test_health.py -v
+          python3 tools/glmocr/test_atomize.py -v
 
   demo-api:
     if: github.event_name == 'workflow_dispatch'
