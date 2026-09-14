@@ -1,0 +1,32 @@
+{
+  "packageFormat": "syllabai-content-package",
+  "packageVersion": "0.1",
+  "scope": "bounded-proof",
+  "buildId": "REPLACE_WITH_BUILD_ID",
+  "compilerVersion": "REPLACE_WITH_COMPILER_VERSION",
+  "schemaVersion": "0.1",
+  "createdAt": "REPLACE_WITH_ISO_8601_TIMESTAMP",
+  "status": "PROPOSED",
+  "artifacts": [
+    {
+      "path": "content/revision-notes/<resource-id>.md",
+      "type": "revision_note_markdown",
+      "sha256": "REQUIRED"
+    },
+    {
+      "path": "content/papers/<paper-id>/question-paper.md",
+      "type": "question_paper_markdown",
+      "sha256": "REQUIRED"
+    },
+    {
+      "path": "content/papers/<paper-id>/mark-scheme.md",
+      "type": "mark_scheme_markdown",
+      "sha256": "REQUIRED"
+    },
+    {
+      "path": "database/content.sqlite",
+      "type": "sqlite_database",
+      "sha256": "REQUIRED"
+    }
+  ]
+}
