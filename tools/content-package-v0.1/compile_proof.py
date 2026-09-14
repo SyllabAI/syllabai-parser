@@ -171,7 +171,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("inventory", type=Path)
     ap.add_argument("output", type=Path)
-    ap.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[3])
+    ap.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     ap.add_argument("--reconstruct", action="store_true")
     args = ap.parse_args()
     if args.output.exists(): shutil.rmtree(args.output)
