@@ -57,6 +57,17 @@ jobs:
         run: |
           python3 tools/glmocr/test_health.py -v
           python3 tools/glmocr/test_atomize.py -v
+      - name: glmocr CLI direct invocation (README-documented path, no import errors)
+        run: |
+          set +e
+          python3 tools/glmocr/health.py \
+            src/test/resources/glm-ocr/june-2025-wph11-01-qp.md \
+            src/test/resources/glm-ocr/june-2025-wph11-01-ms.md > /dev/null 2>&1
+          # exit 0 = clean, exit 1 = expected FAIL-class findings on this pair; >=2 = broken
+          [ $? -le 1 ] || { echo "health.py CLI broken"; exit 1; }
+          python3 tools/glmocr/atomize.py \
+            src/test/resources/glm-ocr/june-2025-wph11-01-qp.md \
+            src/test/resources/glm-ocr/june-2025-wph11-01-ms.md --compact > /dev/null
 
   demo-api:
     if: github.event_name == 'workflow_dispatch'

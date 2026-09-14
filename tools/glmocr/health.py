@@ -40,6 +40,10 @@ import re
 import sys
 from pathlib import Path
 
+if __package__ in (None, ""):  # direct execution: python3 tools/glmocr/health.py
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    __package__ = "tools.glmocr"
+
 from .canonical import GlmOcrMarkdownParser
 from .markscheme_extractor import GlmOcrMarkSchemeExtractor
 from .question_extractor import GlmOcrQuestionExtractor
