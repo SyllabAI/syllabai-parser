@@ -31,3 +31,11 @@ jobs:
       - name: expose java classpath to the conformance harness
         run: echo "GLMOCR_JAVA_CP=$(pwd)/target/classes:$(cat target/cp.txt)" >> "$GITHUB_ENV"
       - run: python3 tools/glmocr/conformance.py
+  content-package-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 tools/content-package-v0.1/test_proof.py
