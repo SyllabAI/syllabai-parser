@@ -9,6 +9,12 @@ and compares the semantic output: document structure, IDs, question numbers,
 parts, marks, QWC markers, MarkScheme entries, MarkPoints, image references,
 warnings (validation findings) and provenance — all fields, verbatim.
 
+The ``atomize`` stage additionally runs the per-sitting atomizer (OCR-Q4) on
+both sides — Java ``GlmOcrAtomizeDump`` vs Python ``atomize_parsed`` over the
+same fixed-identity documents — and diffs the full ``paper.json`` export
+(questions, parts, inherited-stem prompts, mark-scheme bindings, totals,
+unmatched entries, warnings).
+
 Usage (from the repo root, after ``mvn -o test`` has compiled target/classes):
 
     python3 tools/glmocr/conformance.py
@@ -75,6 +81,14 @@ def run_java(path: Path, mode: str) -> dict:
     return json.loads(result.stdout)
 
 
+def run_java_atomize(qp_file: Path, ms_file: Path) -> dict:
+    result = subprocess.run(
+        ["java", "-cp", java_classpath(),
+         "com.syllabai.parser.tools.GlmOcrAtomizeDump", str(qp_file), str(ms_file)],
+        capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
 def run_python(path: Path, mode: str) -> dict:
     sys.path.insert(0, str(TOOLS_DIR))
     from glmocr.canonical import GlmOcrMarkdownParser, EPOCH
@@ -90,6 +104,20 @@ def run_python(path: Path, mode: str) -> dict:
     if mode == "qp":
         return GlmOcrQuestionExtractor().extract(document)
     return GlmOcrMarkSchemeExtractor().extract(document)
+
+
+def run_python_atomize(qp_file: Path, ms_file: Path) -> dict:
+    sys.path.insert(0, str(TOOLS_DIR))
+    from glmocr.atomize import atomize_parsed
+    from glmocr.canonical import GlmOcrMarkdownParser, EPOCH
+
+    parser = GlmOcrMarkdownParser()
+    qp_doc = parser.parse_with_fixed_identity(
+        qp_file.read_bytes(), "corpus/" + qp_file.name, EPOCH)
+    ms_doc = parser.parse_with_fixed_identity(
+        ms_file.read_bytes(), "corpus/" + ms_file.name, EPOCH)
+    return atomize_parsed(qp_doc, ms_doc,
+                          "corpus/" + qp_file.name, "corpus/" + ms_file.name)
 
 
 def diff(path: str, expected, actual, out: list, depth: int = 0) -> None:
@@ -159,11 +187,28 @@ def main() -> int:
                     detail = ", ".join(f"{key}={value}" for key, value in sorted(summary.items()))
                     print(f"PASS {name} [{mode}]" + (f" ({detail})" if detail else ""))
 
+        # atomize stage: full paper.json export, Java vs Python, same pair
+        java_export = run_java_atomize(FIXTURES / qp_file, FIXTURES / ms_file)
+        python_export = run_python_atomize(FIXTURES / qp_file, FIXTURES / ms_file)
+        problems = []
+        diff(f"{pair}:atomize", java_export, python_export, problems)
+        if problems:
+            failures += 1
+            print(f"FAIL {pair} [atomize] — {len(problems)} difference(s):")
+            for problem in problems[:10]:
+                print(f"     {problem}")
+            if len(problems) > 10:
+                print(f"     … and {len(problems) - 10} more")
+        else:
+            summary = summarize(java_export)
+            detail = ", ".join(f"{key}={value}" for key, value in sorted(summary.items()))
+            print(f"PASS {pair} [atomize]" + (f" ({detail})" if detail else ""))
+
     if failures:
         print(f"\nCONFORMANCE FAILED: {failures} file/mode combination(s) differ")
         return 1
     print("\nFULL CONFORMANCE: Java production and Python reference agree on every "
-          "field of every fixture in every mode")
+          "field of every fixture in every mode (doc/qp/ms + atomize export)")
     return 0
 
 

@@ -37,7 +37,7 @@ python3 tools/ocr_batch/test_ocr_batch.py -v   # 32 tests, enforced in CI on too
 
 # corpus health gate + per-sitting atomizer (read-only over the extractors)
 python3 tools/glmocr/test_health.py -v         # 25 tests
-python3 tools/glmocr/test_atomize.py -v        # 15 tests
+python3 tools/glmocr/test_atomize.py -v        # 16 tests
 ```
 
 ## Workbench CLI

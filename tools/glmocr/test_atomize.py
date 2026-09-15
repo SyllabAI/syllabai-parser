@@ -131,6 +131,17 @@ class RealPairIntegrationTests(unittest.TestCase):
         self.assertEqual(json.dumps(self.export, sort_keys=True),
                          json.dumps(again, sort_keys=True))
 
+    def test_atomize_parsed_matches_atomize(self):
+        """atomize() == atomize_parsed() over the same parsed documents —
+        the split that lets conformance.py pin fixed identity on both sides."""
+        from tools.glmocr.canonical import GlmOcrMarkdownParser
+        parser = GlmOcrMarkdownParser()
+        qp_doc = parser.parse(JUNE_QP.read_bytes(), JUNE_QP.name)
+        ms_doc = parser.parse(JUNE_MS.read_bytes(), JUNE_MS.name)
+        parsed = atomize.atomize_parsed(qp_doc, ms_doc, JUNE_QP.name, JUNE_MS.name)
+        self.assertEqual(json.dumps(self.export, sort_keys=True),
+                         json.dumps(parsed, sort_keys=True))
+
     def test_cli_writes_file_and_compact(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "paper.json"

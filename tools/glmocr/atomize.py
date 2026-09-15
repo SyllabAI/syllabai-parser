@@ -25,9 +25,11 @@ extractor convention); MS entry labels are printed forms like ``1(a)(i)`` /
 ``3(b)`` / ``*14``. ``_ms_suffix`` normalizes both sides.
 
 Additive tooling (polyglot policy ADR-011): no canonical-contract change, no
-Java change, no conformance impact. The Java mirror of this export shape is
-future work (recorded in the worklog), which is why the schema lives in a
-tool namespace, not in the canonical contract.
+conformance impact on the doc/qp/ms stages. The Java mirror of this export
+shape exists since 2026-09-15: com.syllabai.parser.structure.dto.GlmOcrPaperExport
++ GlmOcrPaperAtomizer + GlmOcrAtomizeDump, and cross-language equality of the
+export is enforced by the `atomize` stage of tools/glmocr/conformance.py
+(same semantic diff as the doc/qp/ms stages).
 """
 
 from __future__ import annotations
@@ -162,6 +164,11 @@ def _export_question(q, entries_for_number, warnings):
 def atomize(qp_bytes: bytes, ms_bytes: bytes, qp_uri: str, ms_uri: str) -> dict:
     qp_doc = GlmOcrMarkdownParser().parse(qp_bytes, qp_uri)
     ms_doc = GlmOcrMarkdownParser().parse(ms_bytes, ms_uri)
+    return atomize_parsed(qp_doc, ms_doc, qp_uri, ms_uri)
+
+
+def atomize_parsed(qp_doc: dict, ms_doc: dict, qp_uri: str, ms_uri: str) -> dict:
+    """Atomize pre-parsed canonical documents (conformance path: fixed identity)."""
     qp_draft = GlmOcrQuestionExtractor().extract(qp_doc)
     ms_draft = GlmOcrMarkSchemeExtractor().extract(ms_doc)
 

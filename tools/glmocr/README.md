@@ -77,6 +77,10 @@ python3 tools/glmocr/test_atomize.py -v
 ```
 
 Both tools run in CI as part of the `ocr-batch` workflow's `tool-tests` job.
-The Java mirror of the atomizer's export shape is future work — until then
-the export schema lives in the `glmocr-atomize` tool namespace, deliberately
-outside the canonical contract.
+
+The Java mirror of the atomizer's export shape exists since 2026-09-15:
+`GlmOcrPaperExport` (DTO) + `GlmOcrPaperAtomizer` (pairing engine) +
+`GlmOcrAtomizeDump` (conformance CLI), and cross-language equality of the
+export is enforced by the `atomize` stage of `tools/glmocr/conformance.py` —
+same semantic diff as the doc/qp/ms stages. The export schema still lives in
+the tool namespace, deliberately outside the canonical contract.
