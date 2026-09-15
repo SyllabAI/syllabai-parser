@@ -1,6 +1,8 @@
 package com.syllabai.parser.structure.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.syllabai.parser.structure.dto.GlmOcrPaperDraft.FigureRef;
 import com.syllabai.parser.structure.dto.GlmOcrPaperDraft.PaperMeta;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,15 @@ import java.util.Map;
  * @param paperTotal       TOTAL FOR PAPER from the MS (may conflict with
  *                         the QP — reconciliation flags it, never merges)
  * @param icTable          indicative-content table (null when absent)
+ * @param figureRefs       every figure reference found in the mark-scheme
+ *                         markdown, in reading order (null when the document
+ *                         has none). MS pages carry centered image blocks
+ *                         exactly like QPs (content diagrams, worked-answer
+ *                         graphs); the structured entries have no per-row
+ *                         figure attachment, so the references are surfaced
+ *                         at draft level instead of being silently dropped.
+ *                         Entries stay unassigned — ownership is a review
+ *                         decision, never a guess.
  * @param warnings         defect evidence; nothing is silently repaired
  */
 public record GlmOcrMarkSchemeDraft(
@@ -42,6 +53,8 @@ public record GlmOcrMarkSchemeDraft(
         @JsonProperty("questionTotals") Map<String, Integer> questionTotals,
         @JsonProperty("paperTotal") Integer paperTotal,
         @JsonProperty("icTable") IcTable icTable,
+        @JsonProperty("figureRefs") @JsonInclude(JsonInclude.Include.NON_NULL)
+        List<FigureRef> figureRefs,
         @JsonProperty("warnings") List<String> warnings) {
 
     public static final String SCHEMA_VERSION = "1.0";
@@ -49,6 +62,10 @@ public record GlmOcrMarkSchemeDraft(
     public GlmOcrMarkSchemeDraft {
         entries = entries == null ? List.of() : List.copyOf(entries);
         questionTotals = GlmOcrPaperDraft.orderedTotals(questionTotals);
+        // figureRefs deliberately NOT null-normalized: null means "the document
+        // has no figure references" and the field is omitted from the JSON
+        // (NON_NULL), keeping figure-free drafts byte-identical to the
+        // pre-figureRefs engine. An empty list is never produced.
         warnings = warnings == null ? List.of() : List.copyOf(warnings);
     }
 

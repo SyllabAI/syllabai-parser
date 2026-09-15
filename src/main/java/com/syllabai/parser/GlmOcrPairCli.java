@@ -48,7 +48,13 @@ import java.util.Locale;
  * ({@code img:<sha256>}, sniffed MIME, dimensions — via
  * {@link GlmOcrAssetEnricher}); unresolvable references keep their failure
  * state and carry no new fields. Without the flag no filesystem access
- * happens and drafts are byte-identical to the pre-hardening engine.</p>
+ * happens and drafts are byte-identical to the pre-hardening engine.
+ * With the flag, a SIXTH sidecar file {@code assets-report.json} is written
+ * next to the five bundle files: totals, distinct-asset count and the full
+ * unresolved-reference ledger (elementId, sourceName, url) so a reviewer —
+ * and the T-C04 batch gate — can see exactly which referenced images have
+ * no local file without diffing drafts by hand. The sidecar is additive:
+ * the core bridge reads exactly the five named files and never the report.</p>
  */
 public final class GlmOcrPairCli {
 
@@ -185,6 +191,10 @@ public final class GlmOcrPairCli {
         writeJson(outDir.resolve("ms-draft.json"), msDraft);
         writeJson(outDir.resolve("reconciliation.json"), reconciliation);
 
+        if (assetEnrichment != null) {
+            writeJson(outDir.resolve("assets-report.json"), assetsReport(assetEnrichment));
+        }
+
         System.out.println("pair: qp=" + qp.documentId() + " ms=" + ms.documentId()
                 + "; questions: " + qpDraft.questions().size()
                 + "; ms entries: " + msDraft.entries().size()
@@ -193,10 +203,38 @@ public final class GlmOcrPairCli {
                 + ", paper-total conflict: " + reconciliation.paperTotalConflict() + ")");
         if (assetEnrichment != null) {
             System.out.println("assets: " + assetEnrichment.referencesResolved() + "/"
-                    + assetEnrichment.referencesTotal() + " figure references resolved under "
+                    + assetEnrichment.referencesTotal() + " figure references resolved ("
+                    + assetEnrichment.distinctAssets() + " distinct files), "
+                    + assetEnrichment.unresolved().size() + " unresolved under "
                     + assetsDir.toAbsolutePath());
+            for (GlmOcrAssetEnricher.UnresolvedRef unresolved : assetEnrichment.unresolved()) {
+                System.out.println("  unresolved: " + unresolved.url()
+                        + " (element " + unresolved.elementId() + ")");
+            }
         }
         System.out.println("bundle written to: " + outDir.toAbsolutePath());
+    }
+
+    /**
+     * Sidecar report for the {@code --assets-dir} run: insertion-ordered map
+     * so the JSON is deterministic, unresolved references in encounter order.
+     */
+    private static java.util.Map<String, Object> assetsReport(
+            GlmOcrAssetEnricher.Enrichment enrichment) {
+        java.util.Map<String, Object> report = new java.util.LinkedHashMap<>();
+        report.put("referencesTotal", enrichment.referencesTotal());
+        report.put("referencesResolved", enrichment.referencesResolved());
+        report.put("distinctAssets", enrichment.distinctAssets());
+        java.util.List<java.util.Map<String, Object>> unresolved = new java.util.ArrayList<>();
+        for (GlmOcrAssetEnricher.UnresolvedRef ref : enrichment.unresolved()) {
+            java.util.Map<String, Object> entry = new java.util.LinkedHashMap<>();
+            entry.put("elementId", ref.elementId());
+            entry.put("sourceName", ref.sourceName());
+            entry.put("url", ref.url());
+            unresolved.add(entry);
+        }
+        report.put("unresolved", unresolved);
+        return report;
     }
 
     /** corpus URIs keep the repository-relative shape (Past-Papers convention) */
@@ -219,7 +257,8 @@ public final class GlmOcrPairCli {
                 writes the five-file T-C02/T-C03 bundle (qp-canonical.json,
                 ms-canonical.json, qp-draft.json, ms-draft.json, reconciliation.json);
                 --assets-dir optionally enriches QP figure references that resolve
-                to real local files (availability=available, img:<sha256>)
+                to real local files (availability=available, img:<sha256>) and
+                writes the sidecar assets-report.json (resolved/unresolved ledger)
                 """);
     }
 

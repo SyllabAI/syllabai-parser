@@ -122,7 +122,7 @@ class GlmOcrMarkReconciliationTest {
         GlmOcrPaperDraft qp = new GlmOcrPaperDraft("1.0", "test", true, null,
                 List.of(), Map.of("1", 3), 3, Map.of(), List.of(), List.of());
         GlmOcrMarkSchemeDraft ms = new GlmOcrMarkSchemeDraft("1.0", "test", true, null,
-                List.of(), Map.of("1", 4), 4, null, List.of());
+                List.of(), Map.of("1", 4), 4, null, null, List.of());
         Reconciliation r = GlmOcrMarkReconciliation.reconcile(qp, ms);
         assertThat(r.mismatchCount()).isEqualTo(1);
         Finding finding = r.findings().get(0);
@@ -146,7 +146,7 @@ class GlmOcrMarkReconciliationTest {
 
     private static GlmOcrMarkSchemeDraft msWith(GlmOcrPaperDraft.PaperMeta paper) {
         return new GlmOcrMarkSchemeDraft("1.0", "test", false, paper,
-                List.of(), Map.of("1", 3), 3, null, List.of());
+                List.of(), Map.of("1", 3), 3, null, null, List.of());
     }
 
     @Test

@@ -45,6 +45,9 @@ FIXTURE_PAIRS = [
     # synthetic hardening fixture: unterminated <table>, orphan $$ fence,
     # unclosed <div align=center>, "N." numbering style + decimal guard
     ("pathological-qp.md", "pathological-ms.md"),
+    # synthetic hardening fixture: MS/QP centered figure blocks — figureRefs
+    # surfaced at draft level (previously silently dropped), QP ownership
+    ("figure-ms-qp.md", "figure-ms-ms.md"),
 ]
 
 MODES = ("doc", "qp", "ms")
