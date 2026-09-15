@@ -84,11 +84,12 @@ Extraction quality improves iteratively in this workbench — it is content-oper
 
 ## GLM-OCR Markdown pipeline (Session 8/9)
 
-Real corpus: `SyllabAI/Past-Papers` -> `GLM-markdown-sample/` (6 Markdown files,
-3 WPH11 QP/MS pairs; grammar documented in
+Real corpus (historical): `SyllabAI/Past-Papers` -> `GLM-markdown-sample/` (6 Markdown
+files, 3 WPH11 QP/MS pairs; removed from Past-Papers 2026-09-15 as superseded by the
+normalized corpus in `SyllabAI/syllabai-pastpapers`; grammar documented in
 `docs/glm-ocr/real-corpus-syntax-report.md`, design reconciliation in
 `docs/glm-ocr/adapter-design-reconciliation.md`, verification in
-`docs/validation/session9-real-corpus-validation.md`).
+`docs/archive/2026-09/session9-real-corpus-validation.md`, archived 2026-09-15 — superseded by the 2026-09-14 adapter reconciliation).
 
 - `GlmOcrMarkdownParser` — line-oriented Markdown + HTML-island adapter into
   the canonical document; images are **expired signed URLs** in this corpus,

@@ -1,3 +1,5 @@
+> **ARCHIVED 2026-09-15.** Session-9 point-in-time validation artifact; superseded by the 2026-09-14 GLM-OCR adapter reconciliation (`docs/glm-ocr/adapter-design-reconciliation.md` and the defect-class repairs at parser `2e61569`). Historical references to `docs/validation/session9-real-corpus-validation.md` now resolve here.
+
 # Session 9 Real-Corpus Validation Report — GLM-OCR Java Implementation
 
 **Date:** 2026-09-05 (Session 9, recovery + implementation session)
