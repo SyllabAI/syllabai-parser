@@ -390,6 +390,39 @@ class VerifyRenameTests(CorpusOpsTestBase):
         rc = corpus_ops.main(["verify", str(self.tmp / "corpus")])
         self.assertEqual(rc, 1)
 
+    def test_verify_fails_on_missing_document_file_on_disk(self):
+        # T-C17 negative-control finding: a manifest-listed half whose file was
+        # deleted from disk must FAIL pair-completeness (fail-closed), not pass.
+        paper_dir = self.build_after_intake()
+        session = next(p for p in paper_dir.iterdir() if p.is_dir())
+        (session / "MS.md").unlink()
+        import contextlib
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = corpus_ops.main(["verify", str(self.tmp / "corpus"), "--json"])
+        self.assertEqual(rc, 1)
+        findings = json.loads(buf.getvalue())["findings"]
+        self.assertTrue(any(f["level"] == "FAIL" and f["check"] == "pair-completeness"
+                            and "missing on disk" in f["detail"] for f in findings))
+
+    def test_verify_fails_on_document_checksum_drift(self):
+        # Manifest <-> filesystem agreement covers the documents themselves:
+        # editing QP.md without refreshing the manifest sha256 must FAIL.
+        paper_dir = self.build_after_intake()
+        session = next(p for p in paper_dir.iterdir() if p.is_dir())
+        with open(session / "QP.md", "a", encoding="utf-8") as fh:
+            fh.write("drift\n")
+        import contextlib
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = corpus_ops.main(["verify", str(self.tmp / "corpus"), "--json"])
+        self.assertEqual(rc, 1)
+        findings = json.loads(buf.getvalue())["findings"]
+        self.assertTrue(any(f["level"] == "FAIL" and f["check"] == "document-checksum"
+                            for f in findings))
+
     def test_verify_warns_on_unidentified(self):
         self.build_after_intake()
         import contextlib

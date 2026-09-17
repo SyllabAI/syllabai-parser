@@ -445,10 +445,20 @@ def cmd_verify(args: argparse.Namespace) -> int:
     for session, sess in sorted(sessions.items()):
         session_dir = paper_dir / session
         docs = sess.get("documents", {})
-        # pair completeness (§6)
+        # pair completeness (§6): the manifest must LIST both halves AND the
+        # session folder must actually CONTAIN both files (fail-closed — a listed
+        # half whose file is missing from disk is exactly the silent gap class
+        # this command exists to surface; found by the T-C17 negative control).
         for half in ("QP", "MS"):
             if half not in docs:
                 add("FAIL", "pair-completeness", f"{half} missing", session)
+            elif not (session_dir / f"{half}.md").is_file():
+                add("FAIL", "pair-completeness", f"{half}.md missing on disk", session)
+            elif docs[half].get("sha256"):
+                actual = mf.sha256_file(session_dir / f"{half}.md")
+                if actual != docs[half]["sha256"]:
+                    add("FAIL", "document-checksum",
+                        f"{half}.md sha256 != manifest (drift)", session)
         # manifest <-> filesystem agreement (§6)
         saved = set()
         for url, img in sess.get("images", {}).items():
