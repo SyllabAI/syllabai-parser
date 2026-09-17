@@ -547,6 +547,37 @@ class CleanDiffTests(unittest.TestCase):
         clean = qp_draft([q("1", parts=[part("a", 2), part("b", 3)])])
         self.assertEqual(clean_diff.run_gate(raw, clean)["result"], "PASS")
 
+    def test_question_total_mutation_rejected_even_with_parts(self):
+        # T-C17 real-corpus negative control: mutating a part-bearing question's
+        # printed Total line must FAIL (G3.2 only sees part marks, so the
+        # question-level witness needs its own check).
+        raw = qp_draft([q("1", marks=10, parts=[part("a", 2)])])
+        clean = qp_draft([q("1", marks=9, parts=[part("a", 2)])])
+        report = clean_diff.run_gate(raw, clean)
+        self.assertEqual(report["result"], "FAIL")
+        self.assertEqual(next(c for c in report["checks"]
+                              if c["id"] == "G3.2b")["status"], "FAIL")
+
+    def test_question_totals_map_mutation_rejected(self):
+        raw = qp_draft([q("1", marks=None, parts=[part("a", 2)])])
+        raw["questionTotals"] = {"1": 10}
+        clean = qp_draft([q("1", marks=None, parts=[part("a", 2)])])
+        clean["questionTotals"] = {"1": 9}
+        report = clean_diff.run_gate(raw, clean)
+        self.assertEqual(next(c for c in report["checks"]
+                              if c["id"] == "G3.2b")["status"], "FAIL")
+
+    def test_question_total_removal_allowed_but_minting_rejected(self):
+        raw = qp_draft([q("1", marks=10, parts=[part("a", 2)])])
+        dropped = qp_draft([q("1", marks=None, parts=[part("a", 2)])])
+        self.assertEqual(clean_diff.run_gate(raw, dropped)["result"], "PASS")
+        minted = qp_draft([q("1", marks=None, parts=[part("a", 2)])])
+        minted["questionTotals"] = {"1": 10}  # raw carried no total for "1"
+        report = clean_diff.run_gate(qp_draft([q("1", marks=None, parts=[part("a", 2)])]),
+                                     minted)
+        self.assertEqual(next(c for c in report["checks"]
+                              if c["id"] == "G3.2b")["status"], "FAIL")
+
     def test_question_count_increase_rejected(self):
         self.assertEqual(clean_diff.run_gate(qp_draft([q("1")]),
                                              qp_draft([q("1"), q("2")]))["result"], "FAIL")

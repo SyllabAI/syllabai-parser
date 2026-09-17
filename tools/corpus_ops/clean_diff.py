@@ -9,6 +9,14 @@ top-level `warnings[]`):
   G3.1  clean question count <= raw question count (spillover removal is the point);
   G3.2  every (number, part_label, marks) present in BOTH drafts carries IDENTICAL
         marks — cleaning may remove phantom entries, never change real ones;
+  G3.2b question-level printed totals (the `questionTotals` map, with question
+        `marks` as fallback) are identical for every question present in BOTH
+        drafts, and no question total exists in clean that raw lacked — a Total
+        line is load-bearing printed content; cleaning may drop it (explainable
+        removal) but never change or mint one. Found by the 2026-09-17 T-C17
+        real-corpus negative control: mutating `(Total for Question 1 = 10`
+        `marks)` slipped past part-level G3.2 because part-bearing questions'
+        totals are not part marks;
   G3.3  MS mark-point count equal-or-lower;
   G3.4  no new warning classes except the documented `boilerplate-removed`;
   G3.5  paperTotalConflict is false/absent, or unchanged from raw (reviewed conflict).
@@ -55,6 +63,19 @@ def question_structure(qp_draft: dict) -> dict[str, str | None]:
     return structure
 
 
+def question_level_marks(qp_draft: dict) -> dict[str, object]:
+    """Question-number -> printed total for one QP draft. `questionTotals` is the
+    authoritative map when present; question `marks` fills gaps (partless
+    questions carry their printed total there)."""
+    totals: dict[str, object] = {}
+    for n, v in (qp_draft.get("questionTotals") or {}).items():
+        totals[str(n)] = v
+    for q in qp_draft.get("questions", []):
+        if q.get("marks") is not None:
+            totals.setdefault(str(q.get("number")), q.get("marks"))
+    return totals
+
+
 def mark_point_count(ms_draft: dict | None) -> int:
     if not ms_draft:
         return 0
@@ -89,6 +110,20 @@ def run_gate(qp_raw: dict, qp_clean: dict, ms_raw: dict | None = None,
     add("G3.2", not mismatches,
         f"shared entries={len(shared)} mark mismatches={len(mismatches)}"
         + (f" first: {mismatches[0]}" if mismatches else ""))
+
+    # G3.2b — question-level printed totals (Total-line witness)
+    raw_totals = question_level_marks(qp_raw)
+    clean_totals = question_level_marks(qp_clean)
+    shared_totals = sorted(set(raw_totals) & set(clean_totals), key=str)
+    total_mismatches = [
+        {"number": n, "raw_total": raw_totals[n], "clean_total": clean_totals[n]}
+        for n in shared_totals if raw_totals[n] != clean_totals[n]
+    ]
+    new_totals = sorted(n for n in clean_totals if n not in raw_totals)
+    add("G3.2b", not total_mismatches and not new_totals,
+        f"shared question totals={len(shared_totals)} mismatches={len(total_mismatches)}"
+        + (f" first: {total_mismatches[0]}" if total_mismatches else "")
+        + (f" minted-in-clean={new_totals}" if new_totals else ""))
 
     # G3.3 — MS mark-point count equal-or-lower
     mp_raw, mp_clean = mark_point_count(ms_raw), mark_point_count(ms_clean)
