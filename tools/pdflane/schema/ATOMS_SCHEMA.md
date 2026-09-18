@@ -1,4 +1,4 @@
-# SyllabAI Past-Paper Atom Schema — `syllabai.pastpaper.atoms/1.0`
+# SyllabAI Past-Paper Atom Schema — `syllabai.pastpaper.atoms/1.1`
 
 **Status:** definitive for pdflane output (supersedes the Phase-1/2 atom JSON shape).
 **Owner:** pdflane (syllabai-parser). Consumed by: syllabai-web (Exam Questions, Test
@@ -54,7 +54,7 @@ retrieval), Smart Mark.
 
 ```json
 {
-  "schema": "syllabai.pastpaper.atoms/1.0",
+  "schema": "syllabai.pastpaper.atoms/1.1",
   "source": { "qp": "qp.pdf", "ms": "ms.pdf" },
   "questionCount": 11,
   "totalMarks": 120,
@@ -111,7 +111,9 @@ Content is **never** a raw layout dump. Each block is directly renderable.
 { "type": "table", "md": "| Measurement | Mass / g |\n|---|---|\n| Mass of empty crucible | 21.21 |" }
 ```
 ```json
-{ "type": "image", "src": "assets/QP_p04_01.png", "alt": "separation apparatus", "pages": [4] }
+{ "type": "image", "src": "assets/QP_p04_01.png", "alt": "separation apparatus",
+  "pages": [4],
+  "bbox": { "page": 4, "x0": 70.5, "y0": 210.0, "x1": 320.0, "y1": 405.5, "units": "pt" } }
 ```
 ```json
 { "type": "choices", "items": [ { "label": "A", "md": "chromatography" },
@@ -125,7 +127,7 @@ Content is **never** a raw layout dump. Each block is directly renderable.
 |---|---|
 | `para` | inline markdown: `**bold**`, `*italic*`, `<sub></sub>`, `<sup></sup>`, `→`, `⇌`, unicode chemistry as printed |
 | `table` | GitHub-flavoured markdown table string; renderer renders as table |
-| `image` | `src` relative to `parsed/`; `alt` from nearby caption text when available; `pages` = source pages in the QP/MS pdf |
+| `image` | `src` relative to `parsed/`; `alt` from nearby caption text when available; `pages` = source pages in the QP/MS pdf; optional `bbox` = figure rectangle in PDF points, **top-left origin**, page = the block's own source page — enables deterministic re-crop and review overlays. Same shape on mark-scheme images (§6) |
 | `choices` | option list for MCQ / tick-box ("put a cross in the box") questions; **correct-ness never appears in the QP** — it lives in the mark scheme point |
 | `answer_lines` | number of ruled/dotted response lines printed in the QP |
 
@@ -175,6 +177,10 @@ Rules:
 | `points[].ignore` | Ignore — neither rewarded nor penalised |
 | `points[].notes` | any other guidance, and for pool points the candidate answers (1 mark each) |
 | `points[].pages` | source pages in `ms.pdf` |
+| `points[].image` | optional mark-scheme figure that **carries the answer** (e.g. an acceptable graph): `{src, alt?, pages}` — Phase 3 evidence: substantive MS figures carry answers; emitted only when the vision lane attaches a crop |
+| `images` | optional mark-scheme-level figures (whole-answer diagrams), same msImage shape |
+| `style` | `points` (default, absent ⇒ points) or `levels`; the two award structures are mutually exclusive |
+| `levels` | **levels-based marking** (required iff `style` is `levels`): `{ maxMarks, bands[], indicativeContent?, notes? }`; each band = `{ level, markRange {min, max}, descriptor }` — mark **ranges**, matching printed grids like "Level 3 (5–6 marks)" |
 | `provenance` | `llm-structured` (agent structuring over deterministic text) · `pdf-parsed` (deterministic grid parse fallback) · `llm-vision` |
 
 Classification is prefix-based and lossless: the original note text is preserved verbatim
@@ -191,6 +197,30 @@ scheme, one entry per printed pool:
 `labels` reference `points[].id` within the pool's part (letter scope; `b-i` scopes to
 letter `b`, sub `i`); `cap` is the maximum awardable. Pool-aware sums are what
 `totals.sum` and the validation gates use — a naive sum over all points overcounts.
+
+**Levels-based marking** (`style: "levels"`). Some questions award marks by band
+(e.g. 6-mark QWC questions) instead of fixed points. There the `points` array is
+normally empty and the award structure is the band table; `totals.sum` is the
+highest band ceiling and `totals.verified` compares it to the printed total. The
+verbatim guidance text (including the printed band rows) is always preserved in
+`guidance` — the structured `levels` object is a derived view, never a replacement
+(no silent loss). Detection is conservative: promotion to `levels` happens only
+when ≥ 2 distinct printed band headers (`Level N (x–y marks)`) are present.
+
+```json
+{
+  "style": "levels",
+  "levels": {
+    "maxMarks": 6,
+    "bands": [
+      { "level": 3, "markRange": { "min": 5, "max": 6 }, "descriptor": "…" },
+      { "level": 2, "markRange": { "min": 3, "max": 4 }, "descriptor": "…" },
+      { "level": 1, "markRange": { "min": 1, "max": 2 }, "descriptor": "…" }
+    ],
+    "indicativeContent": ["…"]
+  }
+}
+```
 
 ## 7. Part
 
@@ -215,6 +245,7 @@ letter `b`, sub `i`); `cap` is the maximum awardable. Pool-aware sums are what
 | `label` | printed part letter (`a`, `b`, …) |
 | `sub` | roman sub-number (`i`, `ii`, …) or null |
 | `type` | `open` · `mcq` (part carries `choices`) |
+| `correct` | **mcq parts only** (schema-enforced): the correct choice label(s) as uppercase letters, e.g. `["B"]` — deterministically read from the MS point (bare label or "answer is X" phrasing); omitted when not derivable, never guessed. Serves Target Test auto-scoring (SME's `choices[].is_correct` precedent) |
 | `marks` | printed marks for the part when the QP prints them, else the MS point sum for the part; mismatch ⇒ atom flag `PART-MARKS-MISMATCH` |
 | `prompt` | blocks for this part |
 | `answerLines` | convenience duplicate of trailing `answer_lines` block count (renderer shortcut) |
@@ -244,11 +275,16 @@ is a container: its `marks` equal the sum of its leaf marks, and marks-closure a
 - **V2 marks closure** — per atom: pool-collapsed point sum vs `totals.printed` (when
   printed; a carried `PRINTED-TOTAL-DISCREPANCY-QP-VS-MS` or `MS-POINTS-DONT-CLOSE`
   flag marks the deficit instead of failing); leaf part sums vs atom `marks` (flag-
-  tolerated); Σ atom `marks` == envelope `totalMarks`.
+  tolerated); Σ atom `marks` == envelope `totalMarks`. For `style: levels` atoms the
+  ceiling is the highest band (point sums do not apply) and band ranges must be
+  well-formed (`min ≤ max`, `maxMarks` == highest ceiling).
 - **V3 label census** — every MS point maps to a printed QP part letter; every QP part
-  letter has ≥ 1 MS point (flag-tolerant); question numbers unique and ordered.
-- **V4 assets** — every `image.src` exists under `parsed/assets/`; every asset file is
-  referenced from ≥ 1 block (front-matter crops are pruned back to staging).
+  letter has ≥ 1 MS point (flag-tolerant; `style: levels` atoms are exempt — no
+  points is the norm); `correct` labels resolve against the part's own `choices`;
+  question numbers unique and ordered.
+- **V4 assets** — every `image.src` (QP blocks AND MS `image`/`images` entries) exists
+  under `parsed/assets/`; every asset file is referenced from ≥ 1 block or MS image
+  (front-matter crops are pruned back to staging).
 - **V5 round-trip** — `ms.md` regenerates byte-identically from `questions.json`;
   `qp.md` is the deterministic base layer (page-marked).
 
@@ -273,3 +309,29 @@ does not fully close. Flags are the lane's no-silent-loss contract at product le
 
 `marksVerified: false` at the envelope means at least one atom carries a closure-affecting
 flag — the corpus defect is visible to every consumer without opening staging logs.
+
+## 11. Implementation status of v1.1 surfaces
+
+| surface | schema | emitter | validator | populated by chemistry benchmarks |
+|---|---|---|---|---|
+| image `bbox` (pt, top-left) | ✓ | ✓ (PyMuPDF rects) | V1 shape | **yes** (all QP figures) |
+| MCQ part `correct` | ✓ | ✓ (conservative) | V1+V3 | n/a (no MCQ parts in the 3 papers) |
+| `style: levels` + `levels` | ✓ | ✓ (band-header detection, ≥2 levels) | V2+V3 branches | n/a (no levels grids in the 3 papers) |
+| MS `image`/`images` | ✓ | ✓ (vision pass-through) | V1+V4 | n/a (vision wiring into run_paper pending) |
+
+Selftests: `python3 -m pdflane.tests_atoms_v11` (19 cases, synthetic fixtures).
+
+## 12. Changelog
+
+**1.0 → 1.1** (2026-09-18) — additive only; no v1.0 field changed meaning.
+1. `markScheme.style` (`points` default / `levels`) + `markScheme.levels` (bands with
+   mark ranges + indicative content) — closes the levels-marking gap surfaced in the
+   operator's draft-schema review; mutually exclusive with point-based closure.
+2. `markScheme.images` + `points[].image` (msImage) — a home for answer-carrying
+   mark-scheme figures (Phase 3: 4/4 substantive MS figures carry answers).
+3. `part.correct` (mcq parts only) — structured correct-choice labels for Target Test
+   auto-scoring; conservative extraction, omitted when not derivable.
+4. `image.bbox` — figure rectangle in PDF points (top-left origin) for deterministic
+   re-crop / review overlays.
+5. Validator: levels closure branch, correct-label census, MS images in V4; emitter:
+   band detection, correct extraction, MS-image pass-through, asset-prune awareness.

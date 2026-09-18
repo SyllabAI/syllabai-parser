@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "syllabai.pastpaper.atoms/1.0",
+  "$id": "syllabai.pastpaper.atoms/1.1",
   "title": "SyllabAI Past-Paper Atoms (questions.json)",
   "type": "object",
   "required": ["schema", "source", "questionCount", "totalMarks", "marksVerified", "questions"],
   "additionalProperties": false,
   "properties": {
-    "schema": {"const": "syllabai.pastpaper.atoms/1.0"},
+    "schema": {"const": "syllabai.pastpaper.atoms/1.1"},
     "source": {
       "type": "object",
       "required": ["qp", "ms"],
@@ -23,6 +23,29 @@
   },
   "definitions": {
     "provenanceClass": {"enum": ["pdf-parsed", "llm-structured", "llm-vision"]},
+    "bbox": {
+      "type": "object",
+      "required": ["page", "x0", "y0", "x1", "y1", "units"],
+      "additionalProperties": false,
+      "properties": {
+        "page": {"type": "integer", "minimum": 1},
+        "x0": {"type": "number"},
+        "y0": {"type": "number"},
+        "x1": {"type": "number"},
+        "y1": {"type": "number"},
+        "units": {"const": "pt"}
+      }
+    },
+    "msImage": {
+      "type": "object",
+      "required": ["src", "pages"],
+      "additionalProperties": false,
+      "properties": {
+        "src": {"type": "string", "pattern": "^assets/[^/]+$"},
+        "alt": {"type": "string"},
+        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1}
+      }
+    },
     "block": {
       "type": "object",
       "required": ["type"],
@@ -49,7 +72,8 @@
               "type": {"const": "image"},
               "src": {"type": "string", "pattern": "^assets/[^/]+$"},
               "alt": {"type": "string"},
-              "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1}
+              "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1},
+              "bbox": {"$ref": "#/definitions/bbox"}
             }
           }
         },
@@ -98,8 +122,14 @@
         "prompt": {"type": "array", "items": {"$ref": "#/definitions/block"}},
         "choices": {"$ref": "#/definitions/choiceList"},
         "answerLines": {"type": "integer", "minimum": 0},
-        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}}
-      }
+        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}},
+        "correct": {"type": "array", "minItems": 1,
+                    "items": {"type": "string", "pattern": "^[A-Z]$"}}
+      },
+      "allOf": [
+        {"if": {"required": ["correct"]},
+         "then": {"properties": {"type": {"const": "mcq"}}}}
+      ]
     },
     "msPoint": {
       "type": "object",
@@ -117,7 +147,8 @@
         "reject": {"type": "array", "items": {"type": "string"}},
         "ignore": {"type": "array", "items": {"type": "string"}},
         "notes": {"type": "array", "items": {"type": "string"}},
-        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}}
+        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}},
+        "image": {"$ref": "#/definitions/msImage"}
       }
     },
     "markScheme": {
@@ -150,8 +181,49 @@
             }
           }
         },
+        "style": {"enum": ["points", "levels"]},
+        "images": {"type": "array", "items": {"$ref": "#/definitions/msImage"}},
+        "levels": {
+          "type": "object",
+          "required": ["maxMarks", "bands"],
+          "additionalProperties": false,
+          "properties": {
+            "maxMarks": {"type": "integer", "minimum": 1},
+            "bands": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["level", "markRange", "descriptor"],
+                "additionalProperties": false,
+                "properties": {
+                  "level": {"type": "integer", "minimum": 1},
+                  "markRange": {
+                    "type": "object",
+                    "required": ["min", "max"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "min": {"type": "integer", "minimum": 0},
+                      "max": {"type": "integer", "minimum": 1}
+                    }
+                  },
+                  "descriptor": {"type": "string", "minLength": 1}
+                }
+              }
+            },
+            "indicativeContent": {"type": "array", "items": {"type": "string"}},
+            "notes": {"type": "array", "items": {"type": "string"}}
+          }
+        },
         "provenance": {"$ref": "#/definitions/provenanceClass"}
-      }
+      },
+      "allOf": [
+        {"if": {"required": ["levels"]},
+         "then": {"required": ["style"], "properties": {"style": {"const": "levels"}}}},
+        {"if": {"required": ["style"], "properties": {"style": {"const": "levels"}}},
+         "then": {"required": ["levels"]}},
+        {"if": {"required": ["style"], "properties": {"style": {"const": "points"}}},
+         "then": {"not": {"required": ["levels"]}}}
+      ]
     },
     "atom": {
       "type": "object",

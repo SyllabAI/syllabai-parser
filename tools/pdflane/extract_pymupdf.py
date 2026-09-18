@@ -119,8 +119,13 @@ def page_to_md(page, doc, assets_dir, prefix, asset_counter):
             lines.append("")
             lines.append(payload[0])
             lines.append("")
+            # v1.1: persist the figure rect (pt, top-left origin) so the emit
+            # layer can attach a bbox to the image block for deterministic
+            # re-crop / review workflows. payload[0] is the asset markdown.
             blocks.append({"page": page.number + 1, "kind": "image",
-                           "y0": round(y0, 1), "text": payload[0]})
+                           "y0": round(y0, 1), "text": payload[0],
+                           "bbox": {"x0": round(bbox[0], 1), "y0": round(bbox[1], 1),
+                                    "x1": round(bbox[2], 1), "y1": round(bbox[3], 1)}})
         else:
             lines.extend(payload)
     return lines, blocks, asset_counter

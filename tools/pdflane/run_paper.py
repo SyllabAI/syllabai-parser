@@ -159,7 +159,7 @@ def main():
                                 "taxonomy": "HARNESS-DEFECT",
                                 "detail": {k: v for k, v in gv.items() if k != "verdict"}})
 
-    # ---- packaging (v2: syllabai.pastpaper.atoms/1.0) ----
+    # ---- packaging (v2: syllabai.pastpaper.atoms/1.1) ----
     s2_by_num = {}
     line_page = None
     if args.s2_run:
@@ -198,6 +198,12 @@ def main():
         _collect(q["stem"])
         for p in q["parts"]:
             _collect(p["prompt"])
+        msq = q["markScheme"]
+        for im in msq.get("images", []):
+            referenced.add(im["src"].split("/", 1)[1])
+        for pt in msq["points"]:
+            if pt.get("image"):
+                referenced.add(pt["image"]["src"].split("/", 1)[1])
     for fn in sorted(os.listdir(assets)):
         if fn not in referenced:
             os.remove(os.path.join(assets, fn))

@@ -1,4 +1,4 @@
-"""Emit syllabai.pastpaper.atoms/1.0 from pdflane parse outputs (S5 v2 packaging).
+"""Emit syllabai.pastpaper.atoms/1.1 from pdflane parse outputs (S5 v2 packaging).
 
 Builds render-ready atoms (stem + parts + connected mark scheme) from the
 deterministic QP block stream and the structured mark scheme (S2 accepted run
@@ -110,6 +110,8 @@ def _seal(cur, container):
             pid += "-" + p["sub"]
         p["id"] = pid
         p["pages"] = sorted(p["pages"])
+        if any(b["type"] == "choices" for b in p["prompt"]):
+            p["type"] = "mcq"
     cur["stem"] = container.stem
     cur["parts"] = container.parts
 
@@ -139,8 +141,15 @@ def build_qp_atoms(qp_blocks):
                 if asset.startswith("assets/"):
                     asset = asset[len("assets/"):]
                 _finish_choices(pending_choices, container, page)
-                container.add_block({"type": "image", "src": "assets/" + asset,
-                                     "pages": [page]}, page)
+                blk = {"type": "image", "src": "assets/" + asset, "pages": [page]}
+                bb = b.get("bbox")
+                if isinstance(bb, dict) and all(k in bb for k in ("x0", "y0", "x1", "y1")):
+                    blk["bbox"] = {"page": page, "x0": round(float(bb["x0"]), 1),
+                                   "y0": round(float(bb["y0"]), 1),
+                                   "x1": round(float(bb["x1"]), 1),
+                                   "y1": round(float(bb["y1"]), 1),
+                                   "units": "pt"}
+                container.add_block(blk, page)
                 cur["pages"].add(page)
             continue
         if b["kind"] != "text":
@@ -198,6 +207,73 @@ def build_qp_atoms(qp_blocks):
 
 ROMAN_RE = re.compile(r"^[ivx]{1,4}$")
 ID_SHAPE_RE = re.compile(r"^(?P<part>[a-z])(?:-(?P<rest>[a-z0-9]+))?$")
+LEVEL_BAND_RE = re.compile(
+    r"level\s*(?P<lvl>\d{1,2})\s*\(\s*(?P<lo>\d{1,2})\s*[\u2013\u2014-]\s*(?P<hi>\d{1,2})\s*marks?\s*\)",
+    re.I)
+
+MCQ_BARE_RE = re.compile(r"^\(?([A-Ea-e])\)?[.:]?$")
+MCQ_IS_CORRECT_RE = re.compile(
+    r"^(?:the\s+)?(?:only\s+)?correct\s+(?:answer\s+)?is[:\s]*\(?([A-Ea-e])\)?\)?[.:]?$", re.I)
+MCQ_ANSWER_IS_RE = re.compile(
+    r"^(?:the\s+)?answer\s+is[:\s]*\(?([A-Ea-e])\)?\)?[.:]?$", re.I)
+
+
+def _mcq_letters(md):
+    """Correct-choice letters deterministically readable from an MS point md.
+    Conservative: only bare labels and 'answer is X' phrasings count."""
+    s = (md or "").strip()
+    if not s:
+        return []
+    for rx in (MCQ_BARE_RE, MCQ_IS_CORRECT_RE, MCQ_ANSWER_IS_RE):
+        m = rx.match(s)
+        if m:
+            return [m.group(1)]
+    return []
+
+
+def _detect_levels(guidance):
+    """Conservative levels-marking detection from printed band headers.
+
+    Edexcel levels grids print 'Level N (x\u2013y marks)' rows; >= 2 distinct
+    levels promote the mark scheme to style=levels. Verbatim guidance text is
+    preserved regardless (no silent loss); continuation lines between band
+    headers attach to the preceding band as its descriptor.
+    """
+    bands = []
+    for g in guidance:
+        m = LEVEL_BAND_RE.search(g)
+        if m:
+            lvl, lo, hi = int(m.group("lvl")), int(m.group("lo")), int(m.group("hi"))
+            desc = tidy(g[m.end():].lstrip(" :\u2014\u2013-"))
+            for b in bands:
+                if b["level"] == lvl:
+                    if desc:
+                        b["descriptor"] = (b["descriptor"] + " " + desc).strip()
+                    break
+            else:
+                bands.append({"level": lvl, "markRange": {"min": lo, "max": hi},
+                              "descriptor": desc or ("level %d" % lvl)})
+        elif bands and g.strip():
+            bands[-1]["descriptor"] = (bands[-1]["descriptor"] + " " + tidy(g)).strip()
+    if len(bands) < 2:
+        return None
+    return {"maxMarks": max(b["markRange"]["max"] for b in bands), "bands": bands}
+
+
+def _norm_ms_image(im):
+    """Normalize a vision-attached MS figure to the msImage shape (or None)."""
+    if not isinstance(im, dict):
+        return None
+    src = im.get("src")
+    pages = im.get("pages") or []
+    if not src or not pages:
+        return None
+    if not src.startswith("assets/"):
+        src = "assets/" + str(src).lstrip("/")
+    out = {"src": src, "pages": [int(x) for x in pages]}
+    if im.get("alt"):
+        out["alt"] = str(im["alt"])
+    return out
 
 
 def _map_id_shape(pt):
@@ -393,6 +469,10 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
                 "ignore": cat_map["ignore"], "notes": cat_map["notes"],
                 "pages": sorted(pages),
             }
+            if pt.get("image"):
+                im = _norm_ms_image(pt["image"])
+                if im:
+                    entry["image"] = im
             if pid and pid.endswith("-key") and not entry["md"] \
                     and entry["marks"] >= 2:
                 entry["pool"] = {"rule": "any-%d-for-1-each" % entry["marks"]}
@@ -402,6 +482,8 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
         printed = s2q.get("totalRow")
         provenance = "llm-structured"
         pools = [_norm_pool(p) for p in (s2q.get("pools") or [])]
+        ms_images = [im for im in (_norm_ms_image(x)
+                                   for x in (s2q.get("images") or [])) if im]
     else:
         points = []
         for pt in (parse_ms_q or {}).get("points", []):
@@ -421,12 +503,24 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
         printed = (parse_ms_q or {}).get("total_row")
         provenance = "pdf-parsed"
         pools = []
-    total_sum = _closable_sum(points, pools)
+        ms_images = []
+    levels = _detect_levels(guidance) if guidance else None
+    if levels:
+        # Levels-based award: the ceiling is the highest band, not a point sum.
+        # Point entries (if any printed) are preserved verbatim but not summed.
+        total_sum = int(levels["maxMarks"])
+    else:
+        total_sum = _closable_sum(points, pools)
     ms = {"totals": {"printed": printed, "sum": total_sum,
                      "verified": bool(printed is not None and printed == total_sum)},
           "guidance": guidance, "points": points, "provenance": provenance}
+    if levels:
+        ms["style"] = "levels"
+        ms["levels"] = levels
     if pools:
         ms["pools"] = pools
+    if ms_images:
+        ms["images"] = ms_images
     return ms
 
 
@@ -563,7 +657,8 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
                 p["marks"] = leaf_sum if leaf_sum else 1
         for p in a["parts"]:
             qp_letter_marks[p["label"]] = qp_letter_marks.get(p["label"], 0) + p["marks"]
-            if not any(pt["part"] == p["label"] for pt in ms["points"]):
+            if ms.get("style") != "levels" \
+                    and not any(pt["part"] == p["label"] for pt in ms["points"]):
                 flags.add("MS-PART-NO-POINTS")
         # letter-level compare uses LEAF marks only (parents are containers)
         leaf_letter_marks = {}
@@ -575,6 +670,32 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
             sm = part_sums.get(letter)
             if sm is not None and qm and sm != qm:
                 flags.add("PART-MARKS-MISMATCH")
+        # v1.1: structured correct-choice labels for MCQ parts (Target Test
+        # auto-scoring). Conservative extraction: only when the MS point md
+        # IS a bare choice label or an 'answer is X' phrasing; omitted entirely
+        # when not derivable (never guessed).
+        for p in a["parts"]:
+            if p.get("type") != "mcq":
+                continue
+            choice_labels = []
+            for blk in p["prompt"]:
+                if blk["type"] == "choices":
+                    choice_labels.extend(it["label"] for it in blk["items"])
+            if not choice_labels:
+                continue
+            labset = set(choice_labels)
+            corr = []
+            for pt in ms["points"]:
+                if pt["part"] != p["label"]:
+                    continue
+                if (pt["sub"] or None) != (p["sub"] or None):
+                    continue
+                for letter in _mcq_letters(pt["md"]):
+                    u = letter.upper()
+                    if u in labset and u not in corr:
+                        corr.append(u)
+            if corr:
+                p["correct"] = corr
         for pt in ms["points"]:
             if pt["part"] is None:
                 continue
@@ -611,7 +732,7 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
             atom["flags"] = [f for f in ATOM_FLAGS_ORDER if f in flags]
         out_atoms.append(atom)
     doc = {
-        "schema": "syllabai.pastpaper.atoms/1.0",
+        "schema": "syllabai.pastpaper.atoms/1.1",
         "source": {"qp": source_qp, "ms": source_ms},
         "questionCount": len(out_atoms),
         "totalMarks": sum(x["marks"] for x in out_atoms),
@@ -658,6 +779,25 @@ def render_ms_md(doc):
                         lines.append("  - %s: %s" % (tag, item))
                 for item in p["notes"]:
                     lines.append("  - Note: %s" % item)
+            if p.get("image"):
+                lines.append("  - ![%s](%s)"
+                             % (p["image"].get("alt", ""), p["image"]["src"]))
+        if ms.get("style") == "levels":
+            lv = ms["levels"]
+            lines.append("")
+            lines.append("**Levels-based marking (max %d marks)**" % lv["maxMarks"])
+            lines.append("")
+            for b in lv["bands"]:
+                mr = b["markRange"]
+                rng = "%d" % mr["max"] if mr["min"] == mr["max"] \
+                    else "%d\u2013%d" % (mr["min"], mr["max"])
+                lines.append("- **Level %d** (%s marks): %s"
+                             % (b["level"], rng, b["descriptor"]))
+            for ic in lv.get("indicativeContent", []):
+                lines.append("- Indicative content: %s" % ic)
+        for im in ms.get("images", []):
+            lines.append("")
+            lines.append("![%s](%s)" % (im.get("alt", ""), im["src"]))
         for g in ms["guidance"]:
             lines.append("")
             lines.append("*Guidance: %s*" % g)

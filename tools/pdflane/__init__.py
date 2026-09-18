@@ -11,4 +11,4 @@ provenance ("pdf-parsed"); any deficit lands in the review queue, never
 silently dropped. See download/FAILSAFE_PARSE_ENGINE_PLAN.md.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
