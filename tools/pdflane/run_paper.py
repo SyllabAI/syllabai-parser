@@ -16,8 +16,9 @@ import os
 import shutil
 import subprocess
 
-from pdflane import gates as gates_mod
+from pdflane import emit_atoms, gates as gates_mod
 from pdflane import parse_ms, parse_qp, probe as probe_mod
+from pdflane import validate_atoms
 from pdflane.extract_opendataloader import extract as odl_extract
 from pdflane.extract_pdftotext import extract as pdftotext_extract
 from pdflane.extract_pymupdf import extract as pymupdf_extract
@@ -65,8 +66,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--qp", required=True)
     ap.add_argument("--ms", required=True)
-    ap.add_argument("--out", required=True, help="parsed/ output dir")
-    ap.add_argument("--slug", required=True, help="paper slug for atomIds")
+    ap.add_argument("--out", required=True, help="parsed/ output dir (product files only)")
+    ap.add_argument("--slug", required=True, help="paper slug (staging keys only; never emitted)")
+    ap.add_argument("--meta-dir", help="staging dir for _meta lane evidence "
+                                       "(default: <out>/_meta)")
+    ap.add_argument("--s2-run", help="S2 accepted-run JSON (llm-structured mark scheme)")
+    ap.add_argument("--s2-units", help="S2 units JSON (line->page map)")
+    ap.add_argument("--source-qp", default="qp.pdf",
+                    help="source file name recorded in questions.json")
+    ap.add_argument("--source-ms", default="ms.pdf",
+                    help="source file name recorded in questions.json")
     ap.add_argument("--reference", help="optional printed-truth JSON for benchmark gates")
     ap.add_argument("--qualification", default="")
     ap.add_argument("--board", default="Edexcel")
@@ -76,10 +85,9 @@ def main():
     args = ap.parse_args()
 
     out = args.out
-    meta = os.path.join(out, "_meta")
-    qdir = os.path.join(out, "questions")
+    meta = args.meta_dir or os.path.join(out, "_meta")
     assets = os.path.join(out, "assets")
-    for d in (meta, qdir, assets, os.path.join(meta, "pdftotext"),
+    for d in (meta, assets, os.path.join(meta, "pdftotext"),
               os.path.join(meta, "pymupdf"), os.path.join(meta, "opendataloader")):
         os.makedirs(d, exist_ok=True)
 
@@ -151,49 +159,61 @@ def main():
                                 "taxonomy": "HARNESS-DEFECT",
                                 "detail": {k: v for k, v in gv.items() if k != "verdict"}})
 
-    # ---- packaging ----
+    # ---- packaging (v2: syllabai.pastpaper.atoms/1.0) ----
+    s2_by_num = {}
+    line_page = None
+    if args.s2_run:
+        with open(args.s2_run, encoding="utf-8") as f:
+            s2_run = json.load(f)
+        for s2q in s2_run.get("questions", []):
+            s2_by_num[s2q["number"]] = s2q
+    if args.s2_units:
+        with open(args.s2_units, encoding="utf-8") as f:
+            s2_units = json.load(f)
+        line_page = {l["n"]: l["page"] for l in s2_units.get("lines", [])}
+    for q in ms_parse["questions"]:
+        q["_s2"] = s2_by_num.get(q["number"])
+
+    v2_atoms = emit_atoms.build_qp_atoms(qp_blocks)
+    emit_atoms.crosscheck_qp(v2_atoms, qp_parse)  # hard equivalence gate
+    doc = emit_atoms.build_document(v2_atoms, ms_parse["questions"], line_page,
+                                    source_qp=args.source_qp, source_ms=args.source_ms,
+                                    s2_by_num=s2_by_num)
+
+    with open(os.path.join(out, "questions.json"), "w", encoding="utf-8") as f:
+        json.dump(doc, f, indent=1, ensure_ascii=False)
     with open(os.path.join(out, "qp.md"), "w", encoding="utf-8") as f:
         f.write(open(pm_qp["md"], encoding="utf-8").read())
     with open(os.path.join(out, "ms.md"), "w", encoding="utf-8") as f:
-        f.write(clean_layout_md(ms_pages))
+        f.write(emit_atoms.render_ms_md(doc))
 
-    paper_identity = {"board": args.board, "qualification": args.qualification,
-                      "subject": args.subject, "paperCode": args.paper_code,
-                      "session": args.session, "slug": args.slug}
-    ms_by_num = {q["number"]: q for q in ms_parse["questions"]}
-    cross_engine = g["gates"]["G1"]["checks"]["cross_engine_totals"]["odl_match"]
-    for q in qp_parse["questions"]:
-        if q.get("orphan_total"):
-            continue
-        msq = ms_by_num.get(q["number"])
-        flags = []
-        if q["total"] is None:
-            flags.append("QP-TOTAL-MISSING")
-        if msq is None:
-            flags.append("MS-QUESTION-MISSING")
-        arith = bool(msq and msq["arithmetic_ok"])
-        if msq and msq["total_row"] is not None and q["total"] is not None \
-                and msq["total_row"] != q["total"]:
-            flags.append("PRINTED-TOTAL-DISCREPANCY-QP-VS-MS")
-        atom = {
-            "atomId": "%s-q%02d" % (args.slug, q["number"]),
-            "paper": paper_identity,
-            "number": q["number"],
-            "marks": {"total": q["total"], "msTotalRow": msq["total_row"] if msq else None,
-                      "arithmeticVerified": arith},
-            "prompt": {"text": q["prompt"], "pages": q["pages"], "provenance": "pdf-parsed"},
-            "commandWord": None,
-            "figures": [dict(fg, ref="assets/" + os.path.basename(fg["asset"])) for fg in q["figures"]],
-            "markScheme": ({"points": msq["points"], "totalRow": msq["total_row"],
-                            "pages": msq["pages"], "reconciled": arith,
-                            "provenance": "pdf-parsed"} if msq else None),
-            "confidence": "HIGH" if (not flags and arith and cross_engine) else "MEDIUM",
-            "flags": flags,
-            "provenance": {"lane": "pdflane-v%s-deterministic" % __import__("pdflane").__version__,
-                           "engines": ["pdftotext-layout", "pymupdf-blocks", "opendataloader"]},
-        }
-        with open(os.path.join(qdir, "q%02d.json" % q["number"]), "w", encoding="utf-8") as f:
-            json.dump(atom, f, indent=1, ensure_ascii=False)
+    # prune front-matter crops no atom references (they remain in _meta staging)
+    referenced = set()
+
+    def _collect(blocks):
+        for b in blocks:
+            if b["type"] == "image":
+                referenced.add(b["src"].split("/", 1)[1])
+    for q in doc["questions"]:
+        _collect(q["stem"])
+        for p in q["parts"]:
+            _collect(p["prompt"])
+    for fn in sorted(os.listdir(assets)):
+        if fn not in referenced:
+            os.remove(os.path.join(assets, fn))
+            review.append({"code": "FRONT-MATTER-ASSET-PRUNED",
+                           "taxonomy": "HARNESS-DEFECT",
+                           "detail": "assets/%s not referenced by any atom" % fn})
+
+    # V1-V4 gates on the final product set
+    failures = validate_atoms.validate_document(doc, assets)
+    if failures:
+        for f in failures:
+            review.append({"code": "V2-VALIDATION", "taxonomy": "HARNESS-DEFECT",
+                           "detail": f})
+        escalate_v2 = True
+    else:
+        escalate_v2 = False
 
     def relativize(d):
         """Make engine-output records location-independent (byte-determinism)."""
@@ -206,7 +226,7 @@ def main():
         return out_d
 
     paper_json = {
-        "paper": paper_identity,
+        "slug": args.slug,
         "inputs": {"QP": {"sha256": sha256_file(args.qp), "probe": pr["QP"]},
                    "MS": {"sha256": sha256_file(args.ms), "probe": pr["MS"]}},
         "routing": {k: v["route"] for k, v in pr.items()},
@@ -231,7 +251,7 @@ def main():
     slim = lambda d: {k: v for k, v in d.items() if k not in ("pages",)}
     paper_json["inputs"]["QP"]["probe"] = slim(paper_json["inputs"]["QP"]["probe"])
     paper_json["inputs"]["MS"]["probe"] = slim(paper_json["inputs"]["MS"]["probe"])
-    with open(os.path.join(out, "paper.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(meta, "paper.json"), "w", encoding="utf-8") as f:
         json.dump(paper_json, f, indent=1, ensure_ascii=False)
 
     with open(os.path.join(meta, "escalations.jsonl"), "w", encoding="utf-8") as f:
@@ -253,9 +273,15 @@ def main():
     print(json.dumps({"overall": g["overall"], "failed_gates": g["failed_gates"],
                       "gates": {k: v["verdict"] for k, v in g["gates"].items()},
                       "census": paper_json["census"],
+                      "v2": {"schema": doc["schema"], "questionCount": doc["questionCount"],
+                             "totalMarks": doc["totalMarks"],
+                             "marksVerified": doc["marksVerified"],
+                             "validation": "PASS" if not failures else failures,
+                             "flagged": [q["number"] for q in doc["questions"]
+                                         if q.get("flags")]},
                       "flags": g["flags"], "escalations": len(escalations),
                       "review_queue": len(review)}, indent=1))
-    return 0 if g["overall"] != "FAIL" else 2
+    return 0 if not escalate_v2 else 2
 
 
 if __name__ == "__main__":
