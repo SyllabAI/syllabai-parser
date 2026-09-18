@@ -72,6 +72,9 @@ def main():
                                        "(default: <out>/_meta)")
     ap.add_argument("--s2-run", help="S2 accepted-run JSON (llm-structured mark scheme)")
     ap.add_argument("--s2-units", help="S2 units JSON (line->page map)")
+    ap.add_argument("--corrections",
+                    help="operator-authorized printed-error corrections JSON: "
+                         "{questionTotalRows: {<qnum>: <corrected total>}, reason: str}")
     ap.add_argument("--source-qp", default="qp.pdf",
                     help="source file name recorded in questions.json")
     ap.add_argument("--source-ms", default="ms.pdf",
@@ -122,8 +125,32 @@ def main():
     # ---- deterministic structuring ----
     ms_pages = parse_ms.load_pages(base_ms["pages_json"])
     qp_blocks = parse_qp.load_blocks(pm_qp["blocks"])
+    # margin-furniture strips (edge-clipped raster page furniture) never enter
+    # the product stream; their crops are pruned from assets/ as unreferenced
+    kept_blocks, furniture_dropped = [], []
+    for b in qp_blocks:
+        if b.get("kind") == "image" and emit_atoms.is_furniture_image(b.get("bbox")):
+            furniture_dropped.append(b)
+        else:
+            kept_blocks.append(b)
+    qp_blocks = kept_blocks
+    for b in furniture_dropped:
+        review.append({"code": "QP-IMAGE-FURNITURE-DROPPED",
+                       "taxonomy": "SOURCE-DISCREPANCY",
+                       "detail": {"page": b.get("page"),
+                                  "bbox": b.get("bbox"),
+                                  "asset": b.get("text", "")}})
     qp_parse = parse_qp.parse_blocks(qp_blocks)
     ms_parse = parse_ms.parse_pages(ms_pages)
+
+    corrections = None
+    corrections_reason = None
+    if args.corrections:
+        with open(args.corrections, encoding="utf-8") as f:
+            cdata = json.load(f)
+        corrections = {int(k): int(v)
+                       for k, v in (cdata.get("questionTotalRows") or {}).items()}
+        corrections_reason = cdata.get("reason", "")
 
     # ---- gates ----
     eng_texts = {
@@ -178,7 +205,7 @@ def main():
     emit_atoms.crosscheck_qp(v2_atoms, qp_parse)  # hard equivalence gate
     doc = emit_atoms.build_document(v2_atoms, ms_parse["questions"], line_page,
                                     source_qp=args.source_qp, source_ms=args.source_ms,
-                                    s2_by_num=s2_by_num)
+                                    s2_by_num=s2_by_num, corrections=corrections)
 
     with open(os.path.join(out, "questions.json"), "w", encoding="utf-8") as f:
         json.dump(doc, f, indent=1, ensure_ascii=False)
@@ -254,6 +281,10 @@ def main():
         "provenance": {"lane": "pdflane deterministic phase-1",
                        "provenance_classes": ["pdf-parsed"]},
     }
+    if corrections:
+        paper_json["corrections"] = {"applied": {str(k): v for k, v in corrections.items()},
+                                     "reason": corrections_reason,
+                                     "authorized": "operator 2026-09-19"}
     slim = lambda d: {k: v for k, v in d.items() if k not in ("pages",)}
     paper_json["inputs"]["QP"]["probe"] = slim(paper_json["inputs"]["QP"]["probe"])
     paper_json["inputs"]["MS"]["probe"] = slim(paper_json["inputs"]["MS"]["probe"])

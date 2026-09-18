@@ -8,7 +8,7 @@ these paths here).
 """
 import unittest
 
-from pdflane import emit_atoms, validate_atoms
+from pdflane import emit_atoms, parse_ms, validate_atoms
 
 
 def envelope(atoms, total):
@@ -210,6 +210,148 @@ class RendererTests(unittest.TestCase):
                 "stem": [], "parts": [], "markScheme": ms, "provenance": "pdf-parsed"}
         out = emit_atoms.render_ms_md(envelope([atom], 6))
         self.assertIn("![trajectory](assets/MS_p03_01.png)", out)
+
+
+class FurnitureImageTests(unittest.TestCase):
+    STRIP = {"page": 3, "x0": -28.3, "y0": 34.4, "x1": -4.6, "y1": 796.1}
+
+    def test_edge_strip_is_furniture(self):
+        self.assertTrue(emit_atoms.is_furniture_image(self.STRIP))
+
+    def test_real_figure_kept(self):
+        self.assertFalse(emit_atoms.is_furniture_image(
+            {"page": 5, "x0": 100, "y0": 120, "x1": 420, "y1": 330}))
+
+    def test_small_sliver_kept(self):
+        self.assertFalse(emit_atoms.is_furniture_image(
+            {"page": 5, "x0": 0, "y0": 0, "x1": 10, "y1": 60}))
+
+    def test_missing_or_bad_bbox_kept(self):
+        self.assertFalse(emit_atoms.is_furniture_image(None))
+        self.assertFalse(emit_atoms.is_furniture_image({"x0": "x"}))
+
+
+def ms_grid_point(label, part, sub, marks, text):
+    return {"label": label, "part": part, "sub": sub, "marks": marks,
+            "text": [text], "notes": [], "page": 1}
+
+
+class CorrectionsTests(unittest.TestCase):
+    def qp_atom(self):
+        return {"number": 3, "total": 13, "pages": {1}, "_stem_marks": [],
+                "stem": [], "parts": []}
+
+    def ms_q(self):
+        return {"number": 3, "total_row": 11,
+                "points": [ms_grid_point("M%d" % i, None, None, 1, "x")
+                           for i in range(1, 14)],
+                "guidance": []}
+
+    def test_correction_fixes_misprinted_total_row(self):
+        doc = emit_atoms.build_document([self.qp_atom()], [self.ms_q()],
+                                        corrections={3: 13})
+        q3 = doc["questions"][0]
+        self.assertEqual(q3["markScheme"]["totals"],
+                         {"printed": 13, "sum": 13, "verified": True})
+        self.assertNotIn("flags", q3)
+        self.assertTrue(doc["marksVerified"])
+
+    def test_without_correction_flags_remain(self):
+        doc = emit_atoms.build_document([self.qp_atom()], [self.ms_q()])
+        q3 = doc["questions"][0]
+        self.assertIn("MS-POINTS-DONT-CLOSE", q3["flags"])
+        self.assertIn("PRINTED-TOTAL-DISCREPANCY-QP-VS-MS", q3["flags"])
+        self.assertFalse(doc["marksVerified"])
+
+    def test_correction_never_touches_missing_ms(self):
+        doc = emit_atoms.build_document([self.qp_atom()], [], corrections={3: 13})
+        q3 = doc["questions"][0]
+        self.assertIn("MS-QUESTION-MISSING", q3["flags"])
+        self.assertIsNone(q3["markScheme"]["totals"]["printed"])
+
+
+def pages(*texts):
+    return [{"page": i + 1, "text": t} for i, t in enumerate(texts)]
+
+
+class ParseMsLabellessTests(unittest.TestCase):
+    def test_2021_style_totals_and_part_rows(self):
+        r = parse_ms.parse_pages(pages(
+            "  Question\n"
+            "                    Answer                    Notes        Marks\n"
+            "  number\n"
+            "1        (a)   nitrogen            ALLOW N/N2        1\n"
+            "\n"
+            "         (b)   silicon/Si or phosphorus/P            1\n"
+            "\n"
+            "         (c)   73                                    1\n"
+            "\n"
+            "                      Total marks for Question 1 = 3\n"))
+        self.assertEqual(len(r["questions"]), 1)
+        q = r["questions"][0]
+        self.assertEqual(q["total_row"], 3)
+        self.assertEqual([(p["part"], p["marks"]) for p in q["points"]],
+                         [("a", 1), ("b", 1), ("c", 1)])
+        self.assertIn("ALLOW N/N2", q["points"][0]["notes"])
+        self.assertTrue(q["arithmetic_ok"])
+        self.assertEqual(r["total_rows_found"], 1)
+
+    def test_split_total_2019_style(self):
+        r = parse_ms.parse_pages(pages(
+            "4 a           M1 (a compound containing the        ALLOW          1\n"
+            "              elements/atoms) hydrogen and carbon\n"
+            "                                                                           Total\n"
+            "                                                                            4\n"))
+        self.assertEqual(len(r["questions"]), 1)
+        q = r["questions"][0]
+        self.assertEqual(q["number"], 4)
+        self.assertEqual(q["total_row"], 4)
+        self.assertEqual(q["points"][0]["label"], "M1")
+
+    def test_merged_cell_marks_recovery(self):
+        r = parse_ms.parse_pages(pages(
+            "2   (a)   first answer                                   1\n"
+            "          ALLOW anything\n"
+            "    (b)   second answer\n"
+            "                                                                      Total 3\n"))
+        q = r["questions"][0]
+        self.assertEqual(q["total_row"], 3)
+        self.assertEqual([(p["part"], p["marks"]) for p in q["points"]],
+                         [("a", 1), ("b", 2)])
+        self.assertTrue(q["arithmetic_ok"])
+
+    def test_note_value_not_scored_point(self):
+        r = parse_ms.parse_pages(pages(
+            "1   (a)   answer one                                   1\n"
+            "          ALLOW\n"
+            "          M1 bromide solution\n"
+            "                                                                      Total 1\n"))
+        q = r["questions"][0]
+        self.assertEqual(len(q["points"]), 1)
+        self.assertIn("M1 bromide solution", q["points"][0]["notes"])
+
+    def test_bare_part_rows_2014_style(self):
+        r = parse_ms.parse_pages(pages(
+            "1   a             cross in box C     (neutrons)            1\n"
+            "\n"
+            "    b   i         6                                         1\n"
+            "\n"
+            "        ii        14                                        1\n"
+            "\n"
+            "TOTAL                                                        3\n"))
+        q = r["questions"][0]
+        self.assertEqual(q["total_row"], 3)
+        self.assertEqual([(p["part"], p["sub"], p["marks"]) for p in q["points"]],
+                         [("a", None, 1), ("b", "i", 1), ("b", "ii", 1)])
+        self.assertTrue(q["arithmetic_ok"])
+
+    def test_roman_sub_inheritance(self):
+        r = parse_ms.parse_pages(pages(
+            "3 a           M1 white smoke         Accept ring            1\n"
+            "  (ii)     A1   shift to right       Allow more ammonia     1\n"))
+        q = r["questions"][0]
+        self.assertEqual([(p["part"], p["sub"], p["label"]) for p in q["points"]],
+                         [("a", None, "M1"), ("a", "ii", "A1")])
 
 
 if __name__ == "__main__":

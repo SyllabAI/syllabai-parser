@@ -41,6 +41,24 @@ class EmitError(Exception):
     pass
 
 
+def is_furniture_image(bb):
+    """True for edge-clipped margin strips that the raster extractor reports
+    as figure XObjects but that carry no question content (page furniture).
+    Observed population: 23.7x761.7pt strips clipped at the page edge (the
+    June-2024 4CH1 QP prints 17 of them, all identical). Conservative shape
+    rule: extreme aspect ratio AND at least 200pt long — real content figures
+    never satisfy both."""
+    if not isinstance(bb, dict):
+        return False
+    try:
+        w = abs(float(bb["x1"]) - float(bb["x0"]))
+        h = abs(float(bb["y1"]) - float(bb["y0"]))
+    except (KeyError, TypeError, ValueError):
+        return False
+    short, long = min(w, h), max(w, h)
+    return short > 0 and long >= 200.0 and long / short >= 8.0
+
+
 def classify_note(text):
     t = text.strip()
     low = t.lower()
@@ -487,7 +505,9 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
     else:
         points = []
         for pt in (parse_ms_q or {}).get("points", []):
-            text = " ".join(pt["text"]).strip()
+            text = pt["text"] if isinstance(pt["text"], str) \
+                else " ".join(pt["text"])
+            text = text.strip()
             cat_map = {"allow": [], "reject": [], "ignore": [], "notes": []}
             for note in pt.get("notes", []):
                 cat, rest = classify_note(note)
@@ -577,12 +597,17 @@ def _closable_sum(points, pools):
 
 
 def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
-                   source_ms="ms.pdf", s2_by_num=None):
+                   source_ms="ms.pdf", s2_by_num=None, corrections=None):
     """Assemble the envelope; attach mark schemes; compute flags.
 
     Mark scheme source: S2 accepted run preferred; deterministic parse_ms
     fallback per question (either source alone is enough — the union of both
     question number sets is covered).
+
+    corrections: operator-authorized printed-error fixes {qnum: corrected
+    total-row value}, applied ONLY to a parsed total row (never to missing
+    mark schemes); the correction file lives in lane _meta, the product stays
+    clean.
     """
     ms_by_num = {q["number"]: q for q in ms_questions}
     s2_by_num = s2_by_num or {}
@@ -601,6 +626,12 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
                   "guidance": [], "points": [], "provenance": "pdf-parsed"}
         else:
             ms = build_mark_scheme(s2q, pmsq, line_page)
+        if corrections and qnum in corrections and "MS-QUESTION-MISSING" not in flags:
+            corrected = int(corrections[qnum])
+            if ms["totals"]["printed"] is not None \
+                    and ms["totals"]["printed"] != corrected:
+                ms["totals"]["printed"] = corrected
+                ms["totals"]["verified"] = (ms["totals"]["sum"] == corrected)
         printed = ms["totals"]["printed"]
         marks = a["total"]
         if marks is None and printed is not None:
