@@ -93,9 +93,10 @@ def main():
     escalations, review = [], []
     for kind, p in pr.items():
         if p["verdict"] == "SCANNED":
-            escalations.append({"unit": kind, "code": "SCANNED-PDF-NO-VISION-LANE-IN-PHASE-1",
+            escalations.append({"unit": kind, "code": "SCANNED-PDF-NO-VISION-LANE-WIRED",
                                 "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
-                                "detail": "vision lane lands in Phase 2; paper not parseable deterministically"})
+                                "detail": "vision lane available (pdflane.vision_lane); "
+                                          "auto-wiring into run_paper pending"})
 
     # ---- S1 extraction (per-engine outputs kept separate) ----
     base_qp = pdftotext_extract(args.qp, os.path.join(meta, "pdftotext"), "QP")
