@@ -3,6 +3,7 @@ package com.syllabai.parser;
 import com.syllabai.parser.canonical.CanonicalDocument;
 import com.syllabai.parser.canonical.CanonicalJson;
 import com.syllabai.parser.engine.opendataloader.OpenDataLoaderParser;
+import com.syllabai.parser.engine.sme.SmeRevisionNoteParser;
 import com.syllabai.parser.structure.EdexcelSyllabusOutlineExtractor;
 import com.syllabai.parser.structure.PastPaperStructureExtractor;
 import com.syllabai.parser.structure.SyllabusStructureExtractor;
@@ -15,12 +16,13 @@ import java.util.Locale;
 
 /**
  * Content-operations workbench entry point (offline; not part of any
- * deployed runtime). Two modes:
+ * deployed runtime). Three modes:
  *
  * <pre>
  *   syllabai QP &lt;pdf&gt; &lt;out-dir&gt; [MS-pdf] [--paper board|qual|subject|unit|session|code]
  *   syllabai SYLLABUS &lt;pdf&gt; &lt;out-dir&gt; --curriculum board|qual|code|title|subjectCode|subjectName
  *                          [--extractor outline|heuristic]
+ *   syllabai SME &lt;note.md&gt; &lt;out-dir&gt; [--sidecar &lt;json&gt;] [--extracted-at=&lt;ISO-8601&gt;]
  * </pre>
  *
  * Writes canonical document JSON plus the matching ingestion draft JSON for
@@ -141,6 +143,40 @@ public final class ParserCli {
                 System.out.println("units: " + draft.units().size() + "; topics: "
                         + draft.units().stream().mapToInt(u -> u.topics().size()).sum()
                         + " (extractor: " + extractor + ")");
+            }
+            case "SME" -> {
+                // args: SME <note.md> <out-dir> [--sidecar <json>] [--extracted-at=<ISO-8601>]
+                // T-C06 notes ingestion: Save My Exams revision-note page → canonical 1.0
+                Path sidecar = null;
+                java.time.Instant extractedAt = java.time.Instant.now();
+                for (int i = 3; i < args.length; i++) {
+                    if (args[i].startsWith("--sidecar")) {
+                        String value = flagValue(args[i], "--sidecar".length());
+                        if (value.isBlank()) {
+                            System.err.println("--sidecar requires the sidecar JSON path");
+                            System.exit(2);
+                        }
+                        sidecar = Path.of(value);
+                    } else if (args[i].startsWith("--extracted-at=")) {
+                        extractedAt = java.time.Instant.parse(
+                                args[i].substring("--extracted-at=".length()));
+                    } else if (args[i].startsWith("--")) {
+                        System.err.println("unknown flag: " + args[i]);
+                        System.exit(2);
+                    }
+                }
+                SmeRevisionNoteParser sme = new SmeRevisionNoteParser();
+                byte[] sidecarBytes = sidecar == null ? null : Files.readAllBytes(sidecar);
+                CanonicalDocument note = sme.parseWithSidecar(Files.readAllBytes(pdf),
+                        pdf.getFileName().toString(), sidecarBytes, extractedAt);
+                String outName = pdf.getFileName().toString()
+                        .replaceAll("(?i)\\.md$", "") + ".canonical.json";
+                CanonicalJson.write(note, outDir.resolve(outName));
+                System.out.println("documentId: " + note.documentId()
+                        + "; textBlocks: " + note.textBlocks().size()
+                        + "; figures: " + note.figures().size()
+                        + "; tables: " + note.tables().size()
+                        + "; sections: " + note.sections().size());
             }
             default -> {
                 System.err.println("unknown mode: " + args[0]);
