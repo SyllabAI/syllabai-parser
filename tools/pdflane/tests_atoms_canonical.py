@@ -279,6 +279,19 @@ class SyntheticConversion(unittest.TestCase):
         for p in (self.qp_pdf, self.ms_pdf):
             with open(p, "wb") as f:
                 f.write(b"%PDF-1.4 synthetic")
+        # manifest with the older doubled-printed quirk (normalization path)
+        with open(os.path.join(paper, "manifest.yaml"), "w") as f:
+            f.write("paper_id: pearson-edexcel:international-gcse:chemistry:"
+                    "4chx:2025-06:4CHX/1X\n"
+                    "qualification:\n  family: international-gcse\n"
+                    "  name: International GCSE\n"
+                    "subject: chemistry\n"
+                    "series:\n  normalized: 2025-06\n"
+                    "  printed: June 2025; June 2025\n"
+                    "paper:\n  official_reference: 4CHX/1X\n"
+                    "  unit_code: 4CHX\n  paper_number_variant: 1X\n")
+        self.expected_header = ("International GCSE Chemistry 4CHX | "
+                                "June 2025 | Paper 1X")
 
     def test_round_trip(self):
         summary = bridge.convert_paper(self.paper, os.path.join(self.tmp, "out"))
@@ -318,6 +331,20 @@ class SyntheticConversion(unittest.TestCase):
                         if e["role"] == "answer_lines"]
         self.assertEqual(len(answer_lines), 1)
         self.assertIsNone(answer_lines[0]["text"])
+
+        # retrieval headers: paper context on the first text element per
+        # question (QP) and on the MS heading — derived from the manifest
+        first_q1 = next(e for e in qp_doc["textBlocks"]
+                        if e["element_id"] == qp_doc["sections"][0]["elementIds"][0]
+                        and e["element_type"] == "text_block")
+        self.assertTrue(first_q1["text"].startswith(
+            f"[{self.expected_header} | Question 1] This question is about metals."))
+        ms_head = ms_doc["textBlocks"][0]
+        self.assertTrue(ms_head["text"].startswith(
+            f"[{self.expected_header} | Mark scheme] Mark scheme for Question 1"))
+        ep = json.load(open(os.path.join(
+            self.tmp, "out", "paper_summary.json")))
+        self.assertEqual(ep["qp"]["extractionParams"]["retrievalHeaders"], 2)
 
         # mcq choices rendered (question-level) with no correct labels
         q2_ids = set(qp_doc["sections"][1]["elementIds"])
@@ -361,6 +388,47 @@ class SyntheticConversion(unittest.TestCase):
             with open(os.path.join(out1, name)) as f1, \
                     open(os.path.join(out2, name)) as f2:
                 self.assertEqual(f1.read(), f2.read(), name)
+
+
+class ManifestIdentity(unittest.TestCase):
+    def _write(self, tmp, content):
+        import tempfile
+        d = tempfile.mkdtemp(prefix="manifest-ident-", dir=tmp)
+        with open(os.path.join(d, "manifest.yaml"), "w") as f:
+            f.write(content)
+        return d
+
+    def test_real_shape_with_doubled_printed(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._write(tmp, (
+                "paper_id: pearson-edexcel:international-gcse:chemistry:"
+                "4ch0:2011-06:4CH0/1C\n"
+                "exam_board:\n  id: pearson-edexcel\n"
+                "qualification:\n  family: international-gcse\n"
+                "  name: International GCSE\n"
+                "subject: chemistry\n"
+                "specification:\n  folder: 4ch0\n"
+                "series:\n  normalized: 2011-06\n  year: '2011'\n"
+                "  printed: June 2011; June 2011\n"
+                "paper:\n  official_reference: 4CH0/1C\n"
+                "  unit_code: 4CH0\n  paper_number_variant: 1C\n"))
+            self.assertEqual(bridge.load_manifest_identity(d),
+                             "International GCSE Chemistry 4CH0 | June 2011 | Paper 1C")
+
+    def test_falls_back_to_paper_id(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._write(tmp, "paper_id: pearson-edexcel:ial:physics:"
+                                 "wph1:2019-01:WPH1/1\n")
+            self.assertEqual(bridge.load_manifest_identity(d),
+                             "Ial Physics WPH1 | 2019-01 | Paper 1")
+
+    def test_missing_manifest_empty_header(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            d = tempfile.mkdtemp(prefix="empty-", dir=tmp)
+            self.assertEqual(bridge.load_manifest_identity(d), "")
 
 
 class CorpusSmoke(unittest.TestCase):

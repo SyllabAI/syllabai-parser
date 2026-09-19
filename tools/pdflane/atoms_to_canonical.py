@@ -41,6 +41,18 @@ Chunk preview:
   = own chunk) so a dry run can prove chunk counts and page spans WITHOUT a
   Java runtime. Core's chunker remains the authority at ingest time.
 
+Retrieval headers (v1.1.1):
+  The first text-bearing element of every question section carries a
+  deterministic paper-context prefix — e.g. "[International GCSE Chemistry
+  4CH1 | June 2024 | Paper 1C | Question 7]" (MS: "... | Mark scheme]") —
+  derived from manifest.yaml. Because core derives chunk content from element
+  text, this is the only core-compatible way to make embeddings themselves
+  carry subject/session/paper/question signal (multi-subject corpora and
+  slot-ish queries). Coverage is best-effort at chunk granularity: chunks
+  that start mid-question inherit no header. Guaranteed header-per-chunk is
+  a core-side projection concern (ChunkingService + sections) — recommended
+  follow-up, to be coordinated with the core lane.
+
 Determinism: no timestamps, no randomness, stable element ids — identical
 inputs + code produce byte-identical canonical JSON (S0–S1 invariant).
 
@@ -58,7 +70,11 @@ import sys
 from glmocr.canonical import content_document_id
 
 ENGINE_NAME = "pdflane-atoms"
-ENGINE_VERSION = "1.1.0"
+# 1.1.1: retrieval headers — per-question paper-context prefix baked into the
+# first header-carrying element of each section so embeddings themselves carry
+# subject/session/paper/question signal (multi-subject corpora + slot-ish
+# queries). Engine version is part of the identity material, so ids re-derive.
+ENGINE_VERSION = "1.1.1"
 SCHEMA_VERSION = "1.0"
 APPLICATION = "syllabai-parser"
 PDF_MIME = "application/pdf"
@@ -113,6 +129,80 @@ def load_manifest_checksums(paper_dir):
                 out[current] = m.group(1)
                 current = None
     return out
+
+
+def load_manifest_identity(paper_dir):
+    """Paper identity for retrieval headers from manifest.yaml.
+
+    Returns e.g. 'International GCSE Chemistry 4CH1 | June 2024 | Paper 1C'
+    (deterministic; falls back to paper_id fragments when fields are absent;
+    the doubled 'June 2011; June 2011' printed values in older manifests
+    normalize to the first part).
+    """
+    path = os.path.join(paper_dir, "manifest.yaml")
+    top = None
+    vals = {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.rstrip("\n")
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+                indent = len(line) - len(line.lstrip(" "))
+                stripped = line.strip()
+                if indent == 0:
+                    m = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", stripped)
+                    if not m:
+                        top = None
+                        continue
+                    top, rest = m.group(1), m.group(2)
+                    if rest:
+                        vals[top] = rest  # top-level scalar (e.g. subject)
+                    else:
+                        vals[top] = {}
+                elif indent == 2 and isinstance(vals.get(top), dict):
+                    m = re.match(r"^([\w-]+):\s*(.*)$", stripped)
+                    if m:
+                        vals[top][m.group(1)] = m.group(2)
+    except OSError:
+        pass
+
+    qual = vals.get("qualification") or {}
+    series = vals.get("series") or {}
+    paper = vals.get("paper") or {}
+    subject = vals.get("subject") or ""
+    unit = paper.get("unit_code")
+    paper_ref = paper.get("paper_number_variant")
+    if not paper_ref and paper.get("official_reference"):
+        paper_ref = paper["official_reference"].split("/")[-1]
+    printed = (series.get("printed") or series.get("normalized") or "")
+    printed = printed.split(";")[0].strip()
+
+    if not (qual.get("name") and subject):
+        # deterministic fallback: parse paper_id fragments
+        # paper_id = board : qualification-family : subject : spec-folder :
+        #            series : paper-reference
+        pid = vals.get("paper_id") or ""
+        parts = pid.split(":")
+        if len(parts) >= 6:
+            qual["name"] = qual.get("name") or parts[1].replace("-", " ").title()
+            subject = subject or parts[2]
+            printed = printed or parts[4]
+            unit = unit or parts[5].split("/")[0]
+            paper_ref = paper_ref or parts[5].split("/")[-1]
+
+    bits = []
+    head = " ".join(x for x in (qual.get("name"),
+                                subject.title() if subject else None) if x)
+    if unit:
+        head = (head + " " + unit).strip()
+    if head:
+        bits.append(head)
+    if printed:
+        bits.append(printed)
+    if paper_ref:
+        bits.append(f"Paper {paper_ref}")
+    return " | ".join(bits)
 
 
 def qp_md_pages(paper_dir):
@@ -335,6 +425,7 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
     marker_count, lines, per_line = qp_pages or qp_md_pages(paper_dir)
     manifest_checksums = (manifest_checksums if manifest_checksums is not None
                           else load_manifest_checksums(paper_dir))
+    header = load_manifest_identity(paper_dir)
     # pageCount honesty: markers should cover the QP, but figure pages are
     # authoritative for their own page — raise pageCount if figures exceed it
     figure_pages = []
@@ -351,7 +442,8 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
     els = _Elements()
     sections = []
     stats = {"questions": len(atoms["questions"]), "openerAnchors": 0,
-             "openerFallbacks": 0, "blockAligned": 0, "blockInherited": 0}
+             "openerFallbacks": 0, "blockAligned": 0, "blockInherited": 0,
+             "retrievalHeaders": 0, "retrievalHeaderSkipped": 0}
 
     for q in atoms["questions"]:
         blocks = list(_iter_qp_blocks(q))
@@ -361,6 +453,7 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
         stats["openerAnchors" if found else "openerFallbacks"] += 1
         q_page = fallback_page
         q_elems = []
+        q_el_objs = []
         for _scope, block in blocks:
             t = block.get("type")
             page = None
@@ -391,6 +484,21 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
             else:  # unknown future block type: keep provenance, no text
                 el = els.add_text(block.get("md"), page)
             q_elems.append(el["element_id"])
+            q_el_objs.append(el)
+        # retrieval header: prepend paper context to the first text-bearing
+        # element of the question so chunks starting here carry the signal
+        if header:
+            carrier = next((e for e in q_el_objs
+                            if e["element_type"] == "text_block" and e["text"]),
+                           None)
+            if carrier is not None:
+                carrier["text"] = (f"[{header} | Question {q['number']}] "
+                                   + carrier["text"])
+                stats["retrievalHeaders"] += 1
+            else:
+                stats["retrievalHeaderSkipped"] += 1
+        else:
+            stats["retrievalHeaderSkipped"] += 1
         sections.append({
             "sectionId": f"q{int(q['number']):02d}",
             "title": f"Question {q['number']} ({q.get('marks', 0)} marks)",
@@ -429,6 +537,7 @@ def build_ms_document(paper_dir, atoms=None, manifest_checksums=None):
     atoms = atoms or load_atoms(paper_dir)
     manifest_checksums = (manifest_checksums if manifest_checksums is not None
                           else load_manifest_checksums(paper_dir))
+    header = load_manifest_identity(paper_dir)
     els = _Elements()
     sections = []
     max_page = 1
@@ -440,9 +549,11 @@ def build_ms_document(paper_dir, atoms=None, manifest_checksums=None):
         q_page = min(pages) if pages else 1
         max_page = max([max_page] + pages)
         q_elems = []
-        header = els.add_text(f"Mark scheme for Question {q['number']}", q_page,
-                              role="heading", heading_level=2)
-        q_elems.append(header["element_id"])
+        heading_el = els.add_text(
+            (f"[{header} | Mark scheme] " if header else "")
+            + f"Mark scheme for Question {q['number']}", q_page,
+            role="heading", heading_level=2)
+        q_elems.append(heading_el["element_id"])
         totals = ms.get("totals") or {}
         if totals.get("printed") is not None:
             el = els.add_text(

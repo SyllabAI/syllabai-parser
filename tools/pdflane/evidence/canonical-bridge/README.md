@@ -53,3 +53,19 @@ manifest-mismatch refusal, determinism, corpus smoke over all 11 products).
   flagged; the bridge does not hide product-level defects).
 - Ingestion itself (POST, embeddings, exam_papers/questions rows) remains
   operator-gated; this run is the dry-run evidence for that gate.
+
+## Addendum — engine 1.1.1: retrieval headers (2026-09-20, same session)
+
+Adopted the retrieval-header recommendation from the operator's parallel
+design review: the first text-bearing element of every question section now
+carries a deterministic paper-context prefix derived from manifest.yaml —
+`[International GCSE Chemistry 4CH1 | June 2024 | Paper 1C | Question 7]`
+(MS: `... | Mark scheme]`) — so embeddings themselves carry
+subject/session/paper/question signal. Coverage: 99/99 questions across the
+corpus (0 skipped). Chunk preview now 118 QP + 130 MS = 248 chunks (packing
+shifts with header tokens); all 22 documentIds re-derived under engine
+1.1.1 (version is part of the identity material) and remain 22/22 unique.
+
+Known limit: chunks that start mid-question inherit no header — guaranteed
+header-per-chunk is a core-side projection (ChunkingService + sections);
+recommended follow-up to coordinate with the core lane.
