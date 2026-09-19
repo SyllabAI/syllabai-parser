@@ -353,6 +353,22 @@ class ParseMsLabellessTests(unittest.TestCase):
         self.assertEqual([(p["part"], p["sub"], p["label"]) for p in q["points"]],
                          [("a", None, "M1"), ("a", "ii", "A1")])
 
+    def test_implicit_total_2024_style(self):
+        # 4CH1 2024 dialect: 'total for question = N' — no question number in
+        # the row; the total belongs to the currently open question.
+        r = parse_ms.parse_pages(pages(
+            "9   (a)   M1 answer nine one                            1\n"
+            "        (b)   M2 answer nine two                            1\n"
+            "                      total for question = 2\n"))
+        self.assertEqual(len(r["questions"]), 1)
+        q = r["questions"][0]
+        self.assertEqual(q["number"], 9)
+        self.assertEqual(q["total_row"], 2)
+        self.assertEqual([(p["part"], p["marks"]) for p in q["points"]],
+                         [("a", 1), ("b", 1)])
+        self.assertTrue(q["arithmetic_ok"])
+        self.assertEqual(r["total_rows_found"], 1)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

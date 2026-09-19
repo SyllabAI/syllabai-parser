@@ -32,6 +32,7 @@ TOTAL_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s+marks?\s*$", re.I)
 TOTAL_BARE_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s*$")          # 4CH1: 'Total 7'
 TOTAL_UPPER_RE = re.compile(r"^\s*TOTAL\s{2,}(\d{1,3})\s*$")       # 4CH0 2C: 'TOTAL   7'
 TOTAL_Q_RE = re.compile(r"Total\s+marks\s+for\s+Question\s+(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)
+TOTAL_IMPLICIT_RE = re.compile(r"^\s*total\s+for\s+question\s*=\s*(\d{1,3})\s*$", re.I)  # 4CH1 2024: 'total for question = 5' — no question number in row; assigned to the open question by sequence
 TOTAL_SPLIT_RE = re.compile(r"^(?P<pre>.*?\S)?\s*Tota(?:l)?\s*$")  # 4CH1 2019: number on next line ('Tota' = clipped)
 TOTAL_SPLIT_NUM_RE = re.compile(r"^(?P<pre>.*?\S)?\s{2,}(?P<n>\d{1,3})\s*$|^(?P<bare>\d{1,3})\s*$")
 NOTE_KW_TAIL_RE = re.compile(r"\b(ALLOW|ACCEPT|REJECT|IGNORE)\s*$", re.I)
@@ -189,6 +190,11 @@ def parse_pages(pages):
                 if mb:
                     m = True
                     total_val = int(mb.group(1))
+            if not m:
+                mi = TOTAL_IMPLICIT_RE.match(line)
+                if mi:
+                    m = True
+                    total_val = int(mi.group(1))
             if m:
                 if cur is not None and cur["total_row"] is None:
                     cur["total_row"] = total_val
