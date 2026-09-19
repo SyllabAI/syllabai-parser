@@ -20,6 +20,10 @@ import re
 TOTAL_FOR_Q_RE = re.compile(
     r"Total\s+for\s+Question\s*(\d{1,2})\s*(?:=|is)\s*(\d{1,3})\s*marks?", re.I)
 LAYOUT_TOTAL_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s+marks?\s*$", re.I)
+# 4CH1 2024 'Total N' bare variant (no 'marks' suffix); mirrors
+# parse_ms.TOTAL_BARE_RE so the layout-sequence scanner sees the same
+# total rows the deterministic parser closes questions with.
+LAYOUT_TOTAL_BARE_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s*$")
 LAYOUT_LABEL_RE = re.compile(r"\b[MA]\d{1,2}\b")
 
 
@@ -36,7 +40,7 @@ def totals_from_layout(pages):
     vals = []
     for p in pages:
         for line in p["text"].splitlines():
-            m = LAYOUT_TOTAL_RE.match(line)
+            m = LAYOUT_TOTAL_RE.match(line) or LAYOUT_TOTAL_BARE_RE.match(line)
             if m:
                 vals.append(int(m.group(1)))
     return {i + 1: v for i, v in enumerate(vals)}
@@ -46,12 +50,20 @@ def labels_in(text):
     return len(LAYOUT_LABEL_RE.findall(text))
 
 
-def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None):
+def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None,
+        s2_arithmetic=None):
     """engine_texts: {"pymupdf_qp_md":..., "pdftotext_ms_pages":[...],
                       "odl_qp_md":..., "odl_ms_md":...}
     assets_check: {"refs": [...], "existing": [...], "embedded": n}
     reference: optional printed truth {"qp_totals": {...}, "paper_total": 120,
-               "ms_total_rows": {...}, "ms_labels": 168, "questions": 11}"""
+               "ms_total_rows": {...}, "ms_labels": 168, "questions": 11}
+    s2_arithmetic: optional {"verified": bool, "detail": {...}} — outcome of
+               per-question effective-sum vs totalRow checks over a VALIDATED
+               S2 accepted run. When verified, the deterministic
+               ms_point_arithmetic mismatch (merged-marks-cell layouts the
+               line grammar cannot capture — designed path: S2 lane) is
+               superseded, but the raw mismatch stays in the check detail and
+               a review flag keeps the substitution on record."""
     rep = {"gates": {}, "flags": [], "escalations": []}
     ref = reference or {}
 
@@ -71,7 +83,20 @@ def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None):
     g1["checks"]["ms_total_rows_present"] = {"ok": not ms_missing, "missing": ms_missing,
                                              "found": len(ms_totals)}
     arith_bad = [q["number"] for q in ms_parse["questions"] if not q["arithmetic_ok"]]
-    g1["checks"]["ms_point_arithmetic"] = {"ok": not arith_bad, "mismatch": arith_bad}
+    arith_check = {"ok": not arith_bad, "mismatch": arith_bad}
+    if arith_bad and s2_arithmetic and s2_arithmetic.get("verified"):
+        arith_check = {"ok": True, "mismatch": arith_bad,
+                       "superseded_by": "s2-validated-run",
+                       "detail": s2_arithmetic.get("detail", {})}
+        rep["flags"].append({"code": "DETERMINISTIC-MS-ARITHMETIC-SUPERSEDED-BY-S2",
+                             "taxonomy": "HARNESS-DEFECT",
+                             "detail": {"mismatch": arith_bad,
+                                        "reason": "merged-marks-cell layout; "
+                                                  "deterministic line grammar "
+                                                  "undercount superseded by the "
+                                                  "validated S2 accepted run "
+                                                  "(designed lane)"}})
+    g1["checks"]["ms_point_arithmetic"] = arith_check
     # cross-engine agreement on QP totals (blocks parse vs ODL second opinion)
     odl = totals_from_qp_md(engine_texts.get("odl_qp_md") or "")
     agree = (qp_totals == odl) if engine_texts.get("odl_qp_md") else None

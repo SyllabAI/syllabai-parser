@@ -8,7 +8,7 @@ these paths here).
 """
 import unittest
 
-from pdflane import emit_atoms, parse_ms, validate_atoms
+from pdflane import emit_atoms, gates, parse_ms, validate_atoms
 
 
 def envelope(atoms, total):
@@ -368,6 +368,53 @@ class ParseMsLabellessTests(unittest.TestCase):
                          [("a", 1), ("b", 1)])
         self.assertTrue(q["arithmetic_ok"])
         self.assertEqual(r["total_rows_found"], 1)
+
+
+class GateLayoutTotalTests(unittest.TestCase):
+    def test_layout_totals_bare_variant(self):
+        # 4CH1 2024 1C/2C MS dialect prints 'Total N' without 'marks';
+        # the G1 layout-sequence scanner must see the same rows parse_ms
+        # closes questions with (LAYOUT_TOTAL_BARE_RE).
+        seq = gates.totals_from_layout([{"text": "Total 7\njunk\n"},
+                                        {"text": "Total 9 marks\nTotal 10\n"}])
+        self.assertEqual(seq, {1: 7, 2: 9, 3: 10})
+
+    def test_g1_arithmetic_superseded_by_s2(self):
+        # merged-marks-cell layout: deterministic layer undercounts points
+        # (q2 arithmetic mismatch); a verified S2 run supersedes the check
+        # while the raw mismatch stays on record + a review flag is raised.
+        ms_parse = {"questions": [
+            {"number": 1, "total_row": 5, "arithmetic_ok": True, "pages": {4},
+             "points": [{"label": "M1", "marks": 5}]},
+            {"number": 2, "total_row": 13, "arithmetic_ok": False, "pages": {5},
+             "points": [{"label": "M1", "marks": 7}]}],
+            "unclassified": [], "buckets": {"point": 0, "guidance": 0,
+                                            "unclassified": 0, "continuation": 0}}
+        qp_parse = {"questions": [{"number": 1, "total": 5, "orphan_total": False,
+                                   "pages": {2}, "prompt": "p"},
+                                  {"number": 2, "total": 13, "orphan_total": False,
+                                   "pages": {3}, "prompt": "p"}],
+                    "witnesses": [{"value": 18}]}
+        eng = {"pdftotext_ms_pages": [{"text": "Total 5\nTotal 13"}]}
+        base = dict(probe={}, qp_parse=qp_parse, ms_parse=ms_parse,
+                    engine_texts=eng, assets_check={"refs": [], "existing": [],
+                                                    "embedded": 0})
+        g_fail = gates.run(**base)
+        self.assertEqual(g_fail["gates"]["G1"]["verdict"], "FAIL")
+        g_ok = gates.run(s2_arithmetic={"verified": True,
+                                        "detail": {"perQuestion": {
+                                            "2": {"effectiveSum": 13,
+                                                  "totalRow": 13}}}}, **base)
+        g1 = g_ok["gates"]["G1"]
+        self.assertEqual(g1["verdict"], "PASS")
+        self.assertEqual(g1["checks"]["ms_point_arithmetic"]["superseded_by"],
+                         "s2-validated-run")
+        self.assertEqual(g1["checks"]["ms_point_arithmetic"]["mismatch"], [2])
+        codes = [f["code"] for f in g_ok["flags"]]
+        self.assertIn("DETERMINISTIC-MS-ARITHMETIC-SUPERSEDED-BY-S2", codes)
+        # unverified S2 result must NOT supersede
+        g_bad = gates.run(s2_arithmetic={"verified": False, "detail": {}}, **base)
+        self.assertEqual(g_bad["gates"]["G1"]["verdict"], "FAIL")
 
 
 if __name__ == "__main__":

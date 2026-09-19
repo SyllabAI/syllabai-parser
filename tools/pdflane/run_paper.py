@@ -18,7 +18,7 @@ import subprocess
 
 from pdflane import emit_atoms, gates as gates_mod
 from pdflane import parse_ms, parse_qp, probe as probe_mod
-from pdflane import validate_atoms
+from pdflane import s2_structurer, validate_atoms
 from pdflane.extract_opendataloader import extract as odl_extract
 from pdflane.extract_pdftotext import extract as pdftotext_extract
 from pdflane.extract_pymupdf import extract as pymupdf_extract
@@ -152,6 +152,25 @@ def main():
                        for k, v in (cdata.get("questionTotalRows") or {}).items()}
         corrections_reason = cdata.get("reason", "")
 
+    # ---- S2 accepted run (loaded before the gates: a validated S2 run is the
+    # designed lane for merged-marks-cell MS layouts and supersedes the
+    # deterministic point-arithmetic check in G1 — see gates.run docstring) ----
+    s2_by_num = {}
+    if args.s2_run:
+        with open(args.s2_run, encoding="utf-8") as f:
+            s2_run = json.load(f)
+        for s2q in s2_run.get("questions", []):
+            s2_by_num[s2q["number"]] = s2q
+    s2_arithmetic = None
+    if s2_by_num:
+        per_q, ok_all = {}, True
+        for qn in sorted(s2_by_num):
+            s2q = s2_by_num[qn]
+            es = s2_structurer.effective_sum(s2q)
+            per_q[qn] = {"effectiveSum": es, "totalRow": s2q.get("totalRow")}
+            ok_all = ok_all and (s2q.get("totalRow") is not None and es == s2q["totalRow"])
+        s2_arithmetic = {"verified": ok_all, "detail": {"perQuestion": per_q}}
+
     # ---- gates ----
     eng_texts = {
         "pymupdf_qp_md": open(pm_qp["md"], encoding="utf-8").read(),
@@ -170,7 +189,7 @@ def main():
                       {"refs": asset_refs,
                        "existing": sorted("assets/" + f for f in os.listdir(assets)),
                        "embedded": embedded},
-                      reference)
+                      reference, s2_arithmetic=s2_arithmetic)
 
     # review queue + escalations from gate outcomes
     for fl in g["flags"]:
@@ -187,13 +206,8 @@ def main():
                                 "detail": {k: v for k, v in gv.items() if k != "verdict"}})
 
     # ---- packaging (v2: syllabai.pastpaper.atoms/1.1) ----
-    s2_by_num = {}
+    # (s2_by_num was loaded before the gates for the arithmetic-supersede check)
     line_page = None
-    if args.s2_run:
-        with open(args.s2_run, encoding="utf-8") as f:
-            s2_run = json.load(f)
-        for s2q in s2_run.get("questions", []):
-            s2_by_num[s2q["number"]] = s2q
     if args.s2_units:
         with open(args.s2_units, encoding="utf-8") as f:
             s2_units = json.load(f)

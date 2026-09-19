@@ -1,0 +1,1681 @@
+{
+ "slug": "4ch1-2024-06-2c",
+ "questions": [
+  {
+   "number": 1,
+   "totalRow": 7,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 50,
+    "end": 68
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      50
+     ],
+     "text": "sulfur",
+     "id": "a-i",
+     "part": "a",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ALLOW S",
+       "lines": [
+        50
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      51
+     ],
+     "text": "beryllium",
+     "id": "a-ii",
+     "part": "a",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW Be",
+       "lines": [
+        51
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      52
+     ],
+     "text": "boron",
+     "id": "a-iii",
+     "part": "a",
+     "sub": "iii",
+     "notes": [
+      {
+       "text": "ALLOW B",
+       "lines": [
+        52
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      53,
+      54,
+      55
+     ],
+     "text": "2,8,4 / 2.8.4",
+     "id": "a-iv",
+     "part": "a",
+     "sub": "iv",
+     "notes": [
+      {
+       "text": "ACCEPT diagram showing electron configuration",
+       "lines": [
+        53,
+        54,
+        55
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      57,
+      58,
+      59
+     ],
+     "text": "the outer shell is further from the nucleus in sodium/sodium has more shells/sodium has a larger atomic radius ORA",
+     "label": "M1",
+     "part": "b",
+     "notes": [
+      {
+       "text": "ALLOW a sodium atom is larger than a lithium atom",
+       "lines": [
+        57,
+        58,
+        59
+       ]
+      },
+      {
+       "text": "ALLOW Li 2,1 Na 2,8,1",
+       "lines": [
+        60
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      61,
+      62,
+      63
+     ],
+     "text": "there is less attraction to the nucleus for the outer electron/outer shell in sodium ORA",
+     "label": "M2",
+     "part": "b",
+     "notes": [
+      {
+       "text": "ALLOW there is more shielding in sodium ORA",
+       "lines": [
+        61,
+        62,
+        63
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      64
+     ],
+     "text": "so the (outer) electron is more easily lost ORA",
+     "label": "M3",
+     "part": "b",
+     "notes": [
+      {
+       "text": "IGNORE electrons (plural) in M1 and M2 but do not allow electrons in M3",
+       "lines": [
+        64,
+        65,
+        66,
+        67
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "An explanation that links the following three points",
+     "lines": [
+      56
+     ]
+    }
+   ]
+  },
+  {
+   "number": 2,
+   "totalRow": 5,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 70,
+    "end": 83
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      70
+     ],
+     "text": "oxygen",
+     "label": "M1",
+     "part": "a",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ALLOW air /O2",
+       "lines": [
+        70
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      71,
+      72
+     ],
+     "text": "water",
+     "label": "M2",
+     "part": "a",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ALLOW moisture / water vapour /H2O",
+       "lines": [
+        71,
+        72
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      73,
+      74
+     ],
+     "text": "painting/oiling/coating with plastic/galvanising /electroplating /waxing /greasing",
+     "id": "a-ii",
+     "part": "a",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "REJECT sacrificial protection",
+       "lines": [
+        73,
+        74
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      76,
+      77,
+      78
+     ],
+     "text": "a more reactive metal is connected to/coated on the iron OWTTE",
+     "label": "M1",
+     "part": "b",
+     "notes": [
+      {
+       "text": "ACCEPT a suitable metal, e.g. zinc/magnesium /aluminium",
+       "lines": [
+        76,
+        77,
+        78
+       ]
+      },
+      {
+       "text": "IGNORE an element",
+       "lines": [
+        79
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      80,
+      81,
+      82
+     ],
+     "text": "the more reactive metal will react /oxidise /corrode instead of iron",
+     "label": "M2",
+     "part": "b",
+     "notes": [
+      {
+       "text": "REJECT a more reactive metal rusts instead of iron",
+       "lines": [
+        80,
+        81,
+        82
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "An explanation that links the following two points",
+     "lines": [
+      75
+     ]
+    }
+   ]
+  },
+  {
+   "number": 3,
+   "totalRow": 11,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 86,
+    "end": 116
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      86
+     ],
+     "text": "(A) refinery gases",
+     "label": "M1",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      87
+     ],
+     "text": "(F) bitumen",
+     "label": "M2",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      88
+     ],
+     "text": "aircraft fuel",
+     "id": "b-i",
+     "part": "b",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      91
+     ],
+     "text": "crude oil is heated/vaporised",
+     "label": "M1",
+     "part": "b",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "IGNORE evaporated",
+       "lines": [
+        91
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      92,
+      93
+     ],
+     "text": "(the vapour) passes into/rises up the (fractionating) column / chamber OWTTE",
+     "label": "M2",
+     "part": "b",
+     "sub": "ii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      94,
+      95,
+      96,
+      97,
+      98
+     ],
+     "text": "the kerosene /the fraction is tapped off/removed at its boiling point range /condenses and removed",
+     "label": "M3",
+     "part": "b",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW kerosene/the fraction is removed at the 3rd or 4th level",
+       "lines": [
+        94,
+        95,
+        96,
+        97,
+        98
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      99,
+      100,
+      101,
+      102,
+      103
+     ],
+     "text": "silica/alumina",
+     "label": "M1",
+     "part": "c",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ALLOW silicon dioxide/SiO2 /aluminium oxide /Al2O3 /zeolites /aluminosilicates",
+       "lines": [
+        99,
+        100,
+        101,
+        102,
+        103
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      104,
+      105
+     ],
+     "text": "any value or range between 600 and 700 (C ) inclusive",
+     "label": "M2",
+     "part": "c",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      108,
+      109,
+      110,
+      111
+     ],
+     "text": "there is a surplus supply of / less demand for larger fractions /molecules/hydrocarbons there is not enough supply / greater demand for smaller fractions/molecules /hydrocarbons",
+     "label": "M1",
+     "part": "c",
+     "sub": "ii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      112,
+      113
+     ],
+     "text": "alkenes are produced which are needed to make polymers",
+     "label": "M2",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW plastics / to make ethanol",
+       "lines": [
+        112,
+        113
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      114,
+      115
+     ],
+     "text": "smaller fractions /alkanes /molecules /hydrocarbons are needed for petrol",
+     "label": "M3",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW gasoline / fuel for cars",
+       "lines": [
+        114,
+        115
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "A description that refers to three of the following points",
+     "lines": [
+      89,
+      90
+     ]
+    },
+    {
+     "text": "An explanation that links three of the following points",
+     "lines": [
+      106,
+      107
+     ]
+    }
+   ]
+  },
+  {
+   "number": 4,
+   "totalRow": 10,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 118,
+    "end": 142
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      118,
+      119
+     ],
+     "text": "all points plotted correctly to the nearest + or – half a small square for KNO3",
+     "label": "M1",
+     "part": "a",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      120,
+      121
+     ],
+     "text": "all points plotted correctly to the nearest + or – half a small square for NaNO3",
+     "label": "M2",
+     "part": "a",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      122
+     ],
+     "text": "smooth curve of best fit for KNO3",
+     "label": "M1",
+     "part": "a",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "If KNO3 and NaNO3 are not labelled or labelled incorrectly lose 1 mark if curves are correct but allow ECF for (c) and (d) if the curves are the wrong way round",
+       "lines": [
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      124
+     ],
+     "text": "smooth curve of best fit for NaNO3",
+     "label": "M2",
+     "part": "a",
+     "sub": "ii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      130,
+      131
+     ],
+     "text": "temperature where their lines cross (expected value approximately 68 C)",
+     "id": "b",
+     "part": "b"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      132,
+      133
+     ],
+     "text": "mass at 30 C read from graph (expected value approximately 24 g)",
+     "label": "M1",
+     "part": "c"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      134,
+      135
+     ],
+     "text": "4 x answer to M1 (expected value approximately 96 g)",
+     "label": "M2",
+     "part": "c"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      136,
+      137
+     ],
+     "text": "mass at 50 C read from graph (expected value approximately 21 g)",
+     "label": "M1",
+     "part": "d",
+     "notes": [
+      {
+       "text": "Need to show working on the graph for M1 and M2 to score but allow M3 for M1 – M2",
+       "lines": [
+        136,
+        137,
+        138,
+        139,
+        140
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      139,
+      140
+     ],
+     "text": "mass at 20 C read from graph (expected value approximately 8 g)",
+     "label": "M2",
+     "part": "d"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      141
+     ],
+     "text": "M1 − M2 (expected value approximately 13 g)",
+     "label": "M3",
+     "part": "d"
+    }
+   ]
+  },
+  {
+   "number": 5,
+   "totalRow": 10,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 144,
+    "end": 180
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      145
+     ],
+     "text": "same general formula",
+     "label": "M1",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      146
+     ],
+     "text": "same functional group",
+     "label": "M2",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      147,
+      148
+     ],
+     "text": "similar chemical properties /characteristics",
+     "label": "M3",
+     "part": "a",
+     "notes": [
+      {
+       "text": "IGNORE same chemical properties",
+       "lines": [
+        147,
+        148
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      149,
+      150,
+      151
+     ],
+     "text": "trend in physical properties /characteristics",
+     "label": "M4",
+     "part": "a",
+     "notes": [
+      {
+       "text": "accept any trend in specified physical property",
+       "lines": [
+        149,
+        150,
+        151
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      152
+     ],
+     "text": "consecutive members differ by a CH2 group",
+     "label": "M5",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      153
+     ],
+     "text": "H2SO4",
+     "id": "b-i",
+     "part": "b",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      154
+     ],
+     "text": "(from) orange",
+     "label": "M1",
+     "part": "b",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "must be in the correct order",
+       "lines": [
+        154,
+        155
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      156
+     ],
+     "text": "(to) green",
+     "label": "M2",
+     "part": "b",
+     "sub": "ii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      157,
+      158,
+      159,
+      160,
+      161
+     ],
+     "text": "(methanol) H I H−C−O−H I H",
+     "label": "M1",
+     "part": "b",
+     "sub": "iii",
+     "notes": [
+      {
+       "text": "Penalise once only if O − H bond not shown and both structures correct",
+       "lines": [
+        157,
+        158,
+        159,
+        160
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      162,
+      163,
+      164
+     ],
+     "text": "(methanoic acid) O II H−C−O−H",
+     "label": "M2",
+     "part": "b",
+     "sub": "iii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      165
+     ],
+     "text": "CH3OH + HCOOH → HCOOCH3 + H2O",
+     "id": "c",
+     "part": "c",
+     "notes": [
+      {
+       "text": "ALLOW multiples",
+       "lines": [
+        165
+       ]
+      },
+      {
+       "text": "ALLOW CH3OOCH",
+       "lines": [
+        166
+       ]
+      },
+      {
+       "text": "IGNORE state symbols even if incorrect",
+       "lines": [
+        167,
+        168
+       ]
+      },
+      {
+       "text": "REJECT CH3COOH and C2H4O2",
+       "lines": [
+        169,
+        170
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      171
+     ],
+     "text": "A (butyl ethanoate)",
+     "id": "d-i",
+     "part": "d",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "B butyl methanoate is not the correct name of the ester CH3COOCH2CH2CH2CH3",
+       "lines": [
+        172,
+        173
+       ]
+      },
+      {
+       "text": "C ethyl butanoate is not the correct name of the ester CH3COOCH2CH2CH2CH3",
+       "lines": [
+        174,
+        175
+       ]
+      },
+      {
+       "text": "D methyl butanoate is not the correct name of the ester CH3COOCH2CH2CH2CH3",
+       "lines": [
+        176,
+        177
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      178,
+      179
+     ],
+     "text": "C6H12O2",
+     "id": "d-ii",
+     "part": "d",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW symbols in any order",
+       "lines": [
+        178,
+        179
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "Any two from",
+     "lines": [
+      144
+     ]
+    }
+   ],
+   "pools": [
+    {
+     "part": "a",
+     "labels": [
+      "M1",
+      "M2",
+      "M3",
+      "M4",
+      "M5"
+     ],
+     "cap": 2,
+     "reason": "Any two from the five listed homologous-series properties"
+    }
+   ]
+  },
+  {
+   "number": 6,
+   "totalRow": 14,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 182,
+    "end": 241
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      184
+     ],
+     "text": "filter (the mixture)",
+     "label": "M1",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      185,
+      186
+     ],
+     "text": "wash (the precipitate/solid/lead(II) bromide with distilled water)",
+     "label": "M2",
+     "part": "a"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      187
+     ],
+     "text": "suitable drying method",
+     "label": "M3",
+     "part": "a",
+     "notes": [
+      {
+       "text": "e.g. dry with filter paper /leave to dry/dry in a desiccator/dry in an oven",
+       "lines": [
+        187,
+        188,
+        189,
+        190
+       ]
+      },
+      {
+       "text": "REJECT M3 if they attempt to crystallise the filtrate",
+       "lines": [
+        191,
+        192,
+        193
+       ]
+      },
+      {
+       "text": "If any attempt to evaporate the solution allow MAX 1",
+       "lines": [
+        194,
+        195,
+        196
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      197
+     ],
+     "text": "2(.0) x 0.025 = 0.05(0) (mol)",
+     "id": "b-i",
+     "part": "b",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ACCEPT 25 ÷ 1000 = 0.025 0.05 ÷ 0.025 = 2",
+       "lines": [
+        197,
+        198,
+        199
+       ]
+      },
+      {
+       "text": "All working must be shown to gain full marks",
+       "lines": [
+        200,
+        201
+       ]
+      }
+     ],
+     "alternatives": [
+      {
+       "text": "2(.0) x 25 1000 = 0.05(0) (mol)",
+       "lines": [
+        200,
+        201
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      202
+     ],
+     "text": "(n PbBr2) = 0.05(0) ÷ 2 = 0.025",
+     "label": "M1",
+     "part": "b",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW 2:1 = 0.05:0.025",
+       "lines": [
+        202
+       ]
+      }
+     ],
+     "alternatives": [
+      {
+       "text": "0.05 x 367 = 18.35 (g)",
+       "lines": [
+        204
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      203
+     ],
+     "text": "0.025 x 367 = 9.175 (g)",
+     "label": "M2",
+     "part": "b",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ACCEPT 9.18/9.2/9 (g)",
+       "lines": [
+        203
+       ]
+      },
+      {
+       "text": "All working must be shown to gain full marks",
+       "lines": [
+        206,
+        207
+       ]
+      }
+     ],
+     "alternatives": [
+      {
+       "text": "18.35 ÷ 2 = 9.175 (g)",
+       "lines": [
+        205
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      210,
+      211
+     ],
+     "text": "when solid the ions are in fixed positions/in a lattice",
+     "label": "M1",
+     "part": "c",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      212,
+      213
+     ],
+     "text": "so there are no ions/electrons/charged particles free to move",
+     "label": "M2",
+     "part": "c",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      214,
+      215
+     ],
+     "text": "(when molten) the ions are free to move so can conduct electricity/carry a current",
+     "label": "M3",
+     "part": "c",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "IGNORE carry charge",
+       "lines": [
+        214
+       ]
+      },
+      {
+       "text": "REJECT solution for M3",
+       "lines": [
+        216
+       ]
+      },
+      {
+       "text": "REJECT electrons moving /delocalised electrons for M3",
+       "lines": [
+        217,
+        218,
+        219
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      221
+     ],
+     "text": "graphite",
+     "label": "M1",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "IGNORE carbon",
+       "lines": [
+        221
+       ]
+      },
+      {
+       "text": "ALLOW platinum",
+       "lines": [
+        222
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      223,
+      224
+     ],
+     "text": "resistance to high temperature /has a high melting point",
+     "label": "M2",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW conducts electricity / doesn't react with product /is inert",
+       "lines": [
+        223,
+        224,
+        225,
+        226
+       ]
+      },
+      {
+       "text": "M2 dependent on graphite /carbon /a transition metal",
+       "lines": [
+        227,
+        228,
+        229
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      230
+     ],
+     "text": "Pb2+ + 2e(−) → Pb",
+     "id": "c-iii",
+     "part": "c",
+     "sub": "iii",
+     "notes": [
+      {
+       "text": "ACCEPT multiples",
+       "lines": [
+        230
+       ]
+      },
+      {
+       "text": "IGNORE state symbols even if incorrect",
+       "lines": [
+        231,
+        232
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      233,
+      234
+     ],
+     "text": "brown vapour/gas/fumes",
+     "id": "d-i",
+     "part": "d",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "ALLOW red-brown vapour/gas/fumes",
+       "lines": [
+        233,
+        234
+       ]
+      },
+      {
+       "text": "REJECT orange/orange- brown/red alone",
+       "lines": [
+        235,
+        236
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      237,
+      238
+     ],
+     "text": "bromide (ions)/Br − loses electrons",
+     "id": "d-ii",
+     "part": "d",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW electrons are lost",
+       "lines": [
+        237,
+        238
+       ]
+      },
+      {
+       "text": "REJECT bromine loses electrons",
+       "lines": [
+        239,
+        240
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "A description that refers to the following three points",
+     "lines": [
+      182,
+      183
+     ]
+    },
+    {
+     "text": "An explanation that links the following three points",
+     "lines": [
+      208,
+      209
+     ]
+    },
+    {
+     "text": "An explanation that links the following two points",
+     "lines": [
+      220
+     ]
+    }
+   ]
+  },
+  {
+   "number": 7,
+   "totalRow": 13,
+   "totalRowSource": "ms-printed",
+   "slices": {
+    "start": 243,
+    "end": 285
+   },
+   "points": [
+    {
+     "marks": 1,
+     "lines": [
+      243,
+      244
+     ],
+     "text": "(electrostatic) attraction between nuclei (of both atoms)",
+     "label": "M1",
+     "part": "a",
+     "notes": [
+      {
+       "text": "nuclei must be plural",
+       "lines": [
+        243
+       ]
+      }
+     ],
+     "alternatives": [
+      {
+       "text": "(electrostatic) attraction between a shared/bonding pair of electrons",
+       "lines": [
+        246,
+        247
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      245
+     ],
+     "text": "and a shared/bonding pair of electrons",
+     "label": "M2",
+     "part": "a",
+     "notes": [
+      {
+       "text": "nuclei must be plural",
+       "lines": [
+        248
+       ]
+      }
+     ],
+     "alternatives": [
+      {
+       "text": "and nuclei (of both atoms)",
+       "lines": [
+        248
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      250,
+      251
+     ],
+     "text": "(in the organic solvent) litmus paper stays blue/has no change",
+     "label": "M1",
+     "part": "b",
+     "notes": [
+      {
+       "text": "No M1 or M2 if litmus paper turns red",
+       "lines": [
+        250,
+        251,
+        252
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      253,
+      254
+     ],
+     "text": "because there are no (H+) ions/ the solution is not acidic /does not dissociate in an organic solvent",
+     "label": "M2",
+     "part": "b"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      255
+     ],
+     "text": "(in the aqueous solution) litmus paper turns red",
+     "label": "M3",
+     "part": "b",
+     "notes": [
+      {
+       "text": "REJECT M3 if litmus is bleached or turns white",
+       "lines": [
+        255,
+        256,
+        257
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      258,
+      259
+     ],
+     "text": "because H+ ions are formed/hydrochloric acid forms",
+     "label": "M4",
+     "part": "b",
+     "notes": [
+      {
+       "text": "M4 dep on litmus turning red initially",
+       "lines": [
+        258,
+        259
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      264
+     ],
+     "text": "reactants bond energy = 436 + 242 OR 678 (kJ)",
+     "label": "M1",
+     "part": "c",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      265
+     ],
+     "text": "products bond energy = 2 x 431 OR 862 (kJ)",
+     "label": "M2",
+     "part": "c",
+     "sub": "i"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      266
+     ],
+     "text": "− 184 (kJ/mol)",
+     "label": "M3",
+     "part": "c",
+     "sub": "i",
+     "notes": [
+      {
+       "text": "correct answer − 184 with or without working scores 3",
+       "lines": [
+        260,
+        261,
+        262
+       ]
+      },
+      {
+       "text": "(+)184 scores 2",
+       "lines": [
+        263
+       ]
+      },
+      {
+       "text": "ALLOW ecf on incorrect values on M1 and/or M2",
+       "lines": [
+        266,
+        267,
+        268
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      269,
+      270
+     ],
+     "text": "show correct positions of horizontal lines and activation energy hump",
+     "label": "M1",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ALLOW ecf if positive answer in (i)",
+       "lines": [
+        269,
+        270
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      273,
+      274
+     ],
+     "text": "correct labelling of (reactants) H2 + Cl2 and (products) 2HCl",
+     "label": "M2",
+     "part": "c",
+     "sub": "ii"
+    },
+    {
+     "marks": 1,
+     "lines": [
+      275
+     ],
+     "text": "vertical line in correct position labelled H",
+     "label": "M3",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ACCEPT arrow pointing down or double headed arrow",
+       "lines": [
+        275,
+        276,
+        277
+       ]
+      },
+      {
+       "text": "REJECT arrow pointing up",
+       "lines": [
+        278,
+        279
+       ]
+      }
+     ]
+    },
+    {
+     "marks": 1,
+     "lines": [
+      280,
+      281
+     ],
+     "text": "vertical line in correct position labelled Ea or activation energy",
+     "label": "M4",
+     "part": "c",
+     "sub": "ii",
+     "notes": [
+      {
+       "text": "ACCEPT arrow pointing up or double headed arrow",
+       "lines": [
+        280,
+        281,
+        282
+       ]
+      },
+      {
+       "text": "REJECT arrow pointing down",
+       "lines": [
+        283,
+        284
+       ]
+      }
+     ]
+    }
+   ],
+   "guidance": [
+    {
+     "text": "An explanation that links the following four points",
+     "lines": [
+      249
+     ]
+    },
+    {
+     "text": "M3 REJECT arrow pointing down",
+     "lines": [
+      271,
+      272
+     ]
+    }
+   ]
+  }
+ ],
+ "residual": [
+  {
+   "text": "front matter (title pages)",
+   "lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "verify": false
+  },
+  {
+   "text": "General Marking Guidance",
+   "lines": [
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    49
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    69
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    84
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    85
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    117
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    143
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    181
+   ],
+   "verify": false
+  },
+  {
+   "text": "column headers",
+   "lines": [
+    242
+   ],
+   "verify": false
+  },
+  {
+   "text": "back matter",
+   "lines": [
+    286,
+    287
+   ],
+   "verify": false
+  }
+ ]
+}
