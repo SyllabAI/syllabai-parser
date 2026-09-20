@@ -332,19 +332,37 @@ class SyntheticConversion(unittest.TestCase):
         self.assertEqual(len(answer_lines), 1)
         self.assertIsNone(answer_lines[0]["text"])
 
-        # retrieval headers: paper context on the first text element per
-        # question (QP) and on the MS heading — derived from the manifest
-        first_q1 = next(e for e in qp_doc["textBlocks"]
-                        if e["element_id"] == qp_doc["sections"][0]["elementIds"][0]
-                        and e["element_type"] == "text_block")
-        self.assertTrue(first_q1["text"].startswith(
-            f"[{self.expected_header} | Question 1] This question is about metals."))
-        ms_head = ms_doc["textBlocks"][0]
-        self.assertTrue(ms_head["text"].startswith(
-            f"[{self.expected_header} | Mark scheme] Mark scheme for Question 1"))
+        # v1.2.0: structured retrieval identity — doc-level retrieval block on
+        # both documents + group_key on every element (the 1.1.1 text-prefix
+        # header is superseded; core stamps per-chunk headers from metadata)
+        self.assertEqual(qp_doc["retrieval"], {
+            "subjectTitle": "International GCSE Chemistry",
+            "subjectCode": "4CHX",
+            "series": "JUN", "year": 2025,
+            "paperCode": "4CHX/1X", "label": "Paper 1X",
+            "unit": None, "specCodes": None,
+        })
+        self.assertEqual(ms_doc["retrieval"], qp_doc["retrieval"])
+        all_els = (qp_doc["textBlocks"] + qp_doc["tables"] + qp_doc["figures"])
+        self.assertTrue(all_els)
+        for e in all_els:
+            self.assertRegex(e["group_key"], r"^q\d+$", e["element_id"])
+        ms_els = (ms_doc["textBlocks"] + ms_doc["figures"])
+        for e in ms_els:
+            self.assertRegex(e["group_key"], r"^q\d+$", e["element_id"])
+        q1_gk = {e["group_key"] for e in qp_doc["textBlocks"]
+                 if e["element_id"] in set(qp_doc["sections"][0]["elementIds"])}
+        self.assertEqual(q1_gk, {"q1"})
+        # no text-prefix headers on the content anymore
+        for e in qp_doc["textBlocks"]:
+            if e["text"]:
+                self.assertFalse(e["text"].startswith("[International GCSE"),
+                                 e["text"][:60])
         ep = json.load(open(os.path.join(
             self.tmp, "out", "paper_summary.json")))
-        self.assertEqual(ep["qp"]["extractionParams"]["retrievalHeaders"], 2)
+        self.assertNotIn("retrievalHeaders",
+                         ep["qp"]["extractionParams"])
+        self.assertIn("furnitureExcluded", ep["qp"]["extractionParams"])
 
         # mcq choices rendered (question-level) with no correct labels
         q2_ids = set(qp_doc["sections"][1]["elementIds"])
@@ -461,6 +479,243 @@ class CorpusSmoke(unittest.TestCase):
                 for ch in bridge.simulate_chunks(qp_doc):
                     self.assertGreaterEqual(ch["pageStart"], 1)
                     self.assertLessEqual(ch["pageEnd"], qp_doc["pageCount"])
+
+
+class RetrievalMetaTests(unittest.TestCase):
+    """v1.2.0: doc-level retrieval block derivation (core RetrievalMeta parity)."""
+
+    def _paper(self, manifest):
+        import tempfile
+        d = tempfile.mkdtemp(prefix="retr-meta-")
+        if manifest is not None:
+            with open(os.path.join(d, "manifest.yaml"), "w") as f:
+                f.write(manifest)
+        return d
+
+    BASE = ("paper_id: pearson-edexcel:international-gcse:chemistry:"
+            "4ch1:2024-06:4CH1/1C\n"
+            "qualification:\n  family: international-gcse\n"
+            "  name: International GCSE\n"
+            "subject: chemistry\n"
+            "series:\n  normalized: 2024-06\n"
+            "  printed: June 2024\n"
+            "paper:\n  official_reference: 4CH1/1C\n"
+            "  unit_code: 4CH1\n  paper_number_variant: 1C\n")
+
+    def test_full_manifest_fields(self):
+        meta = bridge.load_retrieval_meta(self._paper(self.BASE))
+        self.assertEqual(meta, {
+            "subjectTitle": "International GCSE Chemistry",
+            "subjectCode": "4CH1", "series": "JUN", "year": 2024,
+            "paperCode": "4CH1/1C", "label": "Paper 1C",
+            "unit": None, "specCodes": None,
+        })
+
+    def test_series_canonicalization(self):
+        cases = {
+            "January 2012": ("JAN", 2012),
+            "November 2020": ("NOV", 2020),
+            "Summer 2022": ("JUN", 2022),     # validator rule: Summer→JUN
+            "June 2011; June 2011": ("JUN", 2011),  # doubled-printed quirk
+            "2019-01": ("JAN", 2019),          # numeric normalized form
+        }
+        for printed, (series, year) in cases.items():
+            m = self._paper(self.BASE.replace(
+                "  printed: June 2024", f"  printed: {printed}"))
+            meta = bridge.load_retrieval_meta(m)
+            self.assertEqual((meta["series"], meta["year"]), (series, year),
+                             printed)
+
+    def test_unrecognized_series_stays_null_never_a_raw_label(self):
+        m = self._paper(self.BASE.replace(
+            "  printed: June 2024", "  printed: Autumn 2018").replace(
+            "  normalized: 2024-06", "  normalized: 2018-10"))
+        meta = bridge.load_retrieval_meta(m)
+        self.assertIsNone(meta["series"])     # honest null, not a raw label
+        self.assertEqual(meta["year"], 2018)  # year still derivable
+
+    def test_subject_code_alias_4ch0_to_4ch1(self):
+        m = self.BASE.replace("4CH1/1C", "4CH0/1C").replace(
+            "  unit_code: 4CH1", "  unit_code: 4CH0")
+        meta = bridge.load_retrieval_meta(self._paper(m))
+        self.assertEqual(meta["subjectCode"], "4CH1")  # pilot subject register
+        self.assertEqual(meta["paperCode"], "4CH0/1C")  # paper keeps vintage
+
+    def test_missing_manifest_is_legacy_tolerant(self):
+        self.assertIsNone(bridge.load_retrieval_meta(self._paper(None)))
+
+    def test_validator_mirror_rejects_raw_series_and_bad_year(self):
+        doc = dict(base_doc(), retrieval={"series": "Summer 2019"})
+        problems = bridge.validate_canonical(doc)
+        self.assertTrue(any("retrieval.series" in p for p in problems))
+        doc = dict(base_doc(), retrieval={"series": "JUN", "year": 1804})
+        problems = bridge.validate_canonical(doc)
+        self.assertTrue(any("retrieval.year" in p for p in problems))
+        doc = dict(base_doc(), retrieval={"series": "JUN", "year": 2024})
+        self.assertEqual(bridge.validate_canonical(doc), [])
+
+
+class GroupKeyBoundaryTests(unittest.TestCase):
+    """v1.2.0: per-element group_key + hard atom boundaries in the chunk preview."""
+
+    def test_no_chunk_crosses_two_atoms(self):
+        doc = base_doc()
+        doc["textBlocks"] = [
+            dict(text_block("q1 stem text one"), group_key="q1"),
+            dict(text_block("q1 part prompt text"), group_key="q1"),
+            dict(text_block("q2 stem text two"), group_key="q2"),
+        ]
+        chunks = bridge.simulate_chunks(doc)
+        self.assertGreaterEqual(len(chunks), 2)
+        gk = {e["element_id"]: e.get("group_key") for e in doc["textBlocks"]}
+        for ch in chunks:
+            groups = {gk[e] for e in ch["elementIds"]}
+            self.assertEqual(len(groups), 1, ch["elementIds"])
+
+    def test_legacy_blocks_without_group_key_never_boundary(self):
+        doc = base_doc()
+        doc["textBlocks"] = [text_block("legacy a"), text_block("legacy b")]
+        chunks = bridge.simulate_chunks(doc)
+        self.assertEqual(len(chunks), 1)  # legacy shape packs as before
+
+
+class FurnitureRenderTests(unittest.TestCase):
+    """G3: render-level furniture exclusion — product files never touched."""
+
+    def setUp(self):
+        import tempfile, shutil
+        self.tmp = tempfile.mkdtemp(prefix="furniture-")
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        paper = os.path.join(self.tmp, "4CHX-1X")
+        os.makedirs(os.path.join(paper, "parsed"))
+        self.paper = paper
+        self.atoms = {
+            "schema": "syllabai.pastpaper.atoms/1.1",
+            "source": {"qp": "qp.pdf", "ms": "ms.pdf"},
+            "questionCount": 1, "totalMarks": 2, "marksVerified": True,
+            "questions": [{
+                "number": 1, "type": "open", "marks": 2, "commandWord": None,
+                "provenance": "pdf-parsed",
+                "stem": [
+                    {"type": "para", "md": "DO NOT WRITE IN THIS AREA"},
+                    {"type": "para", "md": "Answer ALL questions."},
+                    {"type": "para", "md":
+                     "Some questions must be answered with a cross in a box . "
+                     "If you change your mind, put a line through the box ."},
+                    {"type": "para", "md": "Total for Question 1 = 2 marks"},
+                    {"type": "para", "md":
+                     "This paragraph mentions DO NOT WRITE IN THIS AREA mid-"
+                     "sentence and must survive column-bleed gluing."},
+                ],
+                "parts": [],
+                "markScheme": {"totals": {"printed": 2, "sum": 2,
+                                          "verified": True},
+                               "guidance": [],
+                               "points": [{"id": "a", "part": None, "sub": None,
+                                           "marks": 2, "md": "answer",
+                                           "allow": [], "reject": [],
+                                           "ignore": [], "notes": [],
+                                           "pages": [1]}]},
+            }],
+        }
+        with open(os.path.join(paper, "parsed", "questions.json"), "w") as f:
+            json.dump(self.atoms, f)
+        with open(os.path.join(paper, "parsed", "qp.md"), "w") as f:
+            f.write("<!-- PAGE 1 -->\n1 boilerplate paper\n")
+        for name in ("qp.pdf", "ms.pdf"):
+            with open(os.path.join(paper, name), "wb") as f:
+                f.write(b"%PDF-1.4 synthetic")
+        with open(os.path.join(paper, "manifest.yaml"), "w") as f:
+            f.write(self_paper_manifest())
+
+    def test_boilerplate_excluded_counted_and_content_survives(self):
+        out = os.path.join(self.tmp, "out")
+        bridge.convert_paper(self.paper, out)
+        qp = json.load(open(os.path.join(out, "qp.canonical.json")))
+        texts = [e["text"] for e in qp["textBlocks"] if e["text"]]
+        self.assertFalse(any(t == "DO NOT WRITE IN THIS AREA" for t in texts))
+        self.assertFalse(any(t == "Answer ALL questions." for t in texts))
+        self.assertFalse(any(t.startswith("Some questions must be answered")
+                             for t in texts))
+        self.assertFalse(any(t.startswith("Total for Question 1") for t in texts))
+        self.assertTrue(any("mid-sentence" in t for t in texts),
+                        "conservative matcher must not eat glued content")
+        params = qp["provenance"]["extractionParams"]
+        self.assertEqual(params["furnitureExcluded"], 3)
+        self.assertEqual(params["furnitureTotalRowsExcluded"], 1)
+        # excluded blocks never appear in the chunk preview either
+        blob = json.dumps(json.load(open(os.path.join(out,
+                                                      "chunks_preview.json"))))
+        self.assertNotIn("Answer ALL questions", blob)
+
+    def test_product_file_untouched(self):
+        before = open(os.path.join(self.paper, "parsed", "questions.json"),
+                      "rb").read()
+        bridge.convert_paper(self.paper, os.path.join(self.tmp, "out"))
+        after = open(os.path.join(self.paper, "parsed", "questions.json"),
+                     "rb").read()
+        self.assertEqual(before, after)
+
+    def test_total_row_inside_real_table_is_content(self):
+        doc = base_doc()
+        doc["tables"] = [{
+            "element_id": "e000001", "element_type": "table",
+            "page_number": 1, "bounding_box": None,
+            "text": "| Question | Marks |\n|---|---|\n| Total for Question 1 = 2 marks |",
+            "reading_order": 0, "confidence": 1.0,
+            "rows": [["Question", "Marks"]],
+            "row_count": 1, "column_count": 2,
+            "source_engine": bridge.ENGINE_NAME,
+            "source_engine_version": bridge.ENGINE_VERSION,
+        }]
+        self.assertEqual(bridge.validate_canonical(doc), [])
+        self.assertEqual(len(bridge.simulate_chunks(doc)), 1)
+
+
+class FigureAltTextTests(unittest.TestCase):
+    """G4: deterministic caption pull + [figure: alt] inline render blocks."""
+
+    def test_existing_alt_is_kept_never_overwritten(self):
+        el = bridge._Elements().add_figure("assets/q1.png", 1, "apparatus photo",
+                                           group_key="q1")
+        filled = bridge._resolve_figure_alt(
+            el, [(0, "Figure 1 a caption")], order=1)
+        self.assertEqual(filled, "apparatus photo")
+        self.assertEqual(el["alt"], "apparatus photo")
+
+    def test_no_caption_nothing_fabricated(self):
+        el = bridge._Elements().add_figure("assets/q1.png", 1, "", group_key="q1")
+        filled = bridge._resolve_figure_alt(
+            el, [(0, "The student sets up the apparatus."),
+                 (1, "Figure 1 rate of reaction graph")], order=2)
+        self.assertEqual(filled, "Figure 1 rate of reaction graph")
+        self.assertEqual(el["alt"], "Figure 1 rate of reaction graph")
+
+    def test_nearest_caption_wins(self):
+        el = bridge._Elements().add_figure("assets/q1.png", 1, "", group_key="q1")
+        filled = bridge._resolve_figure_alt(
+            el, [(0, "Figure 1 far away caption"), (1, "Graph 2 near caption")],
+            order=2)
+        self.assertEqual(filled, "Graph 2 near caption")
+
+    def test_no_caption_nothing_fabricated(self):
+        el = bridge._Elements().add_figure("assets/q1.png", 1, "", group_key="q1")
+        filled = bridge._resolve_figure_alt(
+            el, [(0, "plain text, not a caption")], order=1)
+        self.assertEqual(filled, "")
+        self.assertEqual(el["alt"], "")
+
+
+def self_paper_manifest():
+    return ("paper_id: pearson-edexcel:international-gcse:chemistry:"
+            "4chx:2025-06:4CHX/1X\n"
+            "qualification:\n  family: international-gcse\n"
+            "  name: International GCSE\n"
+            "subject: chemistry\n"
+            "series:\n  normalized: 2025-06\n"
+            "  printed: June 2025\n"
+            "paper:\n  official_reference: 4CHX/1X\n"
+            "  unit_code: 4CHX\n  paper_number_variant: 1X\n")
 
 
 if __name__ == "__main__":

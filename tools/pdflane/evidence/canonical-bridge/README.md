@@ -69,3 +69,51 @@ shifts with header tokens); all 22 documentIds re-derived under engine
 Known limit: chunks that start mid-question inherit no header — guaranteed
 header-per-chunk is a core-side projection (ChunkingService + sections);
 recommended follow-up to coordinate with the core lane.
+
+## Addendum — engine 1.2.0: the corpus-v2 bridge release (2026-09-20, retrieval lane)
+
+The 1.1.1 text-prefix header is **superseded by structure** in the single
+release the corpus-v2 ingest was waiting for (one release = one clean
+embed_rev=2 ingest — no wasteful embed_rev=3 re-supersession):
+
+1. **Doc-level `retrieval` block** (`{subjectTitle, subjectCode, series,
+   year, paperCode, label, unit, specCodes}`) derived deterministically from
+   manifest.yaml. `series` is canonicalized to JAN/JUN/NOV (Summer→JUN;
+   unrecognized stays null — never a raw label, plan §12 #7). `subjectCode`
+   resolves into core's subjects table at ingest (a present-but-unresolvable
+   code fails LOUD there); the documented 4CH0→4CH1 alias maps pre-2016
+   papers onto the pilot subject while `paperCode` keeps the vintage
+   (`4CH0/1C` — production exam_papers format). `specCodes` stays null by
+   design: spec tagging is the taxonomy lane's join on `paperDir#qN`, never
+   baked into documents.
+2. **Per-element `group_key`** (`q1`, `q2`, …) on every element of every
+   question section — core R2 treats a group-key change as a HARD chunk
+   boundary (no chunk crosses an atom), stamps `atom_number`, and projects a
+   per-chunk header (`4CH1/1C Paper 1C JUN 2024 Q3 pp.4-5`; MS: `MS Q3`) from
+   the metadata columns onto EVERY chunk. The chunk preview mirror implements
+   the same boundary rule (legacy no-group-key shapes pack unchanged).
+3. **G3 render-level furniture exclusion**: known Edexcel boilerplate ("DO
+   NOT WRITE IN THIS AREA", "Answer ALL questions.", cross-in-box instruction
+   paragraphs, "Total for Question N = X marks" stem echoes) is classified at
+   RENDER time (whole-block conservative matching) and excluded from the
+   canonical documents with per-doc counters in extractionParams. Parse-level
+   products are NEVER touched — atoms stay complete, "Total for Question N"
+   rows remain G1 witnesses, and column-bleed-glued fragments survive.
+4. **G4 figure alt-text**: an empty-alt figure pulls the nearest same-question
+   `Figure/Graph/Diagram N` caption deterministically; every figure WITH an
+   alt emits an adjacent `role="figure_alt"` text block `[figure: <alt>]` so
+   the chunker (which packs text blocks, not figure elements) carries visual
+   signal into the embeddings. No caption + no alt ⇒ honest empty.
+
+Engine version is identity material: all 22 documentIds re-derive under
+1.2.0 (the new docs cannot collide with the 1.1.1 dry-run id space). The
+v1.1.1 prefix is REMOVED in the same commit that adds the structured
+replacement — embeddings must not double-carry the same signal now that core
+stamps every chunk from metadata.
+
+Test coverage: `python3 -m pdflane.tests_atoms_canonical` — 42 tests green
+(25 pre-existing incl. the round-trip now asserting retrieval/group_key, plus
+17 new: retrieval-meta derivation matrix + alias + validator-mirror
+rejections, group-key boundary packing, furniture render exclusion with
+product-file-untouched proof, figure alt resolution). The 11-product corpus
+smoke re-runs green wherever the pastpapers checkout is present.

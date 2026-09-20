@@ -41,17 +41,50 @@ Chunk preview:
   = own chunk) so a dry run can prove chunk counts and page spans WITHOUT a
   Java runtime. Core's chunker remains the authority at ingest time.
 
-Retrieval headers (v1.1.1):
-  The first text-bearing element of every question section carries a
-  deterministic paper-context prefix — e.g. "[International GCSE Chemistry
-  4CH1 | June 2024 | Paper 1C | Question 7]" (MS: "... | Mark scheme]") —
-  derived from manifest.yaml. Because core derives chunk content from element
-  text, this is the only core-compatible way to make embeddings themselves
-  carry subject/session/paper/question signal (multi-subject corpora and
-  slot-ish queries). Coverage is best-effort at chunk granularity: chunks
-  that start mid-question inherit no header. Guaranteed header-per-chunk is
-  a core-side projection concern (ChunkingService + sections) — recommended
-  follow-up, to be coordinated with the core lane.
+Retrieval metadata (v1.2.0 — the corpus-v2 bridge release):
+  v1.1.1 carried paper context as a text prefix on the first text-bearing
+  element of each question ("[... | Question 7]"); workable, but text
+  pollution, and it only covered chunks that start on that element. v1.2.0
+  supersedes it with the plan §4.1.1 design, coordinated with the core lane
+  (R2: ChunkHeaderBuilder + V33 metadata columns, live in production ingest
+  since 47d56ad/81144e8):
+    1. Doc-level `retrieval` block {subjectTitle, subjectCode, series, year,
+       paperCode, label, unit, specCodes} derived deterministically from
+       manifest.yaml. series is canonicalized to JAN/JUN/NOV ("Summer"→JUN);
+       an unrecognized series stays null — a raw label as a filter is a lie
+       waiting for a year-range query (plan §12 anti-pattern 7). subjectCode
+       resolves into core's subjects table at ingest — a present-but-
+       unresolvable code fails LOUD there, by design; the documented 4CH0→4CH1
+       alias maps pre-2016 papers onto the pilot subject.
+    2. Per-element `group_key` ("q1", "q2", ...) on every element of every
+       question section — core treats a group-key change as a HARD chunk
+       boundary (no chunk crosses an atom), stamps atom_number from it, and
+       projects a per-chunk header ("4CH1/1C Paper 1C JUN 2024 Q3 pp.4-5";
+       MS: "MS Q3") from the metadata columns onto EVERY chunk.
+  The v1.1.1 text prefix is removed in the same release that adds the
+  structured replacement — one release = one clean embed_rev=2 ingest of the
+  11 bridge papers (no double-carrying of the same signal in chunk text).
+
+Render-level furniture exclusion (G3, parser-lane analysis §4):
+  Known Edexcel boilerplate ("DO NOT WRITE IN THIS AREA", "Answer ALL
+  questions.", the cross-in-box instruction paragraphs, "Total for Question
+  N = X marks" stem echoes) is classified deterministically at RENDER time
+  and excluded from the canonical retrieval render, with per-doc counts in
+  extractionParams. Parse-level products are NEVER touched — the atoms
+  product stays complete, "Total for Question N" rows remain G1 marks-
+  integrity witnesses, and classification stays conservative (whole-block
+  matches only): column-bleed-glued fragments survive rather than risk
+  eating real content. Losslessness lives in the product file; the canonical
+  document is a retrieval render by definition (same policy as the QP leak
+  guard).
+
+Figure alt-text (G4, parser-lane analysis §4):
+  A figure whose atoms alt is empty pulls a deterministic caption from the
+  nearest same-question "Figure/Graph/Diagram N" text block when one exists;
+  every figure WITH an alt emits an adjacent role="figure_alt" text block
+  "[figure: <alt>]" so the chunker packs figure signal into embeddings
+  (core's chunker packs text blocks, not figure elements). No caption and no
+  alt ⇒ nothing fabricated — honest empty.
 
 Determinism: no timestamps, no randomness, stable element ids — identical
 inputs + code produce byte-identical canonical JSON (S0–S1 invariant).
@@ -70,11 +103,13 @@ import sys
 from glmocr.canonical import content_document_id
 
 ENGINE_NAME = "pdflane-atoms"
-# 1.1.1: retrieval headers — per-question paper-context prefix baked into the
-# first header-carrying element of each section so embeddings themselves carry
-# subject/session/paper/question signal (multi-subject corpora + slot-ish
-# queries). Engine version is part of the identity material, so ids re-derive.
-ENGINE_VERSION = "1.1.1"
+# 1.2.0: the corpus-v2 bridge release (plan §4.1.1 / §6) — doc-level retrieval
+# metadata + per-element group_key (hard atom boundaries, core-stamped per-chunk
+# headers) replace the 1.1.1 text-prefix headers; render-level furniture
+# exclusion (G3); figure alt-text with [figure: ...] inline render (G4).
+# Engine version is part of the identity material, so documentIds re-derive
+# (the new docs cannot collide with the 1.1.1 dry-run id space).
+ENGINE_VERSION = "1.2.0"
 SCHEMA_VERSION = "1.0"
 APPLICATION = "syllabai-parser"
 PDF_MIME = "application/pdf"
@@ -84,13 +119,225 @@ PAGE_MARK = re.compile(r"<!--\s*PAGE\s+(\d+)\s*-->")
 CHUNK_TARGET_TOKENS = 300
 CHUNK_MAX_TOKENS = 800
 
+# ── retrieval metadata (v1.2.0) ──────────────────────────────────────────────
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# The pilot subject register carries ONE IGCSE Chemistry subject (code 4CH1,
+# verified against production `subjects` at release time). Pre-2016 paper
+# folders are 4CH0 (retired spec code); they map onto the same pilot subject
+# so the subject branch of the serving scope can ever serve them. Documented,
+# deterministic, tiny on purpose — anything else is emitted as-is and a
+# present-but-unresolvable code fails LOUD at core ingestion (plan-fail-closed).
+SUBJECT_CODE_ALIASES = {"4CH0": "4CH1"}
+
+_MONTH_SERIES = {"1": "JAN", "01": "JAN", "6": "JUN", "06": "JUN",
+                 "11": "NOV"}
+_SERIES_WORDS = (("january", "JAN"), ("june", "JUN"), ("summer", "JUN"),
+                 ("november", "NOV"))
+
+# G3: whole-block furniture classification (render-level only — the atoms
+# product is never rewritten). Exact list = the parser-lane analysis §4 G3
+# findings on real product output (4ch1-1c-2024jun Q1 et al). Conservative by
+# design: a block qualifies only when its WHOLE normalized text matches, so
+# column-bleed-glued fragments survive rather than risk eating content.
+_FURNITURE_EXACT = {
+    "do not write in this area",
+    "answer all questions.",
+    "answer all questions",
+    "turn over",
+    "blank page",
+    "pmt",
+}
+_FURNITURE_PREFIXES = (
+    "do not write in this area",
+    "some questions must be answered with a cross in a box",
+    "if you change your mind, put a line through the box",
+)
+# "Total for Question N = X marks" echoes in stems: excluded from the RETRIEVAL
+# render with their own counter, but never touched at parse level — the rows
+# are G1 arithmetic witnesses in the atoms product.
+_FURNITURE_TOTAL_ROW = re.compile(
+    r"^total for question \d+\b.*\bmarks?\s*\.?$", re.IGNORECASE)
+
+# G4: deterministic figure-caption shape (same-question nearest-block pull).
+_FIGURE_CAPTION = re.compile(
+    r"^(figure|fig\.?|graph|diagram|chart)\s*\d*\b", re.IGNORECASE)
+
+
+def _resolve_figure_alt(figure_el, q_paras, order):
+    """G4: fill an empty figure alt from the nearest same-question caption.
+
+    q_paras = [(emission_order, normalized_text)] of the question's kept para
+    blocks; order = the figure's own emission order. Returns the caption used
+    ("" when none found — nothing fabricated). Mutates figure_el["alt"].
+    """
+    if figure_el.get("alt"):
+        return figure_el["alt"]
+    best, best_dist = None, None
+    for o, cap in q_paras:
+        if not _FIGURE_CAPTION.match(cap):
+            continue
+        d = abs(o - order)
+        if best is None or d < best_dist:
+            best, best_dist = cap, d
+    if best:
+        figure_el["alt"] = best
+    return best or ""
 
 
 def _norm(s):
     """Whitespace-collapsed comparison form for alignment search."""
     return re.sub(r"\s+", " ", s or "").strip()
+
+
+def classify_furniture(text):
+    """Render-level furniture classification for a candidate text block.
+
+    Returns None (keep), "furniture" (boilerplate), or "total_row" (the
+    "Total for Question N" witness echo). Whole-block conservative matching
+    only; empty/whitespace text is never furniture.
+    """
+    if text is None:
+        return None
+    n = _norm(text).lower().rstrip(".")
+    if not n:
+        return None
+    if n in _FURNITURE_EXACT or n.rstrip(".") in _FURNITURE_EXACT:
+        return "furniture"
+    for p in _FURNITURE_PREFIXES:
+        if n.startswith(p):
+            return "furniture"
+    if _FURNITURE_TOTAL_ROW.match(n):
+        return "total_row"
+    return None
+
+
+def canonical_series(printed, normalized):
+    """(series, year) from manifest series fields — JAN/JUN/NOV or None.
+
+    A raw label like "Summer 2019" as a filter is a lie waiting for a
+    year-range query (plan §12 #7): unrecognized series stays None, year is
+    still emitted when derivable. "Summer" canonicalizes to JUN.
+    """
+    series = None
+    for cand in (printed or "", normalized or ""):
+        low = cand.lower()
+        for word, val in _SERIES_WORDS:
+            if word in low:
+                series = val
+                break
+        if series:
+            break
+        m = re.search(r"(^|-)(\d{4})-(\d{1,2})(-|$)", cand)
+        if m and m.group(3) in _MONTH_SERIES:
+            series = _MONTH_SERIES[m.group(3)]
+            break
+        m = re.search(r"(^|-)(\d{1,2})-(\d{4})(-|$)", cand)
+        if m and m.group(2) in _MONTH_SERIES:
+            series = _MONTH_SERIES[m.group(2)]
+            break
+    year = None
+    for cand in (printed or "", normalized or ""):
+        m = re.search(r"\b(19\d{2}|20\d{2})\b", cand)
+        if m:
+            year = int(m.group(1))
+            break
+        m = re.match(r"^(\d{4})-(\d{1,2})$", cand.strip())
+        if m:
+            year = int(m.group(1))
+            break
+    return series, year
+
+
+def _parse_manifest(paper_dir):
+    """Shared manifest.yaml scan → (vals dict) — identity + retrieval metadata."""
+    path = os.path.join(paper_dir, "manifest.yaml")
+    vals = {}
+    top = None
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.rstrip("\n")
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+                indent = len(line) - len(line.lstrip(" "))
+                stripped = line.strip()
+                if indent == 0:
+                    m = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", stripped)
+                    if not m:
+                        top = None
+                        continue
+                    top, rest = m.group(1), m.group(2)
+                    if rest:
+                        vals[top] = rest  # top-level scalar (e.g. subject)
+                    else:
+                        vals[top] = {}
+                elif indent == 2 and isinstance(vals.get(top), dict):
+                    m = re.match(r"^([\w-]+):\s*(.*)$", stripped)
+                    if m:
+                        vals[top][m.group(1)] = m.group(2)
+    except OSError:
+        pass
+    return vals
+
+
+def load_retrieval_meta(paper_dir):
+    """Doc-level retrieval identity from manifest.yaml (v1.2.0 contract).
+
+    Mirrors core CanonicalDocumentDto.RetrievalMeta exactly: subjectTitle,
+    subjectCode (alias-normalized), series (JAN/JUN/NOV or None), year,
+    paperCode, label, unit, specCodes. Returns None when the manifest carries
+    no identity at all — core treats a missing retrieval block as legacy-
+    tolerant, so absence stays honest (never fabricated).
+    """
+    vals = _parse_manifest(paper_dir)
+    if not vals:
+        return None
+    qual = vals.get("qualification") or {}
+    series = vals.get("series") or {}
+    paper = vals.get("paper") or {}
+    subject = vals.get("subject") or ""
+
+    printed = (series.get("printed") or series.get("normalized") or "")
+    printed = printed.split(";")[0].strip()
+    norm_series, year = canonical_series(printed, series.get("normalized") or "")
+
+    # subjectCode: spec/unit code, alias-normalized (4CH0→4CH1 pilot mapping).
+    code = None
+    pid_parts = (vals.get("paper_id") or "").split(":")
+    if paper.get("unit_code"):
+        code = str(paper["unit_code"]).split("/")[0].strip()
+    elif len(pid_parts) >= 4:
+        code = pid_parts[3].strip()
+    if code:
+        code = SUBJECT_CODE_ALIASES.get(code.upper(), code.upper())
+
+    # paperCode: full unit reference in the production exam_papers format
+    # ("4CH1/1C"); label: "Paper 1C".
+    paper_code = paper.get("official_reference") or None
+    variant = paper.get("paper_number_variant") or None
+    if not paper_code and code and variant:
+        paper_code = f"{code}/{variant}"
+    label = f"Paper {variant}" if variant else None
+
+    subject_title = " ".join(x for x in
+                             (qual.get("name"), subject.title() if subject else None)
+                             if x) or None
+
+    if not any((subject_title, code, norm_series, year, paper_code, label)):
+        return None
+    return {
+        "subjectTitle": subject_title,
+        "subjectCode": code,
+        "series": norm_series,
+        "year": year,
+        "paperCode": paper_code,
+        "label": label,
+        "unit": None,      # papers span the whole spec — no unit split (honest null)
+        "specCodes": None,  # spec tagging is the taxonomy lane's join on paperDir#qN — never baked into docs
+    }
+
+
+# ── helpers ───────────────────────────────────────────────────────────────────
 
 
 def sha256_file(path):
@@ -139,33 +386,7 @@ def load_manifest_identity(paper_dir):
     the doubled 'June 2011; June 2011' printed values in older manifests
     normalize to the first part).
     """
-    path = os.path.join(paper_dir, "manifest.yaml")
-    top = None
-    vals = {}
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for raw in f:
-                line = raw.rstrip("\n")
-                if not line.strip() or line.lstrip().startswith("#"):
-                    continue
-                indent = len(line) - len(line.lstrip(" "))
-                stripped = line.strip()
-                if indent == 0:
-                    m = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", stripped)
-                    if not m:
-                        top = None
-                        continue
-                    top, rest = m.group(1), m.group(2)
-                    if rest:
-                        vals[top] = rest  # top-level scalar (e.g. subject)
-                    else:
-                        vals[top] = {}
-                elif indent == 2 and isinstance(vals.get(top), dict):
-                    m = re.match(r"^([\w-]+):\s*(.*)$", stripped)
-                    if m:
-                        vals[top][m.group(1)] = m.group(2)
-    except OSError:
-        pass
+    vals = _parse_manifest(paper_dir)
 
     qual = vals.get("qualification") or {}
     series = vals.get("series") or {}
@@ -242,17 +463,19 @@ class _Elements:
         self._n += 1
         return idx
 
-    def add_text(self, text, page, role="paragraph", heading_level=None, bbox=None):
+    def add_text(self, text, page, role="paragraph", heading_level=None, bbox=None,
+                 group_key=None):
         idx = self._next_id()
         self.text_blocks.append({
             "element_id": f"e{idx:06d}", "element_type": "text_block",
             "page_number": page, "bounding_box": bbox, "text": text,
             "reading_order": idx, "confidence": 1.0, "role": role,
             "heading_level": heading_level, **_engine_fields(),
+            "group_key": group_key,
         })
         return self.text_blocks[-1]
 
-    def add_table(self, md, page, bbox=None):
+    def add_table(self, md, page, bbox=None, group_key=None):
         idx = self._next_id()
         rows = [[c.strip() for c in ln.strip().strip("|").split("|")]
                 for ln in md.split("\n")
@@ -263,10 +486,11 @@ class _Elements:
             "reading_order": idx, "confidence": 1.0, "rows": rows,
             "row_count": len(rows),
             "column_count": len(rows[0]) if rows else 0, **_engine_fields(),
+            "group_key": group_key,
         })
         return self.tables[-1]
 
-    def add_figure(self, src, page, alt="", bbox=None):
+    def add_figure(self, src, page, alt="", bbox=None, group_key=None):
         idx = self._next_id()
         fmt = src[src.rfind(".") + 1:] if "." in src else None
         self.figures.append({
@@ -274,6 +498,7 @@ class _Elements:
             "page_number": page, "bounding_box": bbox, "text": src,
             "reading_order": idx, "confidence": 1.0, "format": fmt,
             "source_name": src, "alt": alt or "", **_engine_fields(),
+            "group_key": group_key,
         })
         return self.figures[-1]
 
@@ -383,9 +608,9 @@ def _source_block(paper_dir, filename, manifest_checksums, mat_key):
     }
 
 
-def _document(source, page_count, sections, elements, params):
+def _document(source, page_count, sections, elements, params, retrieval=None):
     els = elements.all()
-    return {
+    doc = {
         "documentId": content_document_id(source["checksum"], ENGINE_NAME, ENGINE_VERSION),
         "schemaVersion": SCHEMA_VERSION,
         "version": 1,
@@ -404,6 +629,10 @@ def _document(source, page_count, sections, elements, params):
             "application": APPLICATION, "schemaVersion": SCHEMA_VERSION,
         },
     }
+    if retrieval is not None:
+        # core CanonicalDocumentDto.RetrievalMeta — legacy-tolerant when absent
+        doc["retrieval"] = retrieval
+    return doc
 
 
 def _iter_qp_blocks(question):
@@ -425,7 +654,7 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
     marker_count, lines, per_line = qp_pages or qp_md_pages(paper_dir)
     manifest_checksums = (manifest_checksums if manifest_checksums is not None
                           else load_manifest_checksums(paper_dir))
-    header = load_manifest_identity(paper_dir)
+    retrieval = load_retrieval_meta(paper_dir)
     # pageCount honesty: markers should cover the QP, but figure pages are
     # authoritative for their own page — raise pageCount if figures exceed it
     figure_pages = []
@@ -443,7 +672,8 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
     sections = []
     stats = {"questions": len(atoms["questions"]), "openerAnchors": 0,
              "openerFallbacks": 0, "blockAligned": 0, "blockInherited": 0,
-             "retrievalHeaders": 0, "retrievalHeaderSkipped": 0}
+             "furnitureExcluded": 0, "furnitureTotalRowsExcluded": 0,
+             "figureAltFilled": 0, "figureAltBlocks": 0}
 
     for q in atoms["questions"]:
         blocks = list(_iter_qp_blocks(q))
@@ -452,9 +682,10 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
         fallback_page, found = aligner.question_page(opener_key, 1)
         stats["openerAnchors" if found else "openerFallbacks"] += 1
         q_page = fallback_page
+        group = f"q{int(q['number'])}"
         q_elems = []
-        q_el_objs = []
-        for _scope, block in blocks:
+        q_paras = []  # (emission_order, text) — G4 caption-pull candidates
+        for order, (_scope, block) in enumerate(blocks):
             t = block.get("type")
             page = None
             if t == "image":
@@ -468,37 +699,47 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
                         if search else q_page)
             page = max(1, page)
             if t == "para":
-                el = els.add_text(block.get("md"), page)
+                text = block.get("md")
+                kind = classify_furniture(text)
+                if kind:
+                    stats["furnitureExcluded" if kind == "furniture"
+                          else "furnitureTotalRowsExcluded"] += 1
+                    continue
+                el = els.add_text(text, page, group_key=group)
+                if text:
+                    q_paras.append((order, _norm(text)))
             elif t == "table":
+                # tables are never furniture: a "Total" row inside a real
+                # table is content (conservative whole-block policy)
                 el = els.add_table(block.get("md") or "", page,
-                                   _bbox_from_atoms(block))
+                                   _bbox_from_atoms(block), group_key=group)
             elif t == "image":
                 el = els.add_figure(block.get("src") or "", page,
                                     block.get("alt") or "",
-                                    _bbox_from_atoms(block))
+                                    _bbox_from_atoms(block), group_key=group)
+                if _resolve_figure_alt(el, q_paras, order):
+                    stats["figureAltFilled"] += 1
+                if el["alt"]:
+                    # G4: the chunker packs text blocks, not figure elements —
+                    # an adjacent [figure: alt] block carries the visual signal
+                    # into the embeddings
+                    alt_el = els.add_text(f"[figure: {el['alt']}]", page,
+                                          role="figure_alt", group_key=group)
+                    q_elems.append(alt_el["element_id"])
+                    stats["figureAltBlocks"] += 1
             elif t == "choices":
-                el = els.add_text(_choices_text(block.get("items") or []),
-                                  page, role="choices")
+                text = _choices_text(block.get("items") or [])
+                kind = classify_furniture(text)
+                if kind:
+                    stats["furnitureExcluded" if kind == "furniture"
+                          else "furnitureTotalRowsExcluded"] += 1
+                    continue
+                el = els.add_text(text, page, role="choices", group_key=group)
             elif t == "answer_lines":
-                el = els.add_text(None, page, role="answer_lines")
+                el = els.add_text(None, page, role="answer_lines", group_key=group)
             else:  # unknown future block type: keep provenance, no text
-                el = els.add_text(block.get("md"), page)
+                el = els.add_text(block.get("md"), page, group_key=group)
             q_elems.append(el["element_id"])
-            q_el_objs.append(el)
-        # retrieval header: prepend paper context to the first text-bearing
-        # element of the question so chunks starting here carry the signal
-        if header:
-            carrier = next((e for e in q_el_objs
-                            if e["element_type"] == "text_block" and e["text"]),
-                           None)
-            if carrier is not None:
-                carrier["text"] = (f"[{header} | Question {q['number']}] "
-                                   + carrier["text"])
-                stats["retrievalHeaders"] += 1
-            else:
-                stats["retrievalHeaderSkipped"] += 1
-        else:
-            stats["retrievalHeaderSkipped"] += 1
         sections.append({
             "sectionId": f"q{int(q['number']):02d}",
             "title": f"Question {q['number']} ({q.get('marks', 0)} marks)",
@@ -515,7 +756,7 @@ def build_qp_document(paper_dir, atoms=None, qp_pages=None, manifest_checksums=N
         page_count, sections, els, {
             "upstreamProduct": "syllabai.pastpaper.atoms/1.1",
             "pageAlignment": "qp-md-markers", **stats,
-        })
+        }, retrieval=retrieval)
     return doc
 
 
@@ -537,7 +778,7 @@ def build_ms_document(paper_dir, atoms=None, manifest_checksums=None):
     atoms = atoms or load_atoms(paper_dir)
     manifest_checksums = (manifest_checksums if manifest_checksums is not None
                           else load_manifest_checksums(paper_dir))
-    header = load_manifest_identity(paper_dir)
+    retrieval = load_retrieval_meta(paper_dir)
     els = _Elements()
     sections = []
     max_page = 1
@@ -548,46 +789,58 @@ def build_ms_document(paper_dir, atoms=None, manifest_checksums=None):
         pages = [p for pt in points for p in (pt.get("pages") or [])]
         q_page = min(pages) if pages else 1
         max_page = max([max_page] + pages)
+        group = f"q{int(q['number'])}"
         q_elems = []
         heading_el = els.add_text(
-            (f"[{header} | Mark scheme] " if header else "")
-            + f"Mark scheme for Question {q['number']}", q_page,
-            role="heading", heading_level=2)
+            f"Mark scheme for Question {q['number']}", q_page,
+            role="heading", heading_level=2, group_key=group)
         q_elems.append(heading_el["element_id"])
         totals = ms.get("totals") or {}
         if totals.get("printed") is not None:
             el = els.add_text(
                 f"Question {q['number']} printed total: {totals['printed']} marks"
                 + ("" if totals.get("verified") else " (verification FAILED)"),
-                q_page, role="paragraph")
+                q_page, role="paragraph", group_key=group)
             q_elems.append(el["element_id"])
         for band in ms.get("levels") or []:
             rng = band.get("markRange") or {}
             el = els.add_text(
                 f"Level {band.get('level')} ({rng.get('min')}-{rng.get('max')} marks): "
-                f"{band.get('descriptor', '')}", q_page, role="levels_band")
+                f"{band.get('descriptor', '')}", q_page, role="levels_band",
+                group_key=group)
             q_elems.append(el["element_id"])
         for g in ms.get("guidance") or []:
-            el = els.add_text(f"Q{q['number']} guidance: {g}", q_page)
+            el = els.add_text(f"Q{q['number']} guidance: {g}", q_page,
+                              group_key=group)
             q_elems.append(el["element_id"])
         for pt in points:
             pt_pages = pt.get("pages") or [q_page]
             pt_page = max(1, min(pt_pages[0], max_page))
             el = els.add_text(_point_text(q["number"], pt), pt_page,
-                              role="mark_point")
+                              role="mark_point", group_key=group)
             q_elems.append(el["element_id"])
             img = pt.get("image")
             if img and img.get("src"):
                 fpage = (img.get("pages") or [pt_page])[0]
                 max_page = max(max_page, fpage)
-                el = els.add_figure(img["src"], fpage, img.get("alt") or "")
+                el = els.add_figure(img["src"], fpage, img.get("alt") or "",
+                                    group_key=group)
                 q_elems.append(el["element_id"])
+                if (img.get("alt") or "").strip():
+                    alt_el = els.add_text(f"[figure: {img['alt']}]", fpage,
+                                          role="figure_alt", group_key=group)
+                    q_elems.append(alt_el["element_id"])
         for img in ms.get("images") or []:
             if img.get("src"):
                 fpage = (img.get("pages") or [q_page])[0]
                 max_page = max(max_page, fpage)
-                el = els.add_figure(img["src"], fpage, img.get("alt") or "")
+                el = els.add_figure(img["src"], fpage, img.get("alt") or "",
+                                    group_key=group)
                 q_elems.append(el["element_id"])
+                if (img.get("alt") or "").strip():
+                    alt_el = els.add_text(f"[figure: {img['alt']}]", fpage,
+                                          role="figure_alt", group_key=group)
+                    q_elems.append(alt_el["element_id"])
         sections.append({
             "sectionId": f"q{int(q['number']):02d}",
             "title": f"Question {q['number']} mark scheme",
@@ -599,7 +852,7 @@ def build_ms_document(paper_dir, atoms=None, manifest_checksums=None):
         max_page, sections, els, {
             "upstreamProduct": "syllabai.pastpaper.atoms/1.1",
             "pointPagesSource": "atoms ms points",
-        })
+        }, retrieval=retrieval)
     return doc
 
 
@@ -641,6 +894,19 @@ def validate_canonical(doc):
                                           prov["engineVersion"])
             if derived != doc["documentId"]:
                 v.append(f"documentId derivation drift (expected {derived})")
+    # retrieval identity (Embedding v2, plan §4.2/§8.1) — mirror of core
+    # CanonicalDocumentValidator: optional as a whole, but a series that IS
+    # present must be the canonical enum and the year plausible.
+    ret = doc.get("retrieval")
+    if ret is not None:
+        s = ret.get("series")
+        if s is not None and str(s).strip() != "" and str(s).strip() not in (
+                "JAN", "JUN", "NOV"):
+            v.append(f'retrieval.series must be JAN, JUN or NOV (was {s!r}) — '
+                     'canonicalize "Summer"→JUN, "October/November"→NOV before ingest')
+        y = ret.get("year")
+        if y is not None and not (1950 <= int(y) <= 2100):
+            v.append(f"retrieval.year must be a plausible exam year (was {y})")
     seen = set()
     for family, els in (("textBlock", doc.get("textBlocks")),
                         ("table", doc.get("tables")),
@@ -685,41 +951,54 @@ def validate_canonical(doc):
 
 
 def simulate_chunks(doc, target=CHUNK_TARGET_TOKENS, max_tokens=CHUNK_MAX_TOKENS):
-    """Faithful port of core ChunkingService.chunk (deterministic packing)."""
+    """Faithful port of core ChunkingService.chunk (deterministic packing).
+
+    v1.2.0 contract parity: a group_key change between consecutive blocks is a
+    HARD chunk boundary (no chunk crosses an atom) exactly as core R2 ships it;
+    blocks without a group_key (legacy shape) never introduce a boundary.
+    """
     cands = []
     for e in doc.get("textBlocks") or []:
         if e and e.get("text") and e["text"].strip():
             cands.append((e["element_id"], e["page_number"], e["reading_order"],
-                          e["text"].strip()))
+                          e["text"].strip(), e.get("group_key")))
     for e in doc.get("tables") or []:
         if e and e.get("text") and e["text"].strip():
             cands.append((e["element_id"], e["page_number"], e["reading_order"],
-                          e["text"].strip()))
+                          e["text"].strip(), e.get("group_key")))
     for e in doc.get("equations") or []:
         if e:
             text = (e.get("text") or "").strip() or (e.get("latex") or "").strip()
             if text:
                 cands.append((e["element_id"], e["page_number"],
-                              e["reading_order"], text))
+                              e["reading_order"], text, e.get("group_key")))
     cands.sort(key=lambda c: (c[1], c[2], c[0]))
 
     def estimate(t):
         return max(1, (len(t) + 3) // 4)
 
     chunks, current, tokens = [], [], 0
-    for eid, page, _ro, text in cands:
+    prev_group = None
+    for eid, page, _ro, text, group in cands:
         t = estimate(text)
+        boundary = (prev_group is not None and group is not None
+                    and group != prev_group)
+        if boundary and current:
+            chunks.append((current, tokens))
+            current, tokens = [], 0
         if t > max_tokens:
             if current:
                 chunks.append((current, tokens))
                 current, tokens = [], 0
             chunks.append(([(eid, page, text)], t))
+            prev_group = group
             continue
         if tokens + t > target and current:
             chunks.append((current, tokens))
             current, tokens = [], 0
         current.append((eid, page, text))
         tokens += t
+        prev_group = group
     if current:
         chunks.append((current, tokens))
 
@@ -798,6 +1077,7 @@ def convert_paper(paper_dir, out_dir):
                             + len(doc["equations"]),
             "sections": len(doc["sections"]),
             "chunks": len(chunks),
+            "retrieval": doc.get("retrieval"),
             "extractionParams": doc["provenance"]["extractionParams"],
         }
 
