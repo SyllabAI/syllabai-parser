@@ -1,0 +1,264 @@
+{
+ "run": "run-4ch1-2024-06-1c.json",
+ "problems": [],
+ "warnings": [
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 1,
+   "text": "Summer 2024"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 2,
+   "text": "Pearson Edexcel International GCSE"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 3,
+   "text": "In Chemistry (4CH1) Paper 1C"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 4,
+   "text": "Edexcel and BTEC Qualifications"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 5,
+   "text": "Edexcel and BTEC qualifications are awarded by Pearson, the "
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 6,
+   "text": "body. We provide a wide range of qualifications including ac"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 7,
+   "text": "occupational and specific programmes for employers. For furt"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 8,
+   "text": "qualifications websites at www.edexcel.com or www.btec.co.uk"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 9,
+   "text": "get   in   touch   with    us   using   the    details   on "
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 10,
+   "text": "www.edexcel.com/contactus."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 11,
+   "text": "Pearson: helping people progress, everywhere"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 12,
+   "text": "Pearson aspires to be the world’s leading learning company. "
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 13,
+   "text": "progress in their lives through education. We believe in eve"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 14,
+   "text": "kinds of people, wherever they are in the world. We’ve been "
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 15,
+   "text": "over 150 years, and by working across 70 countries, in 100 l"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 16,
+   "text": "international reputation for our commitment to high standard"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 17,
+   "text": "through innovation in education. Find out more about how we "
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 18,
+   "text": "students at: www.pearson.com/uk"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 19,
+   "text": "Summer 2024"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 20,
+   "text": "Question Paper Log Number P75820A"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 21,
+   "text": "Publications Code 4CH1_1C_2406_MS"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 22,
+   "text": "All the material in this publication is copyright"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 23,
+   "text": "© Pearson Education Ltd 2024"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 24,
+   "text": "General Marking Guidance"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 25,
+   "text": "•   All   candidates   must   receive   the   same   treatme"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 26,
+   "text": "Examiners must mark the first candidate in exactly the"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 27,
+   "text": "same way as they mark the last."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 28,
+   "text": "•   Mark schemes should be applied positively. Candidates"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 29,
+   "text": "must be rewarded for what they have shown they can do"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 30,
+   "text": "rather than penalised for omissions."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 31,
+   "text": "•   Examiners should mark according to the mark scheme not"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 32,
+   "text": "according to their perception of where the grade"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 33,
+   "text": "boundaries may lie."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 34,
+   "text": "•   There is no ceiling on achievement. All marks on the mar"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 35,
+   "text": "scheme should be used appropriately."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 36,
+   "text": "•   All the marks on the mark scheme are designed to be"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 37,
+   "text": "awarded. Examiners should always award full marks if"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 38,
+   "text": "deserved, i.e. if the answer matches the mark scheme."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 39,
+   "text": "Examiners should also be prepared to award zero marks if"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 40,
+   "text": "the candidate’s response is not worthy of credit according"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 41,
+   "text": "to the mark scheme."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 42,
+   "text": "•   Where some judgement is required, mark schemes will"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 43,
+   "text": "provide the principles by which marks will be awarded and"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 44,
+   "text": "exemplification may be limited."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 45,
+   "text": "•   When examiners are in doubt regarding the application of"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 46,
+   "text": "the mark scheme to a candidate’s response, the team"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 47,
+   "text": "leader must be consulted."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 48,
+   "text": "•   Crossed out work should be marked UNLESS the candidate"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 49,
+   "text": "has replaced it with an alternative response."
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 50,
+   "text": "Answer                                    Notes            M"
+  },
+  {
+   "code": "LEFTOVER-LINE",
+   "line": 84,
+   "text": "Answer                                         Notes        "
+  }
+ ],
+ "review": [],
+ "ok": true,
+ "questions": 10
+}
