@@ -70,12 +70,14 @@ def parse_blocks(blocks):
         line = b["text"].strip()
         if not line:
             continue
-        if b.get("y0", 0.0) > FOOTER_Y_MIN:
-            continue  # page footer band (page numbers, Turn over)
+        tm = TOTAL_FOR_Q_RE.search(line)
+        if b.get("y0", 0.0) > FOOTER_Y_MIN and tm is None:
+            continue  # page footer band (page numbers, Turn over). A printed
+            # question total row is QUESTION furniture, never PAGE furniture —
+            # old-spec layouts sit it inside the footer band (4CH0 Jan-2016 1C).
         if furniture(line):
             continue
 
-        tm = TOTAL_FOR_Q_RE.search(line)
         if tm:
             qn = int(tm.group(1))
             val = int(tm.group(2))

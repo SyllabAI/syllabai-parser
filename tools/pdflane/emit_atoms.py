@@ -175,12 +175,15 @@ def build_qp_atoms(qp_blocks):
         line = b["text"].strip()
         if not line:
             continue
-        if b.get("y0", 0.0) > parse_qp.FOOTER_Y_MIN:
+        tm = parse_qp.TOTAL_FOR_Q_RE.search(line)
+        if b.get("y0", 0.0) > parse_qp.FOOTER_Y_MIN and tm is None:
+            # page-footer band. A printed question total row is QUESTION
+            # furniture, never PAGE furniture — old-spec layouts sit it inside
+            # the footer band (e.g. 4CH0 Jan-2016 1C Q3/Q9/Q10 at y0 792-801).
             continue
         if parse_qp.furniture(line):
             continue
 
-        tm = parse_qp.TOTAL_FOR_Q_RE.search(line)
         if tm:
             qn, val = int(tm.group(1)), int(tm.group(2))
             if cur is not None and cur["number"] == qn and cur["total"] is None:
