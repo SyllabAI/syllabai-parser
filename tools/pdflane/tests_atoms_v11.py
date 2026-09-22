@@ -251,16 +251,35 @@ class CorrectionsTests(unittest.TestCase):
         doc = emit_atoms.build_document([self.qp_atom()], [self.ms_q()],
                                         corrections={3: 13})
         q3 = doc["questions"][0]
+        # G1 upgrade: verifiedAgainst records the QP-printed closure path that
+        # fired before the correction was applied (additive disclosure key)
         self.assertEqual(q3["markScheme"]["totals"],
-                         {"printed": 13, "sum": 13, "verified": True})
+                         {"printed": 13, "sum": 13, "verified": True,
+                          "verifiedAgainst": "qp-printed"})
         self.assertNotIn("flags", q3)
         self.assertTrue(doc["marksVerified"])
 
     def test_without_correction_flags_remain(self):
         doc = emit_atoms.build_document([self.qp_atom()], [self.ms_q()])
         q3 = doc["questions"][0]
-        self.assertIn("MS-POINTS-DONT-CLOSE", q3["flags"])
+        # G1 upgrade: the printed QP/MS total conflict stays disclosed, but
+        # the point sum (13) closes against the QP printed total (13), so the
+        # arithmetic is verified and MS-POINTS-DONT-CLOSE is not raised —
+        # this is exactly the 4CH0 1C jan2012 q3 shape (MS prints 'Total 11',
+        # cells and QP both say 13)
+        self.assertNotIn("MS-POINTS-DONT-CLOSE", q3["flags"])
         self.assertIn("PRINTED-TOTAL-DISCREPANCY-QP-VS-MS", q3["flags"])
+        self.assertTrue(doc["marksVerified"])
+
+    def test_sum_closing_to_neither_source_still_fails(self):
+        # a genuine arithmetic defect: the points close to no printed source
+        # (sum 10 vs printed 11 vs QP 13)
+        bad = self.ms_q()
+        bad["points"] = [ms_grid_point("M%d" % i, None, None, 1, "x")
+                         for i in range(1, 11)]
+        doc = emit_atoms.build_document([self.qp_atom()], [bad])
+        q3 = doc["questions"][0]
+        self.assertIn("MS-POINTS-DONT-CLOSE", q3["flags"])
         self.assertFalse(doc["marksVerified"])
 
     def test_correction_never_touches_missing_ms(self):

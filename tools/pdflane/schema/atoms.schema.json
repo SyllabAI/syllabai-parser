@@ -161,7 +161,8 @@
           "properties": {
             "printed": {"type": ["integer", "null"], "minimum": 1},
             "sum": {"type": "integer", "minimum": 0},
-            "verified": {"type": "boolean"}
+            "verified": {"type": "boolean"},
+            "verifiedAgainst": {"enum": ["qp-printed"]}
           }
         },
         "guidance": {"type": "array", "items": {"type": "string"}},
@@ -174,10 +175,12 @@
             "additionalProperties": false,
             "properties": {
               "part": {"type": "string"},
-              "labels": {"type": "array", "minItems": 2,
+              "labels": {"type": "array", "minItems": 1,
                          "items": {"type": "string"}},
               "cap": {"type": "integer", "minimum": 1},
-              "reason": {"type": "string"}
+              "reason": {"type": "string"},
+              "indices": {"type": "array", "minItems": 1,
+                          "items": {"type": "integer", "minimum": 0}}
             }
           }
         },

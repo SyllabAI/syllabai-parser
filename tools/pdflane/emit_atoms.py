@@ -525,7 +525,27 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
         guidance = [tidy(g["text"]) for g in (parse_ms_q or {}).get("guidance", [])]
         printed = (parse_ms_q or {}).get("total_row")
         provenance = "pdf-parsed"
+        # G1 upgrade: deterministic capped alternative groups ('Any N for M
+        # each') become pools with position indices — same collapse semantics
+        # as the S2-lane pools (members contribute their cap, not their sum).
+        # Member points are matched by identity to survive the 1:1 point list
+        # built above.
         pools = []
+        ms_pts = (parse_ms_q or {}).get("points", []) or []
+        for cg in (parse_ms_q or {}).get("capped_groups", []) or []:
+            # indices are resolved post-demotion by parse_ms; identity match
+            # against ms_pts remains as the fallback for raw groups
+            idxs = cg.get("indices")
+            if idxs is None:
+                idxs = [i for i, p in enumerate(ms_pts)
+                        if any(p is m for m in cg.get("_members", []))]
+            if not idxs:
+                continue
+            pools.append({"part": _pool_part_key(points[idxs[0]]),
+                          "labels": [points[i]["id"] for i in idxs],
+                          "cap": int(cg["anyN"]) * int(cg["per"]),
+                          "indices": idxs,
+                          "reason": "any-%d-for-%d-each" % (cg["anyN"], cg["per"])})
         ms_images = []
     levels = _detect_levels(guidance) if guidance else None
     if levels:
@@ -550,11 +570,24 @@ def build_mark_scheme(s2q, parse_ms_q, line_page=None):
 POOL_PART_RE = re.compile(r"^(?P<letter>[a-z])(?:-(?P<sub>[ivx]+))?$")
 
 
+def _pool_part_key(pt):
+    """G1 upgrade: deterministic-lane pools carry the member block's part in
+    the S2 dash form ('b-i') so the letter-level cross-check adds the pool cap
+    to the right letter."""
+    part = (pt or {}).get("part") or ""
+    sub = (pt or {}).get("sub")
+    return "%s-%s" % (part, sub) if (part and sub) else part
+
+
 def _pool_letter(s):
     return (s or "")[0:1]
 
 
-def _pool_matches(pt, pool):
+def _pool_matches(pt, pool, idx=None):
+    if "indices" in pool:
+        # G1 upgrade: deterministic-lane pools carry position indices (member
+        # labels repeat across parts in old-spec mark schemes)
+        return idx is not None and idx in pool["indices"]
     if pt["id"] not in pool["labels"]:
         return False
     if not pool["part"]:
@@ -593,8 +626,8 @@ def _closable_sum(points, pools):
     total = 0
     for pool in pools or []:
         total += int(pool["cap"])
-    for p in points:
-        if not any(_pool_matches(p, pool) for pool in pools or []):
+    for i, p in enumerate(points):
+        if not any(_pool_matches(p, pool, i) for pool in pools or []):
             total += p["marks"]
     return total
 
@@ -629,6 +662,13 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
                   "guidance": [], "points": [], "provenance": "pdf-parsed"}
         else:
             ms = build_mark_scheme(s2q, pmsq, line_page)
+        # G1 upgrade: a sum that closes against the QP printed total (but not
+        # the MS total row — old-spec misprints) still counts as verified
+        if s2q is None and not ms["totals"]["verified"] \
+                and a["total"] is not None \
+                and ms["totals"]["sum"] == a["total"]:
+            ms["totals"]["verified"] = True
+            ms["totals"]["verifiedAgainst"] = "qp-printed"
         if corrections and qnum in corrections and "MS-QUESTION-MISSING" not in flags:
             corrected = int(corrections[qnum])
             if ms["totals"]["printed"] is not None \
@@ -643,17 +683,21 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
             raise EmitError("q%d: no QP total and no MS total row" % qnum)
         if a["total"] is not None and printed is not None and a["total"] != printed:
             flags.add("PRINTED-TOTAL-DISCREPANCY-QP-VS-MS")
-        if printed is not None and ms["totals"]["sum"] != printed:
+        # G1 upgrade: the point sum must close to a printed source — the MS
+        # total row OR the QP printed total (old-spec MSs carry misprinted
+        # total rows; the QP/MS conflict stays flagged above for disclosure)
+        if printed is not None and ms["totals"]["sum"] != printed \
+                and ms["totals"]["sum"] != a["total"]:
             flags.add("MS-POINTS-DONT-CLOSE")
         # letter-level part cross-check (robust to MS/QP sub-structure divergence:
         # e.g. QP (a)(ii) worth 2 = MS a/ii + a/iii); pool members collapse to
         # their pool cap within their letter
         part_sums = {}
         exact_sub_sums = {}
-        for p in ms["points"]:
+        for pidx, p in enumerate(ms["points"]):
             if p["part"] is None:
                 continue
-            if not any(_pool_matches(p, pool) for pool in ms.get("pools", [])):
+            if not any(_pool_matches(p, pool, pidx) for pool in ms.get("pools", [])):
                 part_sums[p["part"]] = part_sums.get(p["part"], 0) + p["marks"]
             key = (p["part"], p["sub"])
             exact_sub_sums[key] = exact_sub_sums.get(key, 0) + p["marks"]
@@ -747,7 +791,16 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
             flags.add("QP-STEM-MARKS-MARKER")
         if not ms["totals"]["verified"]:
             verified_all = False
-        if flags & {"QP-TOTAL-MISSING", "PRINTED-TOTAL-DISCREPANCY-QP-VS-MS",
+        # G1 upgrade: the atom's marks come from the QP printed total — they
+        # count as verified only when the MS point arithmetic supports that
+        # value (closes to the printed row or to the QP total itself)
+        if a["total"] is not None and ms["totals"]["sum"] != a["total"]:
+            verified_all = False
+        # PRINTED-TOTAL-DISCREPANCY-QP-VS-MS is disclosure-only since the G1
+        # upgrade: a one-sided MS total-row misprint whose arithmetic closes
+        # against the QP total is still verified marks (evidence: 4CH0 1C
+        # jan2012 q3 — MS prints 'Total 11 marks', cells and QP both say 13)
+        if flags & {"QP-TOTAL-MISSING",
                     "MS-QUESTION-MISSING", "MS-POINTS-DONT-CLOSE"}:
             verified_all = False
 

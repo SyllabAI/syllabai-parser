@@ -141,7 +141,12 @@ def main():
                                   "bbox": b.get("bbox"),
                                   "asset": b.get("text", "")}})
     qp_parse = parse_qp.parse_blocks(qp_blocks)
-    ms_parse = parse_ms.parse_pages(ms_pages)
+    # G1 upgrade: QP printed totals feed the MS classifier — displaced
+    # merged-cell recovery against the QP total and QP-aware arithmetic_ok
+    # (old-spec MSs carry misprinted total rows; see parse_ms.parse_pages)
+    qp_totals = {q["number"]: q["total"] for q in qp_parse["questions"]
+                 if q.get("total") is not None and not q.get("orphan_total")}
+    ms_parse = parse_ms.parse_pages(ms_pages, qp_totals=qp_totals)
 
     corrections = None
     corrections_reason = None
