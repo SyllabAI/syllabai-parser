@@ -1039,6 +1039,44 @@ def assert_no_leakage(qp_doc):
 def convert_paper(paper_dir, out_dir):
     atoms = load_atoms(paper_dir)
     manifest_checksums = load_manifest_checksums(paper_dir)
+    ms_only = atoms.get("source", {}).get("qp") is None
+    if ms_only:
+        # COVID-session MS-only product: no QP content exists; only the
+        # MARK_SCHEME canonical is minted (build_ms_document reads markScheme
+        # points/pages from the atoms and never touches the QP side).
+        ms_doc = build_ms_document(paper_dir, atoms=atoms,
+                                   manifest_checksums=manifest_checksums)
+        problems = validate_canonical(ms_doc)
+        if problems:
+            raise ValueError(f"{paper_dir}: canonical validation failed: {problems}")
+        ms_chunks = simulate_chunks(ms_doc)
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, "ms.canonical.json"), "w", encoding="utf-8") as f:
+            json.dump(ms_doc, f, ensure_ascii=False, indent=1)
+        preview = {
+            "note": "mirror of core ChunkingService (300/800 tokens) — core is the "
+                    "authority at ingest; this preview proves chunk/page behavior",
+            "targetTokens": CHUNK_TARGET_TOKENS, "maxTokens": CHUNK_MAX_TOKENS,
+            "qp": {"chunkCount": 0, "chunks": []},
+            "ms": {"chunkCount": len(ms_chunks), "chunks": ms_chunks},
+        }
+        with open(os.path.join(out_dir, "chunks_preview.json"), "w", encoding="utf-8") as f:
+            json.dump(preview, f, ensure_ascii=False, indent=1)
+        summary = {"slug": os.path.basename(os.path.normpath(paper_dir)),
+                   "ms_only": True,
+                   "ms": {"documentId": ms_doc["documentId"],
+                          "checksum": ms_doc["source"]["checksum"],
+                          "source": ms_doc["source"]["fileName"],
+                          "pageCount": ms_doc["pageCount"],
+                          "totalElements": len(ms_doc["textBlocks"]) + len(ms_doc["tables"])
+                          + len(ms_doc["figures"]) + len(ms_doc["equations"]),
+                          "textElements": len(ms_doc["textBlocks"]) + len(ms_doc["tables"])
+                          + len(ms_doc["equations"]),
+                          "sections": len(ms_doc["sections"]),
+                          "chunks": len(ms_chunks)}}
+        with open(os.path.join(out_dir, "summary.json"), "w", encoding="utf-8") as f:
+            json.dump(summary, f, ensure_ascii=False, indent=1)
+        return summary
     qp_doc = build_qp_document(paper_dir, atoms=atoms,
                                manifest_checksums=manifest_checksums)
     ms_doc = build_ms_document(paper_dir, atoms=atoms,

@@ -31,7 +31,7 @@ NOTE_PREFIX_RULES = [
     ("ignore", "ignore"),
 ]
 
-ATOM_FLAGS_ORDER = ["QP-TOTAL-MISSING", "MS-QUESTION-MISSING",
+ATOM_FLAGS_ORDER = ["MS-ONLY-NO-QP", "QP-TOTAL-MISSING", "MS-QUESTION-MISSING",
                     "PRINTED-TOTAL-DISCREPANCY-QP-VS-MS", "MS-POINTS-DONT-CLOSE",
                     "PART-MARKS-MISMATCH",
                     "QP-STEM-MARKS-MARKER", "MS-PART-NO-POINTS", "MS-POINT-UNKNOWN-PART"]
@@ -824,6 +824,50 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
         "questionCount": len(out_atoms),
         "totalMarks": sum(x["marks"] for x in out_atoms),
         "marksVerified": verified_all,
+        "questions": out_atoms,
+    }
+    return doc
+
+
+def build_document_ms_only(ms_questions, line_page=None, source_ms="ms.pdf"):
+    """MS-only envelope (COVID-session papers ship ms.pdf without a QP).
+
+    No QP atoms exist: stem/parts stay empty, the atom type is "ms-only",
+    marks come from the MS printed total row, and marksVerified stays False
+    by construction — the printed-QP closure the G1 verifier needs is
+    impossible without a QP. The mark scheme is still real parsed content
+    (the paper-axis search substrate); only the arithmetic cross-check is
+    absent, and that honesty is carried as the MS-ONLY-NO-QP flag.
+    """
+    out_atoms = []
+    for q in ms_questions:
+        qnum = q["number"]
+        ms = build_mark_scheme(None, q, line_page)
+        flags = {"MS-ONLY-NO-QP"}
+        if ms["totals"]["printed"] is None:
+            raise EmitError("q%d: MS-only and no printed total row" % qnum)
+        if ms["totals"]["sum"] != ms["totals"]["printed"]:
+            flags.add("MS-POINTS-DONT-CLOSE")
+        atom = {
+            "number": qnum,
+            "type": "ms-only",
+            "marks": ms["totals"]["printed"],
+            "commandWord": None,
+            "stem": [],
+            "parts": [],
+            "markScheme": ms,
+            "provenance": "pdf-parsed",
+        }
+        ordered = [f for f in ATOM_FLAGS_ORDER if f in flags]
+        if ordered:
+            atom["flags"] = ordered
+        out_atoms.append(atom)
+    doc = {
+        "schema": "syllabai.pastpaper.atoms/1.1",
+        "source": {"qp": None, "ms": source_ms},
+        "questionCount": len(out_atoms),
+        "totalMarks": sum(x["marks"] for x in out_atoms),
+        "marksVerified": False,
         "questions": out_atoms,
     }
     return doc

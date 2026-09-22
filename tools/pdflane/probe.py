@@ -53,6 +53,11 @@ def probe_both(qp_pdf, ms_pdf):
     return r
 
 
+def probe_ms_only(ms_pdf):
+    """MS-only probe (COVID-session papers ship ms.pdf without a QP)."""
+    return {"MS": probe(ms_pdf)}
+
+
 if __name__ == "__main__":
     import sys
     print(json.dumps(probe_both(sys.argv[1], sys.argv[2]), indent=1))

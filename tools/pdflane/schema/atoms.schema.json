@@ -1,248 +1,783 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "syllabai.pastpaper.atoms/1.1",
-  "title": "SyllabAI Past-Paper Atoms (questions.json)",
-  "type": "object",
-  "required": ["schema", "source", "questionCount", "totalMarks", "marksVerified", "questions"],
-  "additionalProperties": false,
-  "properties": {
-    "schema": {"const": "syllabai.pastpaper.atoms/1.1"},
-    "source": {
-      "type": "object",
-      "required": ["qp", "ms"],
-      "additionalProperties": false,
-      "properties": {
-        "qp": {"type": "string", "pattern": "^[^/]+\\.pdf$"},
-        "ms": {"type": "string", "pattern": "^[^/]+\\.pdf$"}
-      }
-    },
-    "questionCount": {"type": "integer", "minimum": 1},
-    "totalMarks": {"type": "integer", "minimum": 1},
-    "marksVerified": {"type": "boolean"},
-    "questions": {"type": "array", "items": {"$ref": "#/definitions/atom"}}
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "$id": "syllabai.pastpaper.atoms/1.1",
+ "title": "SyllabAI Past-Paper Atoms (questions.json)",
+ "type": "object",
+ "required": [
+  "schema",
+  "source",
+  "questionCount",
+  "totalMarks",
+  "marksVerified",
+  "questions"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "schema": {
+   "const": "syllabai.pastpaper.atoms/1.1"
   },
-  "definitions": {
-    "provenanceClass": {"enum": ["pdf-parsed", "llm-structured", "llm-vision"]},
-    "bbox": {
-      "type": "object",
-      "required": ["page", "x0", "y0", "x1", "y1", "units"],
+  "source": {
+   "type": "object",
+   "required": [
+    "qp",
+    "ms"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "qp": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[^/]+\\.pdf$"
+    },
+    "ms": {
+     "type": "string",
+     "pattern": "^[^/]+\\.pdf$"
+    }
+   }
+  },
+  "questionCount": {
+   "type": "integer",
+   "minimum": 1
+  },
+  "totalMarks": {
+   "type": "integer",
+   "minimum": 1
+  },
+  "marksVerified": {
+   "type": "boolean"
+  },
+  "questions": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/atom"
+   }
+  }
+ },
+ "definitions": {
+  "provenanceClass": {
+   "enum": [
+    "pdf-parsed",
+    "llm-structured",
+    "llm-vision"
+   ]
+  },
+  "bbox": {
+   "type": "object",
+   "required": [
+    "page",
+    "x0",
+    "y0",
+    "x1",
+    "y1",
+    "units"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "page": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "x0": {
+     "type": "number"
+    },
+    "y0": {
+     "type": "number"
+    },
+    "x1": {
+     "type": "number"
+    },
+    "y1": {
+     "type": "number"
+    },
+    "units": {
+     "const": "pt"
+    }
+   }
+  },
+  "msImage": {
+   "type": "object",
+   "required": [
+    "src",
+    "pages"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "src": {
+     "type": "string",
+     "pattern": "^assets/[^/]+$"
+    },
+    "alt": {
+     "type": "string"
+    },
+    "pages": {
+     "type": "array",
+     "items": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "minItems": 1
+    }
+   }
+  },
+  "block": {
+   "type": "object",
+   "required": [
+    "type"
+   ],
+   "properties": {
+    "type": {
+     "enum": [
+      "para",
+      "table",
+      "image",
+      "choices",
+      "answer_lines"
+     ]
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "para"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "md"
+      ],
+      "properties": {
+       "type": {
+        "const": "para"
+       },
+       "md": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "additionalProperties": false
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "table"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "md"
+      ],
+      "properties": {
+       "type": {
+        "const": "table"
+       },
+       "md": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "additionalProperties": false
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "image"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "src",
+       "pages"
+      ],
       "additionalProperties": false,
       "properties": {
-        "page": {"type": "integer", "minimum": 1},
-        "x0": {"type": "number"},
-        "y0": {"type": "number"},
-        "x1": {"type": "number"},
-        "y1": {"type": "number"},
-        "units": {"const": "pt"}
+       "type": {
+        "const": "image"
+       },
+       "src": {
+        "type": "string",
+        "pattern": "^assets/[^/]+$"
+       },
+       "alt": {
+        "type": "string"
+       },
+       "pages": {
+        "type": "array",
+        "items": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "minItems": 1
+       },
+       "bbox": {
+        "$ref": "#/definitions/bbox"
+       }
       }
+     }
     },
-    "msImage": {
-      "type": "object",
-      "required": ["src", "pages"],
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "choices"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "items"
+      ],
       "additionalProperties": false,
       "properties": {
-        "src": {"type": "string", "pattern": "^assets/[^/]+$"},
-        "alt": {"type": "string"},
-        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1}
-      }
-    },
-    "block": {
-      "type": "object",
-      "required": ["type"],
-      "properties": {"type": {"enum": ["para", "table", "image", "choices", "answer_lines"]}},
-      "allOf": [
-        {
-          "if": {"properties": {"type": {"const": "para"}}},
-          "then": {"required": ["md"],
-                    "properties": {"type": {"const": "para"}, "md": {"type": "string", "minLength": 1}},
-                    "additionalProperties": false}
-        },
-        {
-          "if": {"properties": {"type": {"const": "table"}}},
-          "then": {"required": ["md"],
-                    "properties": {"type": {"const": "table"}, "md": {"type": "string", "minLength": 1}},
-                    "additionalProperties": false}
-        },
-        {
-          "if": {"properties": {"type": {"const": "image"}}},
-          "then": {
-            "required": ["src", "pages"],
-            "additionalProperties": false,
-            "properties": {
-              "type": {"const": "image"},
-              "src": {"type": "string", "pattern": "^assets/[^/]+$"},
-              "alt": {"type": "string"},
-              "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 1},
-              "bbox": {"$ref": "#/definitions/bbox"}
-            }
+       "type": {
+        "const": "choices"
+       },
+       "items": {
+        "type": "array",
+        "minItems": 2,
+        "items": {
+         "type": "object",
+         "required": [
+          "label",
+          "md"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "label": {
+           "type": "string"
+          },
+          "md": {
+           "type": "string"
           }
-        },
-        {
-          "if": {"properties": {"type": {"const": "choices"}}},
-          "then": {
-            "required": ["items"],
-            "additionalProperties": false,
-            "properties": {
-              "type": {"const": "choices"},
-              "items": {
-                "type": "array", "minItems": 2,
-                "items": {
-                  "type": "object", "required": ["label", "md"], "additionalProperties": false,
-                  "properties": {"label": {"type": "string"}, "md": {"type": "string"}}
-                }
-              }
-            }
-          }
-        },
-        {
-          "if": {"properties": {"type": {"const": "answer_lines"}}},
-          "then": {"required": ["count"], "additionalProperties": false,
-                    "properties": {"type": {"const": "answer_lines"}, "count": {"type": "integer", "minimum": 1}}}
+         }
         }
-      ]
-    },
-    "choiceList": {
-      "type": "array", "minItems": 2,
-      "items": {
-        "type": "object", "required": ["label", "md"], "additionalProperties": false,
-        "properties": {"label": {"type": "string"}, "md": {"type": "string"}}
+       }
       }
+     }
+    },
+    {
+     "if": {
+      "properties": {
+       "type": {
+        "const": "answer_lines"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "type": {
+        "const": "answer_lines"
+       },
+       "count": {
+        "type": "integer",
+        "minimum": 1
+       }
+      }
+     }
+    }
+   ]
+  },
+  "choiceList": {
+   "type": "array",
+   "minItems": 2,
+   "items": {
+    "type": "object",
+    "required": [
+     "label",
+     "md"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "label": {
+      "type": "string"
+     },
+     "md": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "part": {
+   "type": "object",
+   "required": [
+    "id",
+    "label",
+    "type",
+    "marks",
+    "prompt"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^[0-9]{1,2}[a-z]+(-[ivx]+)?$"
+    },
+    "label": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    },
+    "sub": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[ivx]+$"
+    },
+    "type": {
+     "enum": [
+      "open",
+      "mcq"
+     ]
+    },
+    "marks": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "commandWord": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "prompt": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/block"
+     }
+    },
+    "choices": {
+     "$ref": "#/definitions/choiceList"
+    },
+    "answerLines": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "pages": {
+     "type": "array",
+     "items": {
+      "type": "integer",
+      "minimum": 1
+     }
+    },
+    "correct": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "type": "string",
+      "pattern": "^[A-Z]$"
+     }
+    }
+   },
+   "allOf": [
+    {
+     "if": {
+      "required": [
+       "correct"
+      ]
+     },
+     "then": {
+      "properties": {
+       "type": {
+        "const": "mcq"
+       }
+      }
+     }
+    }
+   ]
+  },
+  "msPoint": {
+   "type": "object",
+   "required": [
+    "id",
+    "part",
+    "sub",
+    "marks",
+    "md",
+    "allow",
+    "reject",
+    "ignore",
+    "notes",
+    "pages"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "type": "string",
+     "pattern": "^[A-Za-z][A-Za-z0-9-]{0,15}$"
     },
     "part": {
-      "type": "object",
-      "required": ["id", "label", "type", "marks", "prompt"],
-      "additionalProperties": false,
-      "properties": {
-        "id": {"type": "string", "pattern": "^[0-9]{1,2}[a-z]+(-[ivx]+)?$"},
-        "label": {"type": "string", "pattern": "^[a-z]+$"},
-        "sub": {"type": ["string", "null"], "pattern": "^[ivx]+$"},
-        "type": {"enum": ["open", "mcq"]},
-        "marks": {"type": "integer", "minimum": 1},
-        "commandWord": {"type": ["string", "null"]},
-        "prompt": {"type": "array", "items": {"$ref": "#/definitions/block"}},
-        "choices": {"$ref": "#/definitions/choiceList"},
-        "answerLines": {"type": "integer", "minimum": 0},
-        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}},
-        "correct": {"type": "array", "minItems": 1,
-                    "items": {"type": "string", "pattern": "^[A-Z]$"}}
-      },
-      "allOf": [
-        {"if": {"required": ["correct"]},
-         "then": {"properties": {"type": {"const": "mcq"}}}}
-      ]
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[a-z]+$"
     },
-    "msPoint": {
-      "type": "object",
-      "required": ["id", "part", "sub", "marks", "md", "allow", "reject", "ignore", "notes", "pages"],
-      "additionalProperties": false,
-      "properties": {
-        "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9-]{0,15}$"},
-        "part": {"type": ["string", "null"], "pattern": "^[a-z]+$"},
-        "sub": {"type": ["string", "null"], "pattern": "^[ivx]+$"},
-        "marks": {"type": "integer", "minimum": 0},
-        "md": {"type": "string"},
-        "pool": {"type": "object", "required": ["rule"], "additionalProperties": false,
-                 "properties": {"rule": {"type": "string"}}},
-        "allow": {"type": "array", "items": {"type": "string"}},
-        "reject": {"type": "array", "items": {"type": "string"}},
-        "ignore": {"type": "array", "items": {"type": "string"}},
-        "notes": {"type": "array", "items": {"type": "string"}},
-        "pages": {"type": "array", "items": {"type": "integer", "minimum": 1}},
-        "image": {"$ref": "#/definitions/msImage"}
+    "sub": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[ivx]+$"
+    },
+    "marks": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "md": {
+     "type": "string"
+    },
+    "pool": {
+     "type": "object",
+     "required": [
+      "rule"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "rule": {
+       "type": "string"
       }
+     }
     },
-    "markScheme": {
+    "allow": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "reject": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "ignore": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "notes": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "pages": {
+     "type": "array",
+     "items": {
+      "type": "integer",
+      "minimum": 1
+     }
+    },
+    "image": {
+     "$ref": "#/definitions/msImage"
+    }
+   }
+  },
+  "markScheme": {
+   "type": "object",
+   "required": [
+    "totals",
+    "guidance",
+    "points",
+    "provenance"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "totals": {
+     "type": "object",
+     "required": [
+      "printed",
+      "sum",
+      "verified"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "printed": {
+       "type": [
+        "integer",
+        "null"
+       ],
+       "minimum": 1
+      },
+      "sum": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "verified": {
+       "type": "boolean"
+      },
+      "verifiedAgainst": {
+       "enum": [
+        "qp-printed"
+       ]
+      }
+     }
+    },
+    "guidance": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "points": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/msPoint"
+     }
+    },
+    "pools": {
+     "type": "array",
+     "items": {
       "type": "object",
-      "required": ["totals", "guidance", "points", "provenance"],
+      "required": [
+       "part",
+       "labels",
+       "cap"
+      ],
       "additionalProperties": false,
       "properties": {
-        "totals": {
-          "type": "object", "required": ["printed", "sum", "verified"], "additionalProperties": false,
-          "properties": {
-            "printed": {"type": ["integer", "null"], "minimum": 1},
-            "sum": {"type": "integer", "minimum": 0},
-            "verified": {"type": "boolean"},
-            "verifiedAgainst": {"enum": ["qp-printed"]}
-          }
-        },
-        "guidance": {"type": "array", "items": {"type": "string"}},
-        "points": {"type": "array", "items": {"$ref": "#/definitions/msPoint"}},
-        "pools": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["part", "labels", "cap"],
-            "additionalProperties": false,
-            "properties": {
-              "part": {"type": "string"},
-              "labels": {"type": "array", "minItems": 1,
-                         "items": {"type": "string"}},
-              "cap": {"type": "integer", "minimum": 1},
-              "reason": {"type": "string"},
-              "indices": {"type": "array", "minItems": 1,
-                          "items": {"type": "integer", "minimum": 0}}
-            }
-          }
-        },
-        "style": {"enum": ["points", "levels"]},
-        "images": {"type": "array", "items": {"$ref": "#/definitions/msImage"}},
-        "levels": {
+       "part": {
+        "type": "string"
+       },
+       "labels": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+         "type": "string"
+        }
+       },
+       "cap": {
+        "type": "integer",
+        "minimum": 1
+       },
+       "reason": {
+        "type": "string"
+       },
+       "indices": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+         "type": "integer",
+         "minimum": 0
+        }
+       }
+      }
+     }
+    },
+    "style": {
+     "enum": [
+      "points",
+      "levels"
+     ]
+    },
+    "images": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/msImage"
+     }
+    },
+    "levels": {
+     "type": "object",
+     "required": [
+      "maxMarks",
+      "bands"
+     ],
+     "additionalProperties": false,
+     "properties": {
+      "maxMarks": {
+       "type": "integer",
+       "minimum": 1
+      },
+      "bands": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "type": "object",
+        "required": [
+         "level",
+         "markRange",
+         "descriptor"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "level": {
+          "type": "integer",
+          "minimum": 1
+         },
+         "markRange": {
           "type": "object",
-          "required": ["maxMarks", "bands"],
+          "required": [
+           "min",
+           "max"
+          ],
           "additionalProperties": false,
           "properties": {
-            "maxMarks": {"type": "integer", "minimum": 1},
-            "bands": {
-              "type": "array", "minItems": 1,
-              "items": {
-                "type": "object",
-                "required": ["level", "markRange", "descriptor"],
-                "additionalProperties": false,
-                "properties": {
-                  "level": {"type": "integer", "minimum": 1},
-                  "markRange": {
-                    "type": "object",
-                    "required": ["min", "max"],
-                    "additionalProperties": false,
-                    "properties": {
-                      "min": {"type": "integer", "minimum": 0},
-                      "max": {"type": "integer", "minimum": 1}
-                    }
-                  },
-                  "descriptor": {"type": "string", "minLength": 1}
-                }
-              }
-            },
-            "indicativeContent": {"type": "array", "items": {"type": "string"}},
-            "notes": {"type": "array", "items": {"type": "string"}}
+           "min": {
+            "type": "integer",
+            "minimum": 0
+           },
+           "max": {
+            "type": "integer",
+            "minimum": 1
+           }
           }
-        },
-        "provenance": {"$ref": "#/definitions/provenanceClass"}
+         },
+         "descriptor": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       }
       },
-      "allOf": [
-        {"if": {"required": ["levels"]},
-         "then": {"required": ["style"], "properties": {"style": {"const": "levels"}}}},
-        {"if": {"required": ["style"], "properties": {"style": {"const": "levels"}}},
-         "then": {"required": ["levels"]}},
-        {"if": {"required": ["style"], "properties": {"style": {"const": "points"}}},
-         "then": {"not": {"required": ["levels"]}}}
-      ]
-    },
-    "atom": {
-      "type": "object",
-      "required": ["number", "type", "marks", "stem", "parts", "markScheme", "provenance"],
-      "additionalProperties": false,
-      "properties": {
-        "number": {"type": "integer", "minimum": 1},
-        "type": {"enum": ["structured", "mcq", "open"]},
-        "marks": {"type": "integer", "minimum": 1},
-        "commandWord": {"type": ["string", "null"]},
-        "stem": {"type": "array", "items": {"$ref": "#/definitions/block"}},
-        "parts": {"type": "array", "items": {"$ref": "#/definitions/part"}},
-        "markScheme": {"$ref": "#/definitions/markScheme"},
-        "provenance": {"$ref": "#/definitions/provenanceClass"},
-        "flags": {"type": "array", "items": {"type": "string"}}
+      "indicativeContent": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "notes": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
       }
+     }
+    },
+    "provenance": {
+     "$ref": "#/definitions/provenanceClass"
     }
+   },
+   "allOf": [
+    {
+     "if": {
+      "required": [
+       "levels"
+      ]
+     },
+     "then": {
+      "required": [
+       "style"
+      ],
+      "properties": {
+       "style": {
+        "const": "levels"
+       }
+      }
+     }
+    },
+    {
+     "if": {
+      "required": [
+       "style"
+      ],
+      "properties": {
+       "style": {
+        "const": "levels"
+       }
+      }
+     },
+     "then": {
+      "required": [
+       "levels"
+      ]
+     }
+    },
+    {
+     "if": {
+      "required": [
+       "style"
+      ],
+      "properties": {
+       "style": {
+        "const": "points"
+       }
+      }
+     },
+     "then": {
+      "not": {
+       "required": [
+        "levels"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  "atom": {
+   "type": "object",
+   "required": [
+    "number",
+    "type",
+    "marks",
+    "stem",
+    "parts",
+    "markScheme",
+    "provenance"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "number": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "type": {
+     "enum": [
+      "structured",
+      "mcq",
+      "open",
+      "ms-only"
+     ]
+    },
+    "marks": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "commandWord": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "stem": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/block"
+     }
+    },
+    "parts": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/part"
+     }
+    },
+    "markScheme": {
+     "$ref": "#/definitions/markScheme"
+    },
+    "provenance": {
+     "$ref": "#/definitions/provenanceClass"
+    },
+    "flags": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
   }
+ }
 }

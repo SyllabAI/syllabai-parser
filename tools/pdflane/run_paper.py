@@ -62,10 +62,173 @@ def clean_layout_md(pages):
     return "\n".join(lines) + "\n"
 
 
+def main_ms_only(args):
+    """MS-only pipeline: no QP lanes, no QP crosscheck, honest ms-only atoms.
+
+    Products: questions.json (source.qp = null, type=ms-only atoms),
+    ms.md, _meta/paper.json with inputs.QP = null. marksVerified is False by
+    construction; the MS-ONLY-NO-QP flag is carried on every atom.
+    """
+    out, meta, assets = args.out, args.meta_dir or os.path.join(args.out, "_meta"), \
+        os.path.join(args.out, "assets")
+    escalations, review = [], []
+
+    # ---- S0 probe / routing (MS only) ----
+    pr = probe_mod.probe_ms_only(args.ms)
+    if pr["MS"]["verdict"] == "SCANNED":
+        escalations.append({"unit": "MS", "code": "SCANNED-PDF-NO-VISION-LANE-WIRED",
+                            "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
+                            "detail": "vision lane available (pdflane.vision_lane); "
+                                      "auto-wiring into run_paper pending"})
+
+    # ---- S1 extraction (MS lanes only) ----
+    base_ms = pdftotext_extract(args.ms, os.path.join(meta, "pdftotext"), "MS")
+    pm_ms = pymupdf_extract(args.ms, os.path.join(meta, "pymupdf", "MS"), "MS")
+    try:
+        odl_ms = odl_extract(args.ms, os.path.join(meta, "opendataloader", "MS"), "MS")
+    except Exception as e:  # second opinion is optional, its absence is recorded
+        odl_ms = None
+        escalations.append({"unit": "MS", "code": "ODL-SECOND-OPINION-UNAVAILABLE",
+                            "taxonomy": "HARNESS-DEFECT", "detail": str(e)})
+
+    # ---- deterministic structuring (no QP totals: recovery paths MS-only) ----
+    ms_pages = parse_ms.load_pages(base_ms["pages_json"])
+    ms_parse = parse_ms.parse_pages(ms_pages, qp_totals=None)
+
+    # ---- gates (MS-side suite) ----
+    eng_texts = {
+        "pdftotext_ms_pages": ms_pages,
+        "odl_ms_md": open(odl_ms["md"], encoding="utf-8").read() if odl_ms else "",
+    }
+    asset_refs = []
+    for fn in sorted(os.listdir(pm_ms["assets_dir"])):
+        shutil.copyfile(os.path.join(pm_ms["assets_dir"], fn), os.path.join(assets, fn))
+        asset_refs.append("assets/" + fn)
+    embedded = len(pm_ms["assets"])
+    g = gates_mod.run_ms_only(pr, ms_parse, eng_texts,
+                              {"refs": asset_refs,
+                               "existing": sorted("assets/" + f for f in os.listdir(assets)),
+                               "embedded": embedded})
+
+    for fl in g["flags"]:
+        review.append({"code": fl["code"], "taxonomy": fl["taxonomy"], "detail": fl["detail"]})
+    for u in ms_parse["unclassified"]:
+        if u["page"] >= 3:
+            review.append({"code": "MS-UNCLASSIFIED-ROW", "taxonomy": "HARNESS-DEFECT",
+                           "detail": u})
+    for gate_name, gv in g["gates"].items():
+        if gv["verdict"] == "FAIL":
+            escalations.append({"unit": gate_name, "code": "GATE-FAIL",
+                                "taxonomy": "HARNESS-DEFECT",
+                                "detail": {k: v for k, v in gv.items() if k != "verdict"}})
+
+    # ---- packaging (ms-only atoms) ----
+    doc = emit_atoms.build_document_ms_only(ms_parse["questions"],
+                                            source_ms=args.source_ms)
+    with open(os.path.join(out, "questions.json"), "w", encoding="utf-8") as f:
+        json.dump(doc, f, indent=1, ensure_ascii=False)
+    with open(os.path.join(out, "ms.md"), "w", encoding="utf-8") as f:
+        f.write(emit_atoms.render_ms_md(doc))
+
+    # prune unreferenced front-matter crops (MS references only)
+    referenced = set()
+    for q in doc["questions"]:
+        msq = q["markScheme"]
+        for im in msq.get("images", []):
+            referenced.add(im["src"].split("/", 1)[1])
+        for pt in msq["points"]:
+            if pt.get("image"):
+                referenced.add(pt["image"]["src"].split("/", 1)[1])
+    for fn in sorted(os.listdir(assets)):
+        if fn not in referenced:
+            os.remove(os.path.join(assets, fn))
+            review.append({"code": "FRONT-MATTER-ASSET-PRUNED",
+                           "taxonomy": "HARNESS-DEFECT",
+                           "detail": "assets/%s not referenced by any atom" % fn})
+
+    # V1-V4 gates on the final product
+    failures = validate_atoms.validate_document(doc, assets)
+    if failures:
+        for f in failures:
+            review.append({"code": "V2-VALIDATION", "taxonomy": "HARNESS-DEFECT",
+                           "detail": f})
+        escalate_v2 = True
+    else:
+        escalate_v2 = False
+
+    def relativize(d):
+        out_d = {}
+        for k, v in (d or {}).items():
+            if isinstance(v, str) and (v.startswith("/") or v.startswith(".")):
+                out_d[k] = os.path.relpath(v, out) if os.path.isabs(v) else v
+            else:
+                out_d[k] = v
+        return out_d
+
+    paper_json = {
+        "slug": args.slug,
+        "inputs": {"QP": None,
+                   "MS": {"sha256": sha256_file(args.ms),
+                          "probe": {k: v for k, v in pr["MS"].items() if k != "pages"}}},
+        "routing": {k: v["route"] for k, v in pr.items()},
+        "engines": tool_versions(),
+        "engine_outputs": {"pymupdf": {"qp": None, "ms": relativize(pm_ms)},
+                           "pdftotext": {"qp": None, "ms": relativize(base_ms)},
+                           "opendataloader": {"qp": None, "ms": relativize(odl_ms)}},
+        "gates": {"overall": g["overall"], "failed": g["failed_gates"],
+                  "detail": {k: v["verdict"] for k, v in g["gates"].items()}},
+        "census": {"qp_questions": None, "qp_sum_totals": None, "qp_witnesses": [],
+                   "ms_questions": len(ms_parse["questions"]),
+                   "ms_point_labels": ms_parse["label_count"],
+                   "ms_label_buckets": ms_parse["buckets"],
+                   "ms_total_rows": ms_parse["total_rows_found"]},
+        "escalations": escalations,
+        "reviewQueue": review,
+        "provenance": {"lane": "pdflane deterministic phase-1 (ms-only)",
+                       "provenance_classes": ["pdf-parsed"]},
+    }
+    with open(os.path.join(meta, "paper.json"), "w", encoding="utf-8") as f:
+        json.dump(paper_json, f, indent=1, ensure_ascii=False)
+    with open(os.path.join(meta, "escalations.jsonl"), "w", encoding="utf-8") as f:
+        for e in escalations:
+            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    with open(os.path.join(meta, "review-queue.jsonl"), "w", encoding="utf-8") as f:
+        for r in review:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    with open(os.path.join(meta, "extraction.json"), "w", encoding="utf-8") as f:
+        json.dump({"engine_output_digests": {
+            "pymupdf_qp_md": None,
+            "pymupdf_ms_md": sha256_text(open(pm_ms["md"], encoding="utf-8").read()),
+            "pdftotext_qp_md": None,
+            "pdftotext_ms_md": sha256_text(open(base_ms["md"], encoding="utf-8").read()),
+            "odl_qp_md": None,
+            "odl_ms_md": sha256_text(eng_texts["odl_ms_md"]) if odl_ms else None,
+        }, "reference_used": False}, f, indent=1)
+
+    print(json.dumps({"overall": g["overall"], "failed_gates": g["failed_gates"],
+                      "gates": {k: v["verdict"] for k, v in g["gates"].items()},
+                      "census": paper_json["census"],
+                      "ms_only": True,
+                      "v2": {"schema": doc["schema"], "questionCount": doc["questionCount"],
+                             "totalMarks": doc["totalMarks"],
+                             "marksVerified": doc["marksVerified"],
+                             "validation": "PASS" if not failures else failures,
+                             "flagged": [q["number"] for q in doc["questions"]
+                                         if q.get("flags")]},
+                      "flags": g["flags"], "escalations": len(escalations),
+                      "review_queue": len(review)}, indent=1))
+    return 0 if not escalate_v2 else 2
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--qp", required=True)
+    ap.add_argument("--qp", required=False, default=None,
+                    help="question paper PDF (omit only with --ms-only)")
     ap.add_argument("--ms", required=True)
+    ap.add_argument("--ms-only", action="store_true",
+                    help="parse the mark scheme alone (COVID-session papers "
+                         "shipped without a QP): atoms carry type=ms-only, "
+                         "marksVerified stays False, no QP canonical is bridged")
     ap.add_argument("--out", required=True, help="parsed/ output dir (product files only)")
     ap.add_argument("--slug", required=True, help="paper slug (staging keys only; never emitted)")
     ap.add_argument("--meta-dir", help="staging dir for _meta lane evidence "
@@ -88,11 +251,18 @@ def main():
     args = ap.parse_args()
 
     out = args.out
+    if args.ms_only and args.qp:
+        ap.error("--ms-only parses the mark scheme alone; --qp must be omitted")
+    if not args.ms_only and not args.qp:
+        ap.error("--qp is required unless --ms-only is set")
     meta = args.meta_dir or os.path.join(out, "_meta")
     assets = os.path.join(out, "assets")
     for d in (meta, assets, os.path.join(meta, "pdftotext"),
               os.path.join(meta, "pymupdf"), os.path.join(meta, "opendataloader")):
         os.makedirs(d, exist_ok=True)
+
+    if args.ms_only:
+        return main_ms_only(args)
 
     reference = None
     if args.reference:

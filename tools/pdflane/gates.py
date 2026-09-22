@@ -192,5 +192,88 @@ def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None,
     return rep
 
 
+def run_ms_only(probe, ms_parse, engine_texts, assets_check):
+    """Gate suite for MS-only products (COVID-session papers, no qp.pdf).
+
+    Same shapes as run(); the QP-coupled checks (QP totals, QP/MS question-set
+    cross-check, QP structure) are absent by construction — an MS-only product
+    can never be marksVerified, so G1's arithmetic cross-check degrades to the
+    MS-side total-row presence + point-sum closure, which stay honest.
+    engine_texts: {"pdftotext_ms_pages": [...], "odl_ms_md": ...}
+    """
+    rep = {"gates": {}, "flags": [], "escalations": []}
+
+    # ---- MS-G1: total rows + point arithmetic (no QP to close against) ----
+    ms_totals = {q["number"]: q["total_row"] for q in ms_parse["questions"]}
+    ms_missing = [q["number"] for q in ms_parse["questions"] if q["total_row"] is None]
+    arith_bad = [q["number"] for q in ms_parse["questions"] if not q["arithmetic_ok"]]
+    g1 = {"checks": {
+        "ms_total_rows_present": {"ok": not ms_missing, "missing": ms_missing,
+                                  "found": len(ms_totals)},
+        "ms_point_arithmetic": {"ok": not arith_bad, "mismatch": arith_bad,
+                                "note": "ms-only: closure against MS total row only"},
+    }}
+    if arith_bad:
+        rep["flags"].append({"code": "MS-POINTS-DONT-CLOSE",
+                             "taxonomy": "HARNESS-DEFECT",
+                             "detail": {"questions": arith_bad}})
+    g1["verdict"] = "PASS" if all(c["ok"] for c in g1["checks"].values()) else "FAIL"
+    rep["gates"]["G1"] = g1
+
+    # ---- G2 label accounting (identical to run()) ----
+    raw_labels = labels_in("".join(p["text"] for p in engine_texts["pdftotext_ms_pages"]))
+    b = ms_parse["buckets"]
+    odl_labels = labels_in(engine_texts.get("odl_ms_md") or "")
+    g2 = {"raw_layout": raw_labels,
+          "parsed_points": b["point"],
+          "guidance_labels": b["guidance"],
+          "unclassified_labels": b["unclassified"],
+          "odl_second_opinion": odl_labels}
+    g2["accounted"] = raw_labels == (b["point"] + b["guidance"] +
+                                     b["unclassified"] + b["continuation"])
+    g2["ok"] = g2["accounted"]
+    if b["unclassified"]:
+        rep["flags"].append({"code": "MS-UNACCOUNTED-CONTENT",
+                             "taxonomy": "HARNESS-DEFECT",
+                             "detail": {"rows": len(ms_parse["unclassified"]),
+                                        "labels": b["unclassified"]}})
+    g2["verdict"] = "PASS" if g2["ok"] else "FAIL"
+    rep["gates"]["G2"] = g2
+
+    # ---- G3 structure: MS continuity only ----
+    msn = [q["number"] for q in ms_parse["questions"]]
+    continuous_ms = msn == list(range(1, len(msn) + 1))
+    g3 = {"ms_count": len(msn), "continuous_ms": continuous_ms,
+          "note": "ms-only: no QP question set to cross-check"}
+    g3["ok"] = continuous_ms
+    g3["verdict"] = "PASS" if g3["ok"] else "FAIL"
+    rep["gates"]["G3"] = g3
+
+    # ---- G4 assets (identical to run()) ----
+    missing_assets = [r for r in assets_check["refs"] if r not in assets_check["existing"]]
+    g4 = {"refs": len(assets_check["refs"]),
+          "missing_files": missing_assets,
+          "extracted": len(assets_check["existing"]),
+          "embedded": assets_check["embedded"]}
+    g4["ok"] = not missing_assets and g4["extracted"] == g4["embedded"]
+    g4["verdict"] = "PASS" if g4["ok"] else "FAIL"
+    rep["gates"]["G4"] = g4
+
+    # ---- G5 schema: MS side only ----
+    problems = []
+    for q in ms_parse["questions"]:
+        if not q["points"]:
+            problems.append("ms q%d has no mark points" % q["number"])
+    g5 = {"problems": problems}
+    g5["ok"] = not problems
+    g5["verdict"] = "PASS" if g5["ok"] else "FAIL"
+    rep["gates"]["G5"] = g5
+
+    fails = [k for k, v in rep["gates"].items() if v["verdict"] == "FAIL"]
+    rep["overall"] = "FAIL" if fails else ("PASS_WITH_FLAGS" if rep["flags"] else "PASS")
+    rep["failed_gates"] = fails
+    return rep
+
+
 if __name__ == "__main__":
     print("gates.py is a library module; run via pdflane.run_paper")
