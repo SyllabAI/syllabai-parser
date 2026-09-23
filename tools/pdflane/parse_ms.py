@@ -26,7 +26,22 @@ exactly one bucket: parsed point | guidance note | unclassified (flagged).
 Nothing silently disappears. Deterministic throughout.
 """
 import json
+import os
 import re
+
+MS_TRACE = os.environ.get("MS_TRACE") == "1"
+_trace_fh = None
+
+
+def _trace(pageno, raw, disposition):
+    """Optional line-disposition trace (MS_TRACE=1), evidence for grammar work."""
+    global _trace_fh
+    if not MS_TRACE:
+        return
+    if _trace_fh is None:
+        _trace_fh = open(os.environ.get("MS_TRACE_PATH",
+                                        "/tmp/ms_trace.log"), "a", encoding="utf-8")
+    _trace_fh.write("p%d | %-90s || %s\n" % (pageno, raw.strip()[:90], disposition))
 
 TOTAL_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s+marks?\s*$", re.I)
 TOTAL_BARE_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s*$")          # 4CH1: 'Total 7'
@@ -34,6 +49,12 @@ TOTAL_UPPER_RE = re.compile(r"^\s*TOTAL\s{2,}(\d{1,3})\s*$")       # 4CH0 2C: 'T
 TOTAL_Q_RE = re.compile(r"Total\s+marks\s+for\s+Question\s+(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)
 TOTAL_Q_SHORT_RE = re.compile(r"Total\s+for\s+Q\s?(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)  # Nov 2020 COVID: 'Total for Q1 = 5'
 TOTAL_IMPLICIT_RE = re.compile(r"^\s*total\s+for\s+question\s*=\s*(\d{1,3})\s*$", re.I)  # 4CH1 2024: 'total for question = 5' — no question number in row; assigned to the open question by sequence
+# G1.2 upgrade (mark-closure lane): 4CH1 2019+ prints the per-question total
+# as a bare 'N marks' line deep in the marks column (col 85-108; one narrow-
+# layout outlier at col 31). Only trusted when the PREVIOUS raw line is blank
+# — note-column wraps ('...scores' / '2 marks') always follow their text line
+# (evidence: 4ch0-1c-2019jan p9 'Correct answer alone scores'/'2 marks').
+TOTAL_TAIL_MARKS_RE = re.compile(r"^\s{1,}(?P<n>\d{1,3})\s+marks\s*$", re.I)
 TOTAL_SPLIT_RE = re.compile(r"^(?P<pre>.*?\S)?\s*Tota(?:l)?\s*$")  # 4CH1 2019: number on next line ('Tota' = clipped)
 TOTAL_SPLIT_NUM_RE = re.compile(r"^(?P<pre>.*?\S)?\s{2,}(?P<n>\d{1,3})\s*$|^(?P<bare>\d{1,3})\s*$")
 NOTE_KW_TAIL_RE = re.compile(r"\b(ALLOW|ACCEPT|REJECT|IGNORE)\s*$", re.I)
@@ -41,14 +62,24 @@ NOTE_KW_START_RE = re.compile(
     r"^\s*(ALLOW|ACCEPT|REJECT|IGNORE|Do not accept|Do not allow|"
     r"Ignore|Accept)\b", re.I)
 # --- label-less grid rows (4CH1 style / label-less 4CH0 rows) ---
+# G1.2 upgrade (mark-closure lane): the rest group is OPTIONAL — old-spec MSs
+# print the opener as its own line ('3 (a)' with the answer grid below), and
+# requiring answer text here left the question unopened so every following
+# row misattributed to the still-open previous question (evidence: 4CH0 1C
+# jun2013 q3 — b/c rows landed on q2, q2 over 7/6, q3 under 3/12).
 QPART_PAREN_RE = re.compile(
-    r"^\s*(?P<qn>\d{1,2})\s+\((?P<part>[a-z])\)\s+(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?(?P<rest>\S.*)$")
+    r"^\s*(?P<qn>\d{1,2})\s+\((?P<part>[a-z])\)\s*(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?(?P<rest>\S.*)?$")
 QPART_BARE_RE = re.compile(
-    r"^\s*(?P<qn>\d{1,2})\s+(?P<part>[a-z])\s+(?:(?P<sub>[ivx]{1,4})\s+)?(?P<rest>\S.*)$")
+    r"^\s*(?P<qn>\d{1,2})\s+(?P<part>[a-z])(?:\s+(?:(?P<sub>[ivx]{1,4})\s+)?(?P<rest>\S.*))?$")
 PART_PAREN_RE = re.compile(r"^\s*\((?P<part>[a-z])\)\s+(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?(?P<rest>\S.*)$")
 PART_BARE_RE = re.compile(r"^\s{1,8}(?P<part>[a-z])\s+(?:(?P<sub>[ivx]{1,4})\s+)?(?P<rest>\S.*)$")
 SUB_PAREN_RE = re.compile(r"^\s*\(\s*(?P<sub>[ivx]+)\s*\)\s+(?P<rest>\S.*)$")
 SUB_BARE_RE = re.compile(r"^\s{1,8}(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+# G1.2 upgrade (mark-closure lane): a marks cell printed as its own line —
+# only whitespace then 1-2 digits (cells >2 digits are table data, not marks).
+# Previously these fell through to continuation absorb and the mark was lost
+# (evidence: 4CH0 1C jun2013 q1(a) '1' line -> point demoted; q3(e)ii/iii).
+ORPHAN_MARKS_LINE_RE = re.compile(r"^\s{1,}(?P<mk>\d{1,2})\s*$")
 ROMAN_RE_MS = re.compile(r"^[ivx]{1,4}$")
 
 
@@ -271,12 +302,18 @@ def parse_pages(pages, qp_totals=None):
                 if mi:
                     m = True
                     total_val = int(mi.group(1))
+            if not m:
+                mtm = TOTAL_TAIL_MARKS_RE.match(line)
+                if mtm and idx > 0 and not raw_lines[idx - 1].strip():
+                    m = True
+                    total_val = int(mtm.group("n"))
             if m:
                 if cur is not None and cur["total_row"] is None:
                     cur["total_row"] = total_val
                     cur["total_row_page"] = pageno
                     cur_point = None
                     pending_label = None
+                    _trace(pageno, raw, f"TOTAL-ROW val={total_val}")
                 else:
                     unclassified.append({"page": pageno, "text": st,
                                          "reason": "total-row-without-open-question"})
@@ -325,6 +362,7 @@ def parse_pages(pages, qp_totals=None):
                     if dm:
                         part, sub, prev = pending_label
                         pending_label = None
+                        _trace(pageno, raw, f"LABEL-DIGIT-COMPLETE part={part} sub={sub}")
                         pt = {"label": prev["base"] + dm.group("d"), "part": part,
                               "sub": sub, "text": list(prev["text"]),
                               "notes": list(prev["notes"]), "marks": prev["marks"],
@@ -372,40 +410,55 @@ def parse_pages(pages, qp_totals=None):
                 mt = MARKS_TAIL_RE.match(rest)
 
                 if num == "":
-                    # bare M/A: digit arrives on the next line; marks may be
-                    # at this line's end or still pending.
-                    # G1 upgrade: part-less bare labels inherit the open part
-                    # block (same rule as completed label rows) — otherwise
-                    # every second row of a label-split pair ('M' + digit
-                    # lines) lands as an orphan point with no part (evidence:
-                    # 4CH0 q6c M2, q7 a-i M2 / b M2 all part-less). An
-                    # explicitly-printed part/sub OPENS the block immediately
-                    # so following inherited rows attach to THIS block, and
-                    # the opener flag rides through to the completion.
-                    bare_opener = part is not None or sub is not None
-                    if part is None and sub is None and cur_group is not None:
-                        part, sub = cur_group
-                    if bare_opener:
-                        cur_group = (part, sub)
-                    if part:
-                        # G1 upgrade: bare rows carry the part letter too —
-                        # the later '(ii)'-shift rows inherit it (evidence:
-                        # 4CH0 q7 a-ii landed part-less -> PART-MARKS-MISMATCH)
-                        last_part = part
-                    buckets["point"] += lbl_n  # line consumed by point handling
-                    if mt:
-                        body = (mt.group("body") or "").strip()
-                        chunks = [c.strip() for c in re.split(r"\s{2,}", body) if c.strip()]
-                        pending_label = (part, sub, {"base": base,
-                                                     "text": [chunks[0]] if chunks else [],
-                                                     "notes": chunks[1:] if len(chunks) > 1 else [],
-                                                     "marks": int(mt.group("mk")),
-                                                     "opener": bare_opener})
+                    # G1.2 upgrade (mark-closure lane): article-'A' prose false
+                    # positive — '(b) A description that refers to any three of
+                    # the ... 3' is a (b) point row whose answer text begins
+                    # with the word 'A'; the bare-A interpretation strands the
+                    # row (and its marks tail) in a pending label that never
+                    # completes (evidence: 4CH1 1C jun2021 q1(b), 3 marks lost;
+                    # legit bare-A answer cells print 'A' alone or 'A (...)',
+                    # never a lowercase word glued to the token). The label
+                    # lookahead is zero-width so rest carries a leading space;
+                    # columnar answer rows separate label and text by 2+ spaces
+                    # — at most ONE space here proves prose.
+                    if base == "A" and re.match(r" ?[a-z]{2,}", rest or ""):
+                        pass  # fall through to the label-less grid-row section
                     else:
-                        pending_label = (part, sub, {"base": base, "text": [],
-                                                     "notes": [], "marks": None,
-                                                     "opener": bare_opener})
-                    continue
+                        # bare M/A: digit arrives on the next line; marks may be
+                        # at this line's end or still pending.
+                        # G1 upgrade: part-less bare labels inherit the open part
+                        # block (same rule as completed label rows) — otherwise
+                        # every second row of a label-split pair ('M' + digit
+                        # lines) lands as an orphan point with no part (evidence:
+                        # 4CH0 q6c M2, q7 a-i M2 / b M2 all part-less). An
+                        # explicitly-printed part/sub OPENS the block immediately
+                        # so following inherited rows attach to THIS block, and
+                        # the opener flag rides through to the completion.
+                        bare_opener = part is not None or sub is not None
+                        if part is None and sub is None and cur_group is not None:
+                            part, sub = cur_group
+                        if bare_opener:
+                            cur_group = (part, sub)
+                        if part:
+                            # G1 upgrade: bare rows carry the part letter too —
+                            # the later '(ii)'-shift rows inherit it (evidence:
+                            # 4CH0 q7 a-ii landed part-less -> PART-MARKS-MISMATCH)
+                            last_part = part
+                        buckets["point"] += lbl_n  # line consumed by point handling
+                        if mt:
+                            body = (mt.group("body") or "").strip()
+                            chunks = [c.strip() for c in re.split(r"\s{2,}", body) if c.strip()]
+                            pending_label = (part, sub, {"base": base,
+                                                         "text": [chunks[0]] if chunks else [],
+                                                         "notes": chunks[1:] if len(chunks) > 1 else [],
+                                                         "marks": int(mt.group("mk")),
+                                                         "opener": bare_opener})
+                            _trace(pageno, raw, f"BARE-LABEL base={base} part={part} sub={sub} marks={mt.group('mk')}")
+                        else:
+                            pending_label = (part, sub, {"base": base, "text": [],
+                                                         "notes": [], "marks": None,
+                                                         "opener": bare_opener})
+                        continue
 
                 label = base + num
                 if part:
@@ -434,6 +487,7 @@ def parse_pages(pages, qp_totals=None):
                           "marks": marks, "page": pageno,
                           "answer_col": rest_col}
                     cur["points"].append(pt)
+                    _trace(pageno, raw, f"POINT label={label} part={part} sub={sub} marks={marks}")
                     if is_opener:
                         group_start = len(cur["points"]) - 1
                     cur["pages"].add(pageno)
@@ -453,6 +507,7 @@ def parse_pages(pages, qp_totals=None):
                     buckets["guidance"] += lbl_n
                     cur_point = None
                     prev_line_guidance = True
+                    _trace(pageno, raw, "GUIDANCE (label-row)")
                     continue
                 # G1 upgrade: prose notes whose text opens with an M/A token
                 # ('M2 can be awarded for use of') — a SINGLE space between the
@@ -513,6 +568,15 @@ def parse_pages(pages, qp_totals=None):
                     part = qpm.group("part")
                     sub = qpm.group("sub")
                     rest = qpm.group("rest")
+                    if not rest:
+                        # G1.2 upgrade: opener-only line ('3 (a)' alone) — opens
+                        # the question and the part-block; rows below carry the
+                        # content and the marks cells
+                        last_part = part
+                        cur_group = (part, sub)
+                        buckets["point"] += lbl_n
+                        _trace(pageno, raw, f"QPART-OPENER-ONLY part={part} sub={sub}")
+                        continue
                     mt, mk = tail_marks(rest)
                     marks = mk
                     body = mt.group("body") if mt else rest
@@ -523,6 +587,7 @@ def parse_pages(pages, qp_totals=None):
                     cur_group = (part, sub)
                     group_start = len(cur["points"]) - 1
                     buckets["point"] += lbl_n
+                    _trace(pageno, raw, f"QPART-POINT part={part} sub={sub} marks={marks}")
             elif cur is not None:
                 prm = PART_PAREN_RE.match(line)
                 brm = None if prm else PART_BARE_RE.match(line)
@@ -542,6 +607,7 @@ def parse_pages(pages, qp_totals=None):
                         cur_group = (part, sub)
                         group_start = len(cur["points"]) - 1
                         buckets["point"] += lbl_n
+                        _trace(pageno, raw, f"PART-POINT part={part} sub={sub} marks={marks}")
                 else:
                     sm = SUB_PAREN_RE.match(line) or SUB_BARE_RE.match(line)
                     if sm and last_part:
@@ -556,11 +622,22 @@ def parse_pages(pages, qp_totals=None):
                         cur_group = (last_part, sub)
                         group_start = len(cur["points"]) - 1
                         buckets["point"] += lbl_n
+                        _trace(pageno, raw, f"SUB-POINT part={last_part} sub={sub} marks={marks}")
             if gp is not None:
                 continue
 
             # continuation line
             if cur_point is not None and raw[:2].strip() == "" and st:
+                # G1.2 upgrade: digit-only marks cell for the open provisional
+                # point (old-spec layouts print the cell on its own line);
+                # before this, the digit fell through to note-absorb and the
+                # mark was silently lost (4CH0 1C jun2013 q1(a), q3(e)ii/iii)
+                om = ORPHAN_MARKS_LINE_RE.match(raw)
+                if om and cur_point["marks"] is None:
+                    cur_point["marks"] = int(om.group("mk"))
+                    buckets["continuation"] += lbl_n
+                    _trace(pageno, raw, f"ORPHAN-MARKS-CELL -> {om.group('mk')}")
+                    continue
                 # G1 upgrade: capped alternative group ('Any two for 1 each')
                 # closes the current part-block's rows as a capped pool; the
                 # line itself still absorbs as a note (text preserved)
@@ -593,6 +670,7 @@ def parse_pages(pages, qp_totals=None):
                         new_point(cur_point["part"], cur_point["sub"], chunks,
                                   mk0, pageno, answer_col=line_col)
                         buckets["point"] += lbl_n
+                        _trace(pageno, raw, f"FURTHER-ROW part={cur_point['part']} sub={cur_point['sub']} marks={mk0}")
                         continue
                 buckets["continuation"] += lbl_n
                 if cur_point["marks"] is None:
@@ -601,7 +679,9 @@ def parse_pages(pages, qp_totals=None):
                         # wrapped marks recovered
                         cur_point["text"].append(mt.group("body").strip())
                         cur_point["marks"] = int(mt.group("mk"))
+                        _trace(pageno, raw, f"WRAPPED-MARKS -> {mt.group('mk')}")
                         continue
+                _trace(pageno, raw, "CONTINUATION-ABSORB")
                 (cur_point["notes"] if cur_point["text"] else cur_point["text"]).append(st)
                 continue
             if st:
@@ -619,6 +699,7 @@ def parse_pages(pages, qp_totals=None):
                     cur["guidance"].append({"page": pageno, "text": st})
                     buckets["guidance"] += lbl_n
                     prev_line_guidance = True
+                    _trace(pageno, raw, "GUIDANCE (loose)")
                 elif carry_guidance and cur is not None \
                         and raw[:2].strip() == "":
                     # G1 upgrade: wrapped note fragment directly following a
@@ -631,6 +712,7 @@ def parse_pages(pages, qp_totals=None):
                 else:
                     unclassified.append({"page": pageno, "text": st, "reason": "unclassified"})
                     buckets["unclassified"] += lbl_n
+                    _trace(pageno, raw, "UNCLASSIFIED")
 
     for q in questions:
         q["pages"] = sorted(q["pages"])
@@ -649,7 +731,13 @@ def parse_pages(pages, qp_totals=None):
                 if src_total is None:
                     continue
                 diff = src_total - resolved_sum
-                if diff > 0:
+                # G1.2 upgrade: cap the recovery at the per-row marks-cell max —
+                # a diff beyond it means rows were lost/misattributed upstream,
+                # not that one cell is huge (evidence: 4CH0 1C jun2013 q3(e)iii
+                # 'recovered' 8 when 3 rows had been stolen by the previous
+                # question); an unbounded diff manufactures phantom marks that
+                # can false-close the question
+                if 0 < diff <= MARKS_CELL_MAX:
                     unresolved[0]["marks"] = diff
                     break
         # rows whose marks cell never resolved are answer-cell descriptors,
