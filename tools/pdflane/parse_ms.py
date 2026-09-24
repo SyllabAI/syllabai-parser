@@ -711,7 +711,13 @@ def parse_pages(pages, qp_totals=None):
                     # G1.2 (RC-E): a printed '(iii)   M1 ...' lead makes this a
                     # structural grid row, never prose — only part-less AND
                     # sub-less rows can be prose notes ('M2 can be awarded...')
-                    if cur_point is not None:
+                    # G1.3-r2 (RC-C): the code checked ONLY `sub is None` — an
+                    # explicit part lead ('(d)   M1 – incomplete combustion',
+                    # 4CH0 1C Jun 2014 q9(d) p16) slipped through as prose and
+                    # its whole block was absorbed into the previous point's
+                    # notes (MS-NO-POINTS for the letter). The part-less
+                    # condition is now enforced as documented.
+                    if part is None and cur_point is not None:
                         (cur_point["notes"] if cur_point["text"] else cur_point["text"]).append(st)
                         buckets["continuation"] += lbl_n
                         continue
