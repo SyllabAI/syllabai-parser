@@ -57,6 +57,30 @@ SUB_PAREN_RE = re.compile(r"^\s*\(\s*(?P<sub>[ivx]+)\s*\)\s+(?P<rest>\S.*)$")
 SUB_BARE_RE = re.compile(r"^\s{1,8}(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
 ROMAN_RE_MS = re.compile(r"^[ivx]{1,4}$")
 
+# --- G1.3 (RC-C letter-level residual): opener rows whose ONLY content is
+# the marks cell — the answer body is empty (a table / step rows follow on
+# the next lines) and the printed marks sit on the opener line itself:
+#   '4 (a) (i)                                     3'   (4CH1 1C Jan 2020 q4 a-i)
+#   '  (b)   (i)                                   2'   (4CH1 1C Jun 2021 q7 b-i)
+#   '        (ii)                                  3'   (4CH1 1C Jan 2020 q4 b-ii)
+#   '7        (ii)      •   substitute ...   2'         (4CH1 1C Jun 2021 q7 b-ii)
+# Previously nothing matched (QPART/PART/SUB regexes demand non-empty rest,
+# and a bare rest='2' lost its marks semantics via tail_marks' \s{2,} rule),
+# so the whole sub-part was dropped -> QP-EXTRA-SUB / PART-MARKS-MISMATCH.
+# The tail digit is column-disciplined (marks column, never the answer
+# column) so MCQ answer-value rows keep their existing handling.
+OPENER_MARKS_QPS_RE = re.compile(   # qn + (part) + ((sub))? + tail, empty body
+    r"^\s*(?P<qn>\d{1,2})\s+\((?P<part>[a-z])\)\s*"
+    r"(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?(?P<mk>\d{1,3})\s*$")
+OPENER_MARKS_PS_RE = re.compile(    # (part) + ((sub))? + tail, empty body
+    r"^\s*\((?P<part>[a-z])\)\s*(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?"
+    r"(?P<mk>\d{1,3})\s*$")
+OPENER_MARKS_QS_RE = re.compile(    # qn + ((sub)) + [content] + tail (no part)
+    r"^\s*(?P<qn>\d{1,2})\s+\(\s*(?P<sub>[ivx]+)\s*\)\s*"
+    r"(?P<rest>\S.*?)?\s{2,}(?P<mk>\d{1,3})\s*$")
+OPENER_MARKS_S_RE = re.compile(     # ((sub)) + tail, empty body (no qn/part)
+    r"^\s*\(\s*(?P<sub>[ivx]+)\s*\)\s*(?P<mk>\d{1,3})\s*$")
+
 
 def collapse_spaced(s):
     """Collapse letter-spaced glyph runs ('e v a p o r a t i o n' ->
@@ -138,6 +162,34 @@ def _next_substantive_line(raw_lines, idx):
             continue
         return st
     return None
+
+
+def _labeled_row_ahead(raw_lines, idx, window=3):
+    """G1.3 (RC-C): True when a complete M/A-labeled row starts within the
+    next `window` plain continuation lines (blank/furniture lines skipped).
+
+    Used to decide whether a displaced merged marks cell belongs to the next
+    labeled row (redirect via pending_marks_next) or opens its own deferred
+    point (legacy behavior, Jan-2012 two-mark blocks). Evidence split:
+    4CH0 1C Jun 2012 q6(c)(i) 'mass of isotopes ... 1' has 'M2 compared to...'
+    two continuation lines below -> the cell IS M2's (redirect);
+    4CH0 2C Jan 2012 q1(b)(ii) 'proton number ... 1' has only note wraps
+    below -> the cell is an independent mark point (spawn)."""
+    seen = 0
+    j = idx
+    while j + 1 < len(raw_lines) and seen < window:
+        j += 1
+        t = raw_lines[j].strip()
+        if not t:
+            continue
+        cleaned = clean_line(raw_lines[j])
+        if cleaned is None:
+            continue
+        seen += 1
+        st = cleaned.strip()
+        if re.match(r"^\s*[MA]\d{1,2}\b", st):
+            return True
+    return False
 
 
 def _is_opener_shaped(st):
@@ -247,6 +299,20 @@ def is_grid_page(text):
         for r in GRID_HEADER_RES:
             if r.match(st):
                 return True
+    # G1.3 (RC-C): MS continuation pages can carry ONLY label-less sub-part
+    # rows — MCQ answer rows '(ii)   D yellow   1' + incorrect-option notes
+    # carry no [MA]<n> token, no total row and no grid header, yet are real
+    # mark content (evidence: 4CH1 1C Jun 2021 q6(b)(ii) p13 lost whole ->
+    # MS-PART-NO-POINTS + letter-sum mismatch). A page showing an
+    # opener-shaped row WITH a trailing marks digit is grid content.
+    for ln in text.splitlines():
+        st = ln.strip()
+        if not re.search(r"\d{1,3}\s*$", st):
+            continue
+        if SUB_PAREN_RE.match(st) or PART_PAREN_RE.match(st) \
+                or QPART_PAREN_RE.match(st) or OPENER_MARKS_S_RE.match(st) \
+                or OPENER_MARKS_PS_RE.match(st):
+            return True
     return False
 
 
@@ -681,6 +747,64 @@ def parse_pages(pages, qp_totals=None):
                 continue
 
             # --- label-less grid rows (4CH1 style / label-less 4CH0 rows) ---
+            # --- G1.3 (RC-C): opener rows whose only content is the marks
+            # cell (empty answer body). Must run BEFORE solo/qpm/prm/sm —
+            # those match with rest='<digit>' and lose the marks semantics
+            # (tail_marks needs \s{2,}; a bare rest digit became junk text,
+            # the sub-part aggregate was demoted and the letter sum broke).
+            om = (OPENER_MARKS_QPS_RE.match(line)
+                  or OPENER_MARKS_PS_RE.match(line)
+                  or OPENER_MARKS_QS_RE.match(line)
+                  or OPENER_MARKS_S_RE.match(line))
+            om_ok = False
+            if om:
+                # value cap + column discipline (the bare digit must sit at
+                # the established marks column — answer-value digits at the
+                # answer column keep the legacy junk-point handling)
+                mk_raw = int(om.group("mk"))
+                mk_val = mk_raw if 0 < mk_raw <= MARKS_CELL_MAX else None
+                _, mk_om = _discipline(om, mk_val, line)
+                om_ok = mk_om is not None
+            if om and om_ok:
+                gd_om = om.groupdict()
+                qn_om = gd_om.get("qn") or None
+                part_om = gd_om.get("part")
+                sub_om = gd_om.get("sub")
+                if qn_om is not None:
+                    if int(qn_om) > MAX_QN:
+                        om_ok = False  # answer value '28', not a question row
+                    else:
+                        ensure_question(int(qn_om))
+            if om and om_ok:
+                if cur is None:
+                    om_ok = False  # row before any question: legacy handling
+            if om and om_ok:
+                rest_om = (gd_om.get("rest") or "").strip()
+                chunks_om = [c.strip() for c in re.split(r"\s{2,}", rest_om)
+                             if c.strip()] if rest_om else []
+                if part_om is None and sub_om is not None:
+                    # '7 (ii)' / '(ii)' — solo sub inherits the open part
+                    # (same semantics as the '(ii)'-shift in the label path).
+                    # NO open part context -> the roman may BE the part
+                    # letter ('(v)' degenerate page, RC-D legacy fallback) —
+                    # never claim; fall through to the legacy paths.
+                    if last_part is None:
+                        om_ok = False
+                    else:
+                        part_om = last_part
+                if part_om is None and sub_om is None:
+                    om_ok = False
+            if om and om_ok:
+                gp_om = new_point(part_om, sub_om, chunks_om, mk_om, pageno,
+                                  answer_col=len(line.rstrip()))
+                gp_om["_from_deferred"] = True  # step rows below are notes
+                if part_om:
+                    last_part = part_om
+                cur_group = (part_om, sub_om)
+                group_start = len(cur["points"]) - 1
+                buckets["point"] += lbl_n
+                continue
+
             gp = None
             solo = QPART_PAREN_SOLO_RE.match(line) or QPART_BARE_SOLO_RE.match(line)
             qpm = None if solo else (QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line))
@@ -869,7 +993,20 @@ def parse_pages(pages, qp_totals=None):
                     # 4CH0 q3 'ammonia in M2 ... 1' wrap two rows above its
                     # M3 row — spawning a point here double-counts).
                     nxt = _next_substantive_line(raw_lines, idx)
-                    if ans_col is not None and nxt is not None \
+                    # G1.3 (RC-C): if a complete M/A-labeled row starts within
+                    # the next few plain continuation lines, this cell is that
+                    # row's vertically-centered merged marks cell — hand it to
+                    # the row via pending_marks_next instead of spawning a
+                    # phantom point that steals it (evidence: 4CH0 1C Jun 2012
+                    # q6(c)(i) 'mass of isotopes 1' two lines above its M2 row
+                    # -> phantom P2 'on a scale where' + M2 poisoned by the
+                    # accept-text bleed). Note-wrap-only continuation chains
+                    # (4CH0 2C Jan 2012 q1(b)(ii) 'proton number 1' block)
+                    # keep the legacy deferred-point spawn.
+                    if _labeled_row_ahead(raw_lines, idx):
+                        pending_marks_next = mk0
+                        buckets["continuation"] += lbl_n
+                    elif ans_col is not None and nxt is not None \
                             and not _is_opener_shaped(nxt):
                         dp = new_point(cur_point["part"], cur_point["sub"], [],
                                        mk0, pageno, answer_col=ans_col)
@@ -878,11 +1015,17 @@ def parse_pages(pages, qp_totals=None):
                         continue
                 buckets["continuation"] += lbl_n
                 if cur_point["marks"] is None:
-                    mt = MARKS_TAIL_RE.match(st)
-                    if mt and (mt.group("body") or "").strip():
+                    # G1.3 (RC-C): the legacy unguarded recovery here undid the
+                    # G1.2 column/value discipline — accept-text digits ('12'
+                    # from 'carbon-12 has a mass of / 12') poisoned tail-less
+                    # M-rows (evidence: 4CH0 1C Jun 2012 q6(c)(i) M2 marks=12).
+                    # Same guards as the disciplined recovery above: value cap
+                    # + marks-column discipline.
+                    mt, mk = _discipline(*tail_marks(st), line)
+                    if mt and mk is not None and (mt.group("body") or "").strip():
                         # wrapped marks recovered
                         cur_point["text"].append(mt.group("body").strip())
-                        cur_point["marks"] = int(mt.group("mk"))
+                        cur_point["marks"] = mk
                         continue
                 (cur_point["notes"] if cur_point["text"] else cur_point["text"]).append(st)
                 continue
