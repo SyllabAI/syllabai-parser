@@ -274,3 +274,184 @@ class DeferredCellStopsAtBlockBoundary(unittest.TestCase):
         self.assertEqual([p["marks"] for p in d_pts], [1, 1])
         e_pts = [p for p in q["points"] if p["part"] == "e"]
         self.assertEqual([p["marks"] for p in e_pts], [1, 1])
+
+
+class Round3Col0BareOpeners(unittest.TestCase):
+    """G1.3-r3: column-0 bare part openers.
+
+    (1) Banner form — 'f   In part (f):' at the left margin with NO marks
+        cell (4CH0 1C Jun 2015 q8 p21): a structural opener only; the scored
+        rows below carry their own cells. Previously PART_BARE_RE demanded
+        1-8 leading spaces, so the whole f block scored under e.
+    (2) Scored form — 'd   i   silica ... 1' at the left margin (same paper
+        q4-area p14): a real point with its own tail cell."""
+
+    BANNER = (" Question\n"
+              "         Answer                       Notes        Marks\n"
+              "number\n"
+              "8 e   (i)   UV (light)                               1\n"
+              "       (ii)  bromomethane                            1\n"
+              "f                                    In part (f):\n"
+              "     i    M1   0.18 x 25 / 1000                      2\n"
+              "     ii   0.0045                                     1\n"
+              "                                             Total 6 marks\n")
+
+    SCORED = (" Question\n"
+              "         Answer                       Notes        Marks\n"
+              "number\n"
+              "4 c   i     aluminosilicates                         1\n"
+              "d   i    silica / silicon dioxide / SiO2   Accept zeolites   1\n"
+              "    ii    measured surface area                    1\n"
+              "                                             Total 4 marks\n")
+
+    def test_banner_row_is_structural_opener(self):
+        r = parse_ms.parse_pages([pg(1, self.BANNER)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("f", "i")], 2, "f.i scored under f, not e")
+        self.assertEqual(got[("f", "ii")], 1)
+        self.assertNotIn(("e", "i"), {}, "no phantom re-labels")
+
+    def test_col0_scored_row_creates_point(self):
+        r = parse_ms.parse_pages([pg(1, self.SCORED)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("d", "i")], 1, "col-0 'd i' scored row kept")
+        self.assertEqual(got[("d", "ii")], 1)
+        self.assertEqual(got[("c", "i")], 1)
+
+
+class Round3SoloOpeners(unittest.TestCase):
+    """G1.3-r3: bare part letter ALONE ('b' solo, 4CH1 1C Jun 2019 q9(b)
+    p13 — qn column empty on the page continuation) and paren part letter
+    ALONE without a qn ('   (c)', 4CH0 1C Jan 2018 q12(c) p18)."""
+
+    B_SOLO = (" Question\n"
+              "         Answer                       Notes        Marks\n"
+              "number\n"
+              "9 a      M1 C 8.05 / 12                                   2\n"
+              "   b\n"
+              "          ACCEPT any combination of dots                 2\n"
+              "          M1 all four bonding pairs correct\n"
+              "                                             Total 6 marks\n")
+
+    PAREN_SOLO = (" Question\n"
+                  "         Answer                       Notes        Marks\n"
+                  "number\n"
+                  "12 (a) (i)   low AND because forward reaction is exo    1\n"
+                  "  (b)      (the catalyst) increases both rates          1\n"
+                  "  (c)\n"
+                  "      (i)   M1 profile curve completed                  2\n"
+                  "                                             Total 4 marks\n")
+
+    def test_bare_letter_solo_opens_aggregate(self):
+        r = parse_ms.parse_pages([pg(1, self.B_SOLO)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertIn(("b", None), got, "b aggregate opened")
+        self.assertEqual(got[("a", None)], 2)
+        self.assertLessEqual(q["sum_points"], 6, "no double-count")
+
+    def test_paren_solo_without_qn_opens_block(self):
+        r = parse_ms.parse_pages([pg(1, self.PAREN_SOLO)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("c", "i")], 2, "(c)(i) scored under c, not b")
+        self.assertEqual(got[("b", None)], 1)
+
+
+class Round3QnRomanSub(unittest.TestCase):
+    """G1.3-r3: qn + bare roman sub lead with an EMPTY part column
+    ('5   iv   oxygen / O2   1', 4CH0 1C Jun 2013 q5(a) p10 continuation)."""
+
+    TEXT = (" Question\n"
+            "         Answer                       Notes        Marks\n"
+            "number\n"
+            "5 a   i     haematite                                   1\n"
+            "      ii    Al2O3                                       1\n"
+            "      iii   carbon / C                                  1\n"
+            "5     iv    oxygen / O2            Accept O             1\n"
+            "            production of heat     DEP on oxygen        1\n"
+            "                                             Total 5 marks\n")
+
+    def test_qn_sub_lead_scores_under_open_part(self):
+        r = parse_ms.parse_pages([pg(1, self.TEXT)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("a", "iv")], 1, "'5 iv' scored as a-iv")
+        self.assertEqual(got[("a", "iii")], 1)
+        self.assertEqual(q["sum_points"], 5)
+
+
+class Round3CompactPartSub(unittest.TestCase):
+    """G1.3-r3: compact part+sub opener with no space — '(c)(i) (Iron (III)
+    oxide) loses oxygen   1' (4CH1 1CR Jan 2020 q11(c)(i) p18)."""
+
+    TEXT = (" Question\n"
+            "         Answer                       Notes        Marks\n"
+            "number\n"
+            "11 (a)   equation                                        2\n"
+            "   (b) (i)   M1 Mass copper                              4\n"
+            "       (c)(i)   (Iron (III) oxide) loses oxygen          1\n"
+            "       (ii)  Carbon monoxide is poisonous                1\n"
+            "                                             Total 8 marks\n")
+
+    def test_compact_opener_splits_letter(self):
+        r = parse_ms.parse_pages([pg(1, self.TEXT)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("c", "i")], 1, "(c)(i) under c")
+        self.assertEqual(got[("c", "ii")], 1, "(c)(ii) under c")
+        self.assertEqual(got[("b", "i")], 4)
+
+
+class Round3ArabicOptions(unittest.TestCase):
+    """G1.3-r3: parenthesized ARABIC option leads ('(2)'-'(5)', 4CH0 1C Jun
+    2013 q8(b)) — scored under the open part with sub=None (the atoms schema
+    types sub as roman only); the tail-less wrapped option recovers its cell
+    via the end-of-parse resolution."""
+
+    TEXT = (" Question\n"
+            "         Answer                       Notes        Marks\n"
+            "number\n"
+            "8 (b)      (2)   time / how long                              1\n"
+            "           (3)   number of chips                            1\n"
+            "           (4)   volume of gas                              1\n"
+            "           (5)   percentage\n"
+            "                 concentration          Ignore volume        1\n"
+            "                                             Total 4 marks\n")
+
+    def test_arabic_options_scored_under_open_part(self):
+        r = parse_ms.parse_pages([pg(1, self.TEXT)])
+        q = r["questions"][0]
+        b = [p for p in q["points"] if p["part"] == "b"]
+        self.assertEqual(len(b), 4, f"four option rows, got {len(b)}")
+        self.assertEqual(sum(p["marks"] or 0 for p in b), 4)
+        for p in b:
+            self.assertIsNone(p["sub"], "arabic option leads never become roman subs")
+
+
+class Round3LoneCellBackwardFill(unittest.TestCase):
+    """G1.3-r3: the lone-cell backward fill no longer demands an EMPTY
+    point — 'M2 - 0.006' + lone '1' (4CH0 2C Jan 2013 q7(a)(i)): the second
+    marks cell of the sub-part fills the tail-less M2 row above it."""
+
+    TEXT = (" Question\n"
+            "         Answer                       Notes        Marks\n"
+            "number\n"
+            "7 (a) (i)  M1 -                One mark for (144/24)=6    1\n"
+            "           M2 -   0.006\n"
+            "                                                      1\n"
+            "      (ii) 0.006                                       1\n"
+            "                                             Total 3 marks\n")
+
+    def test_lone_cell_fills_text_bearing_m2(self):
+        r = parse_ms.parse_pages([pg(1, self.TEXT)])
+        q = r["questions"][0]
+        ai = [p for p in q["points"] if (p["part"], p["sub"]) == ("a", "i")]
+        self.assertEqual(sum(p["marks"] or 0 for p in ai), 2,
+                         "M1 + recovered lone cell (two a-i rows)")
+        self.assertEqual(len(ai), 2)
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("a", "ii")], 1)
+        self.assertEqual(q["sum_points"], 3)
