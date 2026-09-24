@@ -166,7 +166,8 @@ def _next_substantive_line(raw_lines, idx):
 
 def _labeled_row_ahead(raw_lines, idx, window=3):
     """G1.3 (RC-C): True when a complete M/A-labeled row starts within the
-    next `window` plain continuation lines (blank/furniture lines skipped).
+    next `window` plain continuation lines (blank/furniture lines skipped)
+    WITHOUT a block opener intervening.
 
     Used to decide whether a displaced merged marks cell belongs to the next
     labeled row (redirect via pending_marks_next) or opens its own deferred
@@ -174,7 +175,10 @@ def _labeled_row_ahead(raw_lines, idx, window=3):
     4CH0 1C Jun 2012 q6(c)(i) 'mass of isotopes ... 1' has 'M2 compared to...'
     two continuation lines below -> the cell IS M2's (redirect);
     4CH0 2C Jan 2012 q1(b)(ii) 'proton number ... 1' has only note wraps
-    below -> the cell is an independent mark point (spawn)."""
+    below -> the cell is an independent mark point (spawn);
+    4CH0 1C Jun 2012 q4(d) 'ferric fluoride / FeF3 ... 1' has the '(e)'
+    block opener before any labeled row -> the cell belongs to the CURRENT
+    block (spawn) — the lookahead must not cross block boundaries."""
     seen = 0
     j = idx
     while j + 1 < len(raw_lines) and seen < window:
@@ -189,6 +193,11 @@ def _labeled_row_ahead(raw_lines, idx, window=3):
         st = cleaned.strip()
         if re.match(r"^\s*[MA]\d{1,2}\b", st):
             return True
+        if (QPART_PAREN_RE.match(st) or QPART_BARE_RE.match(st)
+                or QPART_PAREN_SOLO_RE.match(st) or QPART_BARE_SOLO_RE.match(st)
+                or PART_PAREN_RE.match(st) or PART_BARE_RE.match(st)
+                or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st)):
+            return False  # block boundary: no same-block labeled row follows
     return False
 
 
@@ -343,7 +352,8 @@ def parse_pages(pages, qp_totals=None):
                "continuation": 0, "furniture_pages": 0}
 
     def ensure_question(qn):
-        nonlocal cur, last_part, point_seq, group_start, cur_group
+        nonlocal cur, last_part, point_seq, group_start, cur_group, \
+            pending_marks_next
         closed = any(x["number"] == qn and x["total_row"] is not None
                      for x in questions)
         if closed:
@@ -358,6 +368,14 @@ def parse_pages(pages, qp_totals=None):
             point_seq = 0
             group_start = 0
             cur_group = None
+            # G1.3 (RC-C): a displaced merged marks cell belongs to the
+            # question it was printed in. If its intended row absorbed as
+            # prose instead of creating a point, an unexpired pending value
+            # poisoned the NEXT question's first provisional point
+            # (evidence: 4CH1 1C Jun 2020 q5 lone '2' leaked into q6
+            # M2(a-i) -> letter sum 8 vs 6; latent in G1.2, exposed once
+            # the OM branch recovered q6(c)(iii)'s real 2-mark cell).
+            pending_marks_next = None
 
     def new_point(part, sub, chunks, marks, pageno, answer_col=None):
         nonlocal cur_point, point_seq, pending_marks_next
@@ -865,7 +883,17 @@ def parse_pages(pages, qp_totals=None):
                     sub = mm.group("sub")
                     rest = mm.group("rest")
                     mt, mk = _discipline(*tail_marks(rest), line)
-                    if prm or mt:  # bare-letter rows require a marks tail
+                    # G1.3 (RC-C round 2): a COLUMNAR bare-letter row keeps
+                    # opening its point even without a same-line marks cell —
+                    # the printed marks sit on a wrapped line below ('1 c
+                    # isotopes / atomic numbers / mass numbers   3', 4CH0 1C
+                    # Jan 2015 q1(c): the cell used to be claimed by the
+                    # previous letter's block as a phantom further-answer
+                    # row). Prose stays excluded: the 2+ space gap between
+                    # the letter and the text proves columnar layout.
+                    columnar_bare = bool(brm) and bool(
+                        re.match(r"^\s{1,8}[a-z]\s{2,}", line))
+                    if prm or mt or columnar_bare:
                         marks = mk
                         body = mt.group("body") if mt else rest
                         chunks = [c.strip() for c in re.split(r"\s{2,}", body or "") if c.strip()]
@@ -1023,7 +1051,6 @@ def parse_pages(pages, qp_totals=None):
                     # + marks-column discipline.
                     mt, mk = _discipline(*tail_marks(st), line)
                     if mt and mk is not None and (mt.group("body") or "").strip():
-                        # wrapped marks recovered
                         cur_point["text"].append(mt.group("body").strip())
                         cur_point["marks"] = mk
                         continue

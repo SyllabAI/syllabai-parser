@@ -204,3 +204,73 @@ class MCQContinuationPage(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BareLetterNoTailRows(unittest.TestCase):
+    """4CH0 1C Jan 2015 q1(c): a columnar bare-letter row with NO same-line
+    marks cell ('c   isotopes' with the 3-mark cell on a wrapped line below)
+    used to be dropped entirely — the cell was then claimed by the PREVIOUS
+    letter's block as a phantom further-answer row (b-iii(3))."""
+
+    TEXT = (" Question\n"
+            "         Answer                          Notes        Marks\n"
+            "number\n"
+            "1 a                                                      1\n"
+            "   b   i     A (an electron)                             1\n"
+            "       ii    B (a neutron)                               1\n"
+            "       iii   B (electrons and protons)                   1\n"
+            "   c         isotopes\n"
+            "             atomic numbers                              3\n"
+            "             mass numbers\n"
+            "                                                 Total 7 marks\n")
+
+    def test_columnar_bare_row_opens_point_and_wrapped_cell_fills(self):
+        r = parse_ms.parse_pages([pg(1, self.TEXT)])
+        q = r["questions"][0]
+        got = {(p["part"], p["sub"]): p["marks"] for p in q["points"]}
+        self.assertEqual(got[("a", None)], 1)
+        self.assertEqual(got[("b", "iii")], 1, "b-iii keeps its own 1 mark")
+        self.assertEqual(got[("c", None)], 3, "c opens and recovers its cell")
+        self.assertEqual(q["sum_points"], 7)
+        self.assertTrue(q["arithmetic_ok"])
+
+    def test_prose_single_space_rows_stay_excluded(self):
+        text = (" Question\n"
+                "         Answer                          Notes        Marks\n"
+                "number\n"
+                "2 a    M1 some answer text                              1\n"
+                "       a bit of prose wrapping the answer cell\n"
+                "                                                Total 1 marks\n")
+        r = parse_ms.parse_pages([pg(1, text)])
+        q = r["questions"][0]
+        # the prose line must NOT open a phantom part row
+        parts = {p["part"] for p in q["points"]}
+        self.assertEqual(parts, {"a"}, f"only part a, got {parts}")
+
+
+class DeferredCellStopsAtBlockBoundary(unittest.TestCase):
+    """4CH0 1C Jun 2012 q4(d): the second mark cell ('ferric fluoride /
+    FeF3   1') sits on a notes-column continuation line; the '(e)' block
+    opener follows before any labeled row — the cell belongs to (d)'s own
+    block (deferred spawn), never redirected across the boundary."""
+
+    def test_second_d_point_survives(self):
+        lines = [
+            " Question",
+            "                              Expected Answer       Accept       Reject       Marks",
+            " number",
+            "4 (d)      (fluorine reacts) vigorously / instantly /   the quickest   fluorine   1",
+            "           violently / very quickly",
+            "           IGNORE references to electron transfer",
+            "                                              ferric fluoride / FeF3   1",
+            "           (to form) iron(III) fluoride",
+            "  (e)      M1 colourless (IGNORE clear)                 no colour      decolour   1",
+            "           M2 orange / yellow /brown                    any colours    any other  1",
+        ]
+        r = parse_ms.parse_pages([pg(1, "\n".join(lines))])
+        q = r["questions"][0]
+        d_pts = [p for p in q["points"] if p["part"] == "d"]
+        self.assertEqual(len(d_pts), 2, "both (d) rows kept")
+        self.assertEqual([p["marks"] for p in d_pts], [1, 1])
+        e_pts = [p for p in q["points"] if p["part"] == "e"]
+        self.assertEqual([p["marks"] for p in e_pts], [1, 1])
