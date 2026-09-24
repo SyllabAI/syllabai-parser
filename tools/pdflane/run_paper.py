@@ -392,6 +392,19 @@ def main():
 
     v2_atoms = emit_atoms.build_qp_atoms(qp_blocks)
     emit_atoms.crosscheck_qp(v2_atoms, qp_parse)  # hard equivalence gate
+    # G1.2 (RC-F): orphan-total stubs (question never opened — rasterized
+    # opener page / out-of-sequence print) are disclosed as review rows and
+    # excluded from the product; the stem is deterministically unavailable.
+    # The MS side keeps its full parse, so affected questions surface as
+    # MS-QUESTION-MISSING in the document flags — honest, never silent.
+    qp_opener_orphans = [a for a in v2_atoms if a.get("orphan_total")]
+    for o in qp_opener_orphans:
+        review.append({"code": "QP-OPENER-UNSEEN",
+                       "taxonomy": "SOURCE-DISCREPANCY",
+                       "detail": {"question": o["number"],
+                                  "printedTotal": o["total"],
+                                  "pages": o["pages"]}})
+    v2_atoms = [a for a in v2_atoms if not a.get("orphan_total")]
     doc = emit_atoms.build_document(v2_atoms, ms_parse["questions"], line_page,
                                     source_qp=args.source_qp, source_ms=args.source_ms,
                                     s2_by_num=s2_by_num, corrections=corrections)

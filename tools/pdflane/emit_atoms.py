@@ -15,8 +15,13 @@ import re
 from pdflane import parse_qp
 
 PART_OPENER_RE = re.compile(r"^\((?P<label>[a-z])\)\s*(?:\((?P<sub>[ivx]+)\))?\s*(?P<rest>.*)$")
-SUB_OPENER_PAREN_RE = re.compile(r"^\((?P<sub>[ivx]+)\)\s*(?P<rest>.+)$")
-SUB_OPENER_BARE_RE = re.compile(r"^(?P<sub>[ivx]{1,4})\)\s*(?P<rest>.+)$")
+# G1.2 (RC-C): rest may be EMPTY — old-spec QPs print the sub-part opener
+# alone on its own line ((iii) above a diagram block). Requiring ".+" made
+# every standalone "(ii)"/"(iii)"/"(iv)" a body line, so the sub-part never
+# opened and its printed "(1)" filled the parent instead (evidence:
+# 4CH0 1C June 2011 q2 — QP parts 4 vs MS 6 while the MS closes 6/6).
+SUB_OPENER_PAREN_RE = re.compile(r"^\((?P<sub>[ivx]+)\)\s*(?P<rest>.*)$")
+SUB_OPENER_BARE_RE = re.compile(r"^(?P<sub>[ivx]{1,4})\)\s*(?P<rest>.*)$")
 STANDALONE_MARKS_RE = re.compile(r"^\((?P<n>\d{1,2})\)$")
 TRAILING_MARKS_RE = re.compile(r"\s*\((?P<n>\d{1,2})\)$")
 SELECT_STEM_RE = re.compile(
@@ -136,8 +141,15 @@ def _seal(cur, container):
 
 def build_qp_atoms(qp_blocks):
     """Walk the pymupdf block stream with parse_qp's boundary discipline,
-    emitting v2 atoms with stem/part segmentation and interleaved images."""
+    emitting v2 atoms with stem/part segmentation and interleaved images.
+
+    G1.2 (RC-F): the returned list carries .orphan_events — every question
+    number whose total row did not close its own open atom (parse_qp records
+    an orphan entry for exactly those events; kept or merged). crosscheck_qp
+    uses it for parity."""
     atoms = []
+    orphan_numbers = []  # G1.2 (RC-F): every total row that did not close its own open atom
+    pending_part_openers = []  # G1.2 (RC-C): opener-shaped lines seen between atoms
     cur = None
     container = None
     expected = 1
@@ -193,12 +205,31 @@ def build_qp_atoms(qp_blocks):
                 expected = qn + 1
                 continue
             if cur is None:
-                match = [a for a in atoms if a["number"] == qn and a["total"] is None]
+                match = [a for a in atoms if a["number"] == qn
+                         and a["total"] is None and not a.get("orphan_total")]
                 if match:
                     match[0]["total"] = val
                     expected = qn + 1
+                    orphan_numbers.append(qn)  # parse_qp recorded an orphan+merge here
                     continue
-            raise EmitError("unexpected total row: %r" % line)
+            # G1.2 (RC-F): a total row whose question never opened (rasterized
+            # opener page — e.g. 4CH1 1C June 2019 pages 1/2/4/12/16/18/20/26
+            # carry no text layer — or out-of-sequence reprint) is an ORPHAN
+            # total, never a hard abort. parse_qp.parse_blocks already tolerates
+            # this (orphan atom + end-of-stream merge); the walk now mirrors it
+            # so the two can never diverge. The orphan stays disclosed:
+            # run_paper emits a QP-OPENER-UNSEEN review row and excludes the
+            # stub from the product (the stem is deterministically unavailable).
+            if cur is not None:
+                _seal(cur, container)  # abandon-in-place: keep the open atom
+                cur = None
+            orphan_numbers.append(qn)
+            atoms.append({"number": qn, "total": val, "prompt": [],
+                          "pages": [page], "figures": [],
+                          "stem": {"blocks": []}, "parts": [],
+                          "orphan_total": True})
+            expected = qn + 1
+            continue
 
         can_open = (cur is None) or (cur.get("total") is not None)
         bm = parse_qp.BOUNDARY_RE.match(line)
@@ -212,18 +243,49 @@ def build_qp_atoms(qp_blocks):
         if qn is not None and can_open:
             open_atom(qn, page)
             expected = qn + 1
+            for ppage, pline in pending_part_openers:
+                if ppage == page:
+                    _route_text(cur, container, pending_choices, pline, page)
+            pending_part_openers = []
             if first is not None:
                 _route_text(cur, container, pending_choices, first, page)
             continue
 
         if cur is None or cur["total"] is not None:
+            # G1.2 (RC-C): some layouts print the part-opener text block BEFORE
+            # the question-number block (PyMuPDF column order: '(a) Complete
+            # the table...' then a separate '1' block). Buffer opener-shaped
+            # lines seen between atoms; when the next atom opens on the same
+            # page they route first, so part (a) is not lost.
+            pom = PART_OPENER_RE.match(line)
+            if pom and not is_dot_line(pom.group("rest") or ""):
+                pending_part_openers.append((page, line))
             continue  # front matter / post-closing furniture
         cur["pages"].add(page)
         _route_text(cur, container, pending_choices, line, page)
 
     if cur is not None and cur["total"] is None:
         _seal(cur, container)
-    return atoms
+    # G1.2 (RC-F): mirror parse_qp's end-of-stream orphan merge — an orphan
+    # total whose question materialized without a total closes that question.
+    real = [a for a in atoms if not a.get("orphan_total")]
+    kept_orphans = []
+    for o in atoms:
+        if not o.get("orphan_total"):
+            continue
+        match = [a for a in real if a["number"] == o["number"] and a["total"] is None]
+        if match:
+            match[0]["total"] = o["total"]
+        else:
+            kept_orphans.append(o)
+    out = _AtomList(real + kept_orphans)
+    out.orphan_events = orphan_numbers
+    return out
+
+
+class _AtomList(list):
+    """List of atoms with a .orphan_events side-channel (G1.2 RC-F parity)."""
+    orphan_events = None
 
 
 ROMAN_RE = re.compile(r"^[ivx]{1,4}$")
@@ -443,12 +505,24 @@ def _add_para(container, text, page):
 
 
 def crosscheck_qp(atoms, qp_parse):
-    """The v2 walk must agree with the proven deterministic parser."""
+    """The v2 walk must agree with the proven deterministic parser.
+
+    G1.2 (RC-F): orphan totals are compared too — parse_qp records an orphan
+    entry for every total row that did not close its own open atom (merged or
+    not), so the walk must have seen the same events in the same order of
+    question numbers. Merged orphans are recorded via orphan_numbers at the
+    moment of synthesis/late-close, so both sides list them."""
     real = [q for q in qp_parse["questions"] if not q.get("orphan_total")]
-    if len(real) != len(atoms):
+    walk = [a for a in atoms if not a.get("orphan_total")]
+    if len(real) != len(walk):
         raise EmitError("question count divergence: v2=%d parse_qp=%d"
-                        % (len(atoms), len(real)))
-    for a, q in zip(atoms, real):
+                        % (len(walk), len(real)))
+    walk_orphans = sorted(getattr(atoms, "orphan_events", None) or [])
+    parse_orphans = sorted(qp_parse.get("orphan_totals") or [])
+    if walk_orphans != parse_orphans:
+        raise EmitError("orphan-total divergence: v2=%s parse_qp=%s"
+                        % (walk_orphans, parse_orphans))
+    for a, q in zip(walk, real):
         if a["number"] != q["number"]:
             raise EmitError("number divergence: v2=%d parse_qp=%d"
                             % (a["number"], q["number"]))
