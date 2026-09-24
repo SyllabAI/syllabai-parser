@@ -52,8 +52,52 @@ QPART_BARE_SOLO_RE = re.compile(r"^\s*(?P<qn>\d{1,2})\s+(?P<part>[a-z])\s*$")
 QPART_BARE_RE = re.compile(
     r"^\s*(?P<qn>\d{1,2})\s+(?P<part>[a-z])\s+(?:(?P<sub>[ivx]{1,4})\s+)?(?P<rest>\S.*)$")
 PART_PAREN_RE = re.compile(r"^\s*\((?P<part>[a-z])\)\s+(?:\(\s*(?P<sub>[ivx]+)\s*\)\s*)?(?P<rest>\S.*)$")
+# G1.3-r3 (RC-C round 3): COMPACT part+sub opener with no space — '(c)(i)
+# (Iron (III) oxide) loses oxygen   1' (4CH1 1CR Jan 2020 q11(c)(i) p18).
+# PART_PAREN_RE requires \s+ after the part letter, so the opener row merged
+# into the PREVIOUS block's text and the whole (c) letter scored under (b)
+# (signature ms b13 vs qp b5, c none).
+PART_PAREN_COMPACT_RE = re.compile(
+    r"^\s*\((?P<part>[a-h])\)\s*\(\s*(?P<sub>[ivx]+)\s*\)\s*(?P<rest>\S.*)$")
 PART_BARE_RE = re.compile(r"^\s{1,8}(?P<part>[a-z])\s+(?:(?P<sub>[ivx]{1,4})\s+)?(?P<rest>\S.*)$")
+# G1.3-r3 (RC-C round 3): column-0 bare part opener. pdftotext -layout can
+# print the part letter at the LEFT MARGIN when the question-number column is
+# empty on a page: banner rows ('f   In part (f):', 4CH0 1C Jun 2015 q8 p21)
+# and scored rows ('d   i   silica ... 1'). PART_BARE_RE requires 1-8 leading
+# spaces, so these never matched: the whole letter block inherited the
+# PREVIOUS letter (letter-shift signature ms e3->8 / qp f5->None) or the row
+# fell to unclassified. Letters constrained to a-h; the sequential guard
+# (next/same letter, question open) lives at the call site.
+PART_BARE_COL0_RE = re.compile(
+    r"^(?P<part>[a-h])\s{2,}(?:(?P<sub>[ivx]{1,4})\s{2,})?(?P<rest>\S.*)$")
+# G1.3-r3 (RC-C round 3): qn + bare roman sub lead with an EMPTY part column
+# ('5   iv   oxygen / O2   1', 4CH0 1C Jun 2013 q5(a) p10 continuation page).
+# QPART_BARE_RE needs a part letter ('5 a'); SUB_BARE_RE needs leading spaces
+# and no qn. Neither matched, so the whole sub-block was dropped and the
+# following rows inherited the PREVIOUS sub's label (ms a5 vs qp a6).
+QPART_BARE_SUB_RE = re.compile(
+    r"^\s*(?P<qn>\d{1,2})\s+(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+# G1.3-r3 (RC-C round 3): bare part letter ALONE (no qn, no text, no marks
+# cell — 'b' on its own line, 4CH1 1C Jun 2019 q9(b) p13: the question
+# continues from the previous page so the qn column is empty and the marks
+# cell sits on a following note row). Opens the part aggregate with the same
+# semantics as QPART_*_SOLO; the end-of-parse resolution fills or demotes it.
+PART_BARE_SOLO_RE = re.compile(r"^\s{1,8}(?P<part>[a-h])\s*$")
+PART_BARE_SOLO_COL0_RE = re.compile(r"^(?P<part>[a-h])\s*$")
+# G1.3-r3 (RC-C round 3): paren part letter ALONE without a question number
+# ('   (c)' on its own line, 4CH0 1C Jan 2018 q12(c) p18). QPART_PAREN_SOLO_RE
+# needs the qn — dropped here, the whole (c) block inherited (b). Same
+# aggregate semantics as the bare form.
+PART_PAREN_SOLO_QNLESS_RE = re.compile(r"^\s{0,8}\((?P<part>[a-h])\)\s*$")
 SUB_PAREN_RE = re.compile(r"^\s*\(\s*(?P<sub>[ivx]+)\s*\)\s+(?P<rest>\S.*)$")
+# G1.3-r3 (RC-C round 3): parenthesized ARABIC option leads — matching/
+# multiple-statement MS blocks print numbered answer options '(2) time / how
+# long ... 1' (4CH0 1C Jun 2013 q8(b), options (2)-(5), one mark each).
+# SUB_PAREN_RE only accepts romans, so the tail-less wrapped option rows fell
+# out of the block (letter short by one mark). Scores under the open part;
+# the end-of-parse resolution fills a deferred cell from a following note row.
+SUB_PAREN_NUM_RE = re.compile(
+    r"^\s*\(\s*(?P<sub>\d{1,2})\s*\)\s+(?P<rest>\S.*)$")
 SUB_BARE_RE = re.compile(r"^\s{1,8}(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
 ROMAN_RE_MS = re.compile(r"^[ivx]{1,4}$")
 
@@ -831,7 +875,20 @@ def parse_pages(pages, qp_totals=None):
 
             gp = None
             solo = QPART_PAREN_SOLO_RE.match(line) or QPART_BARE_SOLO_RE.match(line)
-            qpm = None if solo else (QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line))
+            # G1.3-r3 (RC-C round 3): bare part letter ALONE (see
+            # PART_BARE_SOLO_RE). Sequential guard: next/same letter of the
+            # open question, or the question's first letter.
+            bsolo = None
+            if solo is None and cur is not None:
+                for _bsre in (PART_BARE_SOLO_RE, PART_BARE_SOLO_COL0_RE,
+                              PART_PAREN_SOLO_QNLESS_RE):
+                    _m = _bsre.match(line)
+                    if _m and (last_part is None
+                               or _m.group("part") == last_part
+                               or ord(_m.group("part")) == ord(last_part) + 1):
+                        bsolo = _m
+                        break
+            qpm = None if (solo or bsolo) else (QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line))
             if solo:
                 # G1.2 (RC-A): opener-only row — '1 (a)' / '5 a' with no text.
                 # 2012+ table grids print the opener alone; the part's merged
@@ -850,6 +907,14 @@ def parse_pages(pages, qp_totals=None):
                         cur_group = (part, None)
                         group_start = len(cur["points"]) - 1
                         buckets["point"] += lbl_n
+            elif bsolo:
+                part = bsolo.group("part")
+                gp = new_point(part, None, [], None, pageno,
+                               answer_col=len(line.rstrip()))
+                last_part = part
+                cur_group = (part, None)
+                group_start = len(cur["points"]) - 1
+                buckets["point"] += lbl_n
             elif qpm:
                 qn = int(qpm.group("qn"))
                 if qn <= MAX_QN:
@@ -868,7 +933,7 @@ def parse_pages(pages, qp_totals=None):
                     group_start = len(cur["points"]) - 1
                     buckets["point"] += lbl_n
             elif cur is not None:
-                prm = PART_PAREN_RE.match(line)
+                prm = PART_PAREN_RE.match(line) or PART_PAREN_COMPACT_RE.match(line)
                 # G1.2 (RC-D): '(v)'/'(i)'/'(x)' with an open part context is a
                 # roman SUB-part opener, never a part letter (parts are a-h).
                 # PART_PAREN_RE previously claimed '(v)', landing the row as
@@ -883,6 +948,63 @@ def parse_pages(pages, qp_totals=None):
                 if brm and brm.group("part") in ("i", "v", "x") \
                         and last_part is not None and SUB_BARE_RE.match(line):
                     brm = None
+                # G1.3-r3 (RC-C round 3): column-0 bare part opener (see
+                # PART_BARE_COL0_RE). Sequential guard: the letter must be
+                # the NEXT or SAME part of the open question (banner rows
+                # can reprint), and a question must be open at all — this
+                # keeps leftmost-column data fragments ('g  cm3' units,
+                # lowercase stray marks) from opening phantom parts.
+                col0m = None
+                if prm is None and brm is None and cur is not None:
+                    m0 = PART_BARE_COL0_RE.match(line)
+                    if m0 and (last_part is None
+                               or m0.group("part") == last_part
+                               or ord(m0.group("part")) == ord(last_part) + 1):
+                        col0m = m0
+                # G1.3-r3 (RC-C round 3): qn + bare roman sub lead (see
+                # QPART_BARE_SUB_RE) — same-question continuation only, and
+                # only under an open part (a sub needs its parent letter).
+                qsubm = None
+                if col0m is None and prm is None and brm is None \
+                        and cur is not None and last_part is not None:
+                    m5 = QPART_BARE_SUB_RE.match(line)
+                    if m5 and int(m5.group("qn")) <= MAX_QN \
+                            and cur["number"] == int(m5.group("qn")):
+                        qsubm = m5
+                if qsubm is not None:
+                    sub5 = qsubm.group("sub")
+                    rest5 = qsubm.group("rest")
+                    mt5, mk5 = _discipline(*tail_marks(rest5), line)
+                    body5 = mt5.group("body") if mt5 else rest5
+                    chunks5 = [c.strip() for c in re.split(r"\s{2,}", body5) if c.strip()]
+                    gp = new_point(last_part, sub5, chunks5, mk5, pageno,
+                                   answer_col=len(line) - len(rest5.lstrip()))
+                    cur_group = (last_part, sub5)
+                    group_start = len(cur["points"]) - 1
+                    buckets["point"] += lbl_n
+                    continue
+                if col0m is not None:
+                    part = col0m.group("part")
+                    sub = col0m.group("sub")
+                    rest = col0m.group("rest")
+                    mt, mk = _discipline(*tail_marks(rest), line)
+                    last_part = part
+                    if mt:
+                        # scored opener ('d   i   silica ... 1'): a real point
+                        body = mt.group("body")
+                        chunks = [c.strip() for c in re.split(r"\s{2,}", body) if c.strip()]
+                        gp = new_point(part, sub, chunks, mk, pageno,
+                                       answer_col=len(line) - len(rest.lstrip()))
+                        cur_group = (part, sub)
+                        group_start = len(cur["points"]) - 1
+                        buckets["point"] += lbl_n
+                    else:
+                        # banner/prose opener ('f   In part (f):'): structural
+                        # only — the scored rows below carry their own marks
+                        # cells; creating a marks-less point here would leak a
+                        # None into the letter sums
+                        cur_group = (part, sub)
+                    continue
                 if prm or brm:
                     mm = prm or brm
                     part = mm.group("part")
@@ -910,9 +1032,16 @@ def parse_pages(pages, qp_totals=None):
                         group_start = len(cur["points"]) - 1
                         buckets["point"] += lbl_n
                 else:
-                    sm = SUB_PAREN_RE.match(line) or SUB_BARE_RE.match(line)
+                    sm = SUB_PAREN_RE.match(line) or SUB_BARE_RE.match(line) \
+                        or SUB_PAREN_NUM_RE.match(line)
                     if sm and last_part:
                         sub = sm.group("sub")
+                        if not ROMAN_RE_MS.match(sub or ""):
+                            # G1.3-r3: arabic option numbers ('(2)'-'(5)') are
+                            # option leads, not sub-parts — the atoms schema
+                            # types sub as roman only. Score under the open
+                            # part with sub=None.
+                            sub = None
                         rest = sm.group("rest")
                         mt, mk = _discipline(*tail_marks(rest), line)
                         marks = mk
@@ -943,8 +1072,16 @@ def parse_pages(pages, qp_totals=None):
                 col_ok = (lcol >= marks_col - MARKS_COL_SLACK) \
                     if marks_col is not None else (lcol >= MARKS_COL_MIN)
                 if col_ok:
+                    # G1.3-r3 (RC-C round 3): the backward fill no longer
+                    # demands an EMPTY point. 2011-2013 old-spec blocks print
+                    # a sub-part's second marks cell on a lone line directly
+                    # under the tail-less M2 row ('M2 - 0.006' + lone '1',
+                    # 4CH0 2C Jan 2013 q7(a)(i)/(iii)) — with text the point
+                    # was skipped, the cell routed forward as pending and was
+                    # then WIPED by the next opener's own cell (double loss:
+                    # M2 unfilled + cell vanished).
                     if (cur is not None and cur_point is not None
-                            and cur_point["marks"] is None and not cur_point["text"]):
+                            and cur_point["marks"] is None):
                         cur_point["marks"] = lval
                         buckets["continuation"] += lbl_n
                         continue
