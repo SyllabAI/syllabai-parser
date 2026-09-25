@@ -251,6 +251,26 @@ def build_qp_atoms(qp_blocks):
                 _route_text(cur, container, pending_choices, first, page)
             continue
 
+        # G1.5 (R4-MCQ): question-number RE-PRINT repair. Furniture digits on
+        # the periodic-table inside cover (4CH1 1C Nov-2021 '1' at y≈755, and
+        # 1CR Nov-2020 — group/period numerals below the footer band) open the
+        # atom prematurely; the true '1 (a) ...' opener then absorbs as body
+        # text, part (a) never opens, and the MCQ sub-romans '(i)/(ii)/(iii)'
+        # cascade into a phantom letter 'i' (QP UNKNOWN-PART vs the MS grid).
+        # A boundary-shaped line re-printing the OPEN question's number with a
+        # part-opener lead, while the atom still has no parts, is that true
+        # opener: reset the leaked front matter and route the part lead.
+        if (bm is not None and cur is not None and cur["total"] is None
+                and not container.parts
+                and int(bm.group("qn")) == cur["number"]
+                and PART_OPENER_RE.match(bm.group("t"))
+                and not parse_qp.DOTS_RE.match(bm.group("t"))):
+            container = _Container()
+            pending_choices = []
+            cur["pages"].add(page)
+            _route_text(cur, container, pending_choices, bm.group("t"), page)
+            continue
+
         if cur is None or cur["total"] is not None:
             # G1.2 (RC-C): some layouts print the part-opener text block BEFORE
             # the question-number block (PyMuPDF column order: '(a) Complete

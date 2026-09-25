@@ -240,14 +240,117 @@ def _labeled_row_ahead(raw_lines, idx, window=3):
         if (QPART_PAREN_RE.match(st) or QPART_BARE_RE.match(st)
                 or QPART_PAREN_SOLO_RE.match(st) or QPART_BARE_SOLO_RE.match(st)
                 or PART_PAREN_RE.match(st) or PART_BARE_RE.match(st)
-                or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st)):
+                or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st)
+                or PART_PAREN_COMPACT_RE.match(st)
+                or PART_BARE_COL0_RE.match(st)
+                or QPART_BARE_SUB_RE.match(st)
+                or PART_BARE_SOLO_RE.match(st)
+                or PART_BARE_SOLO_COL0_RE.match(st)
+                or PART_PAREN_SOLO_QNLESS_RE.match(st)):
             return False  # block boundary: no same-block labeled row follows
     return False
 
 
+def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24):
+    """G1.5 (R4-GRID): decide whether a lone marks cell printed ABOVE a block
+    opener belongs to that opener's block.
+
+    Scans the next `window` content lines (blank/furniture/note-led lines
+    skipped) for an opener-shaped row. When found, scans the opener's block —
+    until the next letter/sub opener, a total row, or `block_cap` content
+    lines — for any OTHER marks-cell source (tail-marks row or further lone
+    cell at the marks column).
+
+    Returns (opener_index, block_has_own_cell), or None when no opener sits
+    within the window.
+
+    Evidence: 4CH1 1C Jun 2024 q3 '4' / q4 '5' and 2C Nov 2021 q7 '1' print
+    ABOVE their '(c)'/'(d)' openers as the block's ONLY cell (forward);
+    4CH0 2C Jan 2013 q7(a) lone '1' precedes an '(a)(iii)' opener whose rows
+    carry their own cells (backward — the r3 relaxed fill must survive)."""
+    seen = 0
+    j = idx
+    opener_j = None
+    while j + 1 < len(raw_lines) and seen < window:
+        j += 1
+        t = raw_lines[j].strip()
+        if not t:
+            continue
+        cleaned = clean_line(raw_lines[j])
+        if cleaned is None:
+            continue
+        seen += 1
+        st = cleaned.strip()
+        if _is_opener_shaped(st):
+            opener_j = j
+            break
+        if TOTAL_UPPER_RE.search(st) or re.search(r"\bTotal\b", st, re.I):
+            return None  # block/region ended before any opener
+    if opener_j is None:
+        return None
+    # the opener row's OWN tail is the block's cell (4CH0 2C Jan 2013 q7(a):
+    # lone '1' under a tail-less M2 row, the following '(iii)' row carries
+    # its own '1' — the forward must not fire and the r3 backward fill
+    # applies instead)
+    mt_o, mk_o = tail_marks_at(raw_lines[opener_j], marks_col)
+    if mt_o is not None and mk_o is not None \
+            and len(raw_lines[opener_j]) - len(raw_lines[opener_j].lstrip()) <= 24:
+        return opener_j, True
+    has_cell = False
+    seen2 = 0
+    k = opener_j
+    while k + 1 < len(raw_lines) and seen2 < block_cap:
+        k += 1
+        if not raw_lines[k].strip():
+            continue
+        cleaned = clean_line(raw_lines[k])
+        if cleaned is None:
+            continue
+        st = cleaned.strip()
+        if re.search(r"\bTotal\b", st, re.I):
+            break
+        if k != opener_j and (QPART_PAREN_RE.match(st) or QPART_BARE_RE.match(st)
+                              or QPART_PAREN_SOLO_RE.match(st)
+                              or QPART_BARE_SOLO_RE.match(st)
+                              or PART_PAREN_RE.match(st) or PART_BARE_RE.match(st)
+                              or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st)
+                              or PART_PAREN_COMPACT_RE.match(st)
+                              or PART_BARE_COL0_RE.match(st)
+                              or QPART_BARE_SUB_RE.match(st)
+                              or PART_BARE_SOLO_RE.match(st)
+                              or PART_BARE_SOLO_COL0_RE.match(st)
+                              or PART_PAREN_SOLO_QNLESS_RE.match(st)):
+            break  # next letter/sub block starts — scan window closed
+        seen2 += 1
+        # G1.5: only SHALLOW (answer-column) rows prove the block's own cell.
+        # Deep note-column tails inside the window are the NEXT block's
+        # displaced cell riding a note row (4CH1 1C Jun 2024 q3: (d)'s '1' on
+        # 'ALLOW Mg  1' two rows above '(d)') — counting them would block the
+        # forward hand-off and bleed the lone cell backward instead.
+        if len(raw_lines[k]) - len(raw_lines[k].lstrip()) <= 24:
+            mt, mk = tail_marks_at(raw_lines[k], marks_col)
+            if mt is not None and mk is not None:
+                has_cell = True
+                break
+        lm = re.match(r"^\s{4,}(\d{1,2})\s*$", raw_lines[k])
+        if lm and 0 < int(lm.group(1)) <= MARKS_CELL_MAX:
+            lcol_k = len(raw_lines[k].rstrip()) - len(lm.group(1))
+            col_ok_k = (lcol_k >= marks_col - MARKS_COL_SLACK) \
+                if marks_col is not None else (lcol_k >= MARKS_COL_MIN)
+            if col_ok_k:
+                has_cell = True
+                break
+    return opener_j, has_cell
+
+
 def _is_opener_shaped(st):
     """True when a stripped line opens a question/part/sub point row (G1.2
-    RC-E: the deferred marks cell attaches to the next opener's point)."""
+    RC-E: the deferred marks cell attaches to the next opener's point).
+    G1.5 (R4-GRID): the G1.3-r3 SOLO opener forms are openers too — '(c)'
+    alone / bare letter alone open the part aggregate, and the lone-cell
+    forward decision plus every block-boundary scan must see them
+    (4CH1 1C Jun 2024 q3/q4 '4'/'5' above a solo '(c)'; 2C Nov 2021 q7
+    '1' above a solo '(d)')."""
     if not st:
         return False
     if LABEL_RE.match(st) and (LABEL_RE.match(st).group("labelbase")):
@@ -255,7 +358,13 @@ def _is_opener_shaped(st):
     return bool(QPART_PAREN_RE.match(st) or QPART_BARE_RE.match(st)
                 or QPART_PAREN_SOLO_RE.match(st) or QPART_BARE_SOLO_RE.match(st)
                 or PART_PAREN_RE.match(st) or PART_BARE_RE.match(st)
-                or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st))
+                or SUB_PAREN_RE.match(st) or SUB_BARE_RE.match(st)
+                or PART_PAREN_COMPACT_RE.match(st)
+                or PART_BARE_COL0_RE.match(st)
+                or QPART_BARE_SUB_RE.match(st)
+                or PART_BARE_SOLO_RE.match(st)
+                or PART_BARE_SOLO_COL0_RE.match(st)
+                or PART_PAREN_SOLO_QNLESS_RE.match(st))
 
 
 LABEL_RE = re.compile(
@@ -796,6 +905,20 @@ def parse_pages(pages, qp_totals=None):
                 if cur_point is not None and cur_point.get("_from_deferred") \
                         and cur_point.get("part") == part \
                         and cur_point.get("sub") == sub:
+                    # G1.5 (R4-GRID): a row the redirect just targeted is the
+                    # PENDING CELL's owner, not an unscored step — absorb the
+                    # cell as a deferred scored point for the row. Absorbing
+                    # it as a note expired the pending silently and the
+                    # end-of-parse merged-cell recovery then poisoned the
+                    # wrong letter (4CH0 1C Jun 2014 q11(d): M3's cell lost,
+                    # recovery filled b's 'M2 dep on M1' -> b 2->3 / d 3->2).
+                    if pending_marks_next is not None:
+                        dp = new_point(part, sub, [st], pending_marks_next,
+                                       pageno,
+                                       answer_col=cur_point.get("answer_col"))
+                        dp["_from_deferred"] = True
+                        buckets["point"] += lbl_n
+                        continue
                     (cur_point["notes"] if cur_point["text"] else cur_point["text"]).append(st)
                     buckets["continuation"] += lbl_n
                     continue
@@ -1057,11 +1180,21 @@ def parse_pages(pages, qp_totals=None):
 
             # --- G1.2 (RC-A/RC-E): lone marks cell — a deep-indented line whose
             # entire content is a 1-2 digit value <= MARKS_CELL_MAX.
+            # Forward (G1.5 R4-GRID): a lone cell with a block opener within
+            # the next few content lines belongs to THAT opener's block when
+            # the block carries no other marks cell — 2019+ layouts print the
+            # block's merged cell vertically centered, i.e. ABOVE its opener
+            # row (4CH1 1C Jun 2024 q3 '4' / q4 '5' above '(c)'; 2C Nov 2021
+            # q7 '1' above '(d)'; 2C Jun 2020 q2 '1' above '(b)' past an
+            # IGNORE note). Decided BEFORE the backward fill, which otherwise
+            # bleeds the cell into the previous letter (b 2->6, c 4->0).
             # Backward: fills the open aggregate/opener point still lacking
             # marks (2012+ table grids print the part's merged marks cell on
-            # its own line under the opener: 4CH0 2C Jan 2012 '1 (a)' + '4').
-            # Forward: otherwise it belongs to the NEXT opener row (displaced
-            # upward merged cell: 4CH1 2C June 2021 q3 '2' above '(iii) M1').
+            # its own line under the opener: 4CH0 2C Jan 2012 '1 (a)' + '4';
+            # the r3 relaxed fill survives via the block's own-cell scan).
+            # Legacy forward: otherwise the next opener row consumes it via
+            # pending (displaced upward merged cell: 4CH1 2C June 2021 q3
+            # '2' above '(iii) M1').
             lone = re.match(r"^\s{4,}(?P<v>\d{1,2})\s*$", line)
             if lone and 0 < int(lone.group("v")) <= MARKS_CELL_MAX:
                 lcol = len(line.rstrip()) - len(lone.group("v"))
@@ -1072,6 +1205,42 @@ def parse_pages(pages, qp_totals=None):
                 col_ok = (lcol >= marks_col - MARKS_COL_SLACK) \
                     if marks_col is not None else (lcol >= MARKS_COL_MIN)
                 if col_ok:
+                    # G1.5 (R4-MCQ): 2019+ MSs print the question total as a
+                    # BARE right-column digit (black-box total; pdftotext drops
+                    # everything but the digit), identical in shape to a
+                    # displaced marks cell (4CH1 1C Nov 2021 q1: lone '5' after
+                    # (b) M2 -> captured as a 5-mark b point, b 2->7). When the
+                    # digit equals the open question's running point sum, no
+                    # total row is set, and the next content does not merely
+                    # continue the question, it IS the total row.
+                    if (cur is not None and cur["total_row"] is None
+                            and cur["points"] and not pending_total):
+                        run_sum = sum(p_["marks"] for p_ in cur["points"]
+                                      if p_["marks"] is not None)
+                        if run_sum == lval:
+                            nxt_t = _next_content_line(raw_lines, idx)
+                            qpart_ahead = False
+                            if nxt_t is not None:
+                                for _rx in (QPART_PAREN_RE, QPART_BARE_RE):
+                                    if _rx.match(nxt_t):
+                                        qpart_ahead = True
+                                        break
+                            if nxt_t is None or qpart_ahead:
+                                cur["total_row"] = lval
+                                cur["total_row_page"] = pageno
+                                cur_point = None
+                                pending_label = None
+                                buckets["continuation"] += lbl_n
+                                continue
+                    # G1.5 (R4-GRID): opener-attached cell — the opener's block
+                    # scan guards the r3 backward fill (when the block has its
+                    # own cell, the lone cell stays with the current point).
+                    oa = _opener_ahead_with_cell(raw_lines, idx, marks_col) \
+                        if cur is not None else None
+                    if oa is not None and not oa[1]:
+                        pending_marks_next = lval
+                        buckets["continuation"] += lbl_n
+                        continue
                     # G1.3-r3 (RC-C round 3): the backward fill no longer
                     # demands an EMPTY point. 2011-2013 old-spec blocks print
                     # a sub-part's second marks cell on a lone line directly
@@ -1177,6 +1346,15 @@ def parse_pages(pages, qp_totals=None):
                     if _labeled_row_ahead(raw_lines, idx):
                         pending_marks_next = mk0
                         buckets["continuation"] += lbl_n
+                    elif nxt is not None and _is_opener_shaped(nxt):
+                        # G1.5 (R4-GRID): the cell rides ABOVE the next block
+                        # opener as the opener's own merged cell (4CH1 1C Jun
+                        # 2024 q3: (d)'s '1' printed on the 'ALLOW Mg  1' note
+                        # row two lines above '(d) magnesium') — hand it to the
+                        # opener via pending; the current block is already
+                        # complete (the marks-None fill above ran first).
+                        pending_marks_next = mk0
+                        buckets["continuation"] += lbl_n
                     elif ans_col is not None and nxt is not None \
                             and not _is_opener_shaped(nxt):
                         dp = new_point(cur_point["part"], cur_point["sub"], [],
@@ -1220,6 +1398,30 @@ def parse_pages(pages, qp_totals=None):
                     # guidance row ('M2 dependent on mention of both' /
                     # 'attraction and electrons in M1') — a guidance
                     # continuation, not an unclassified row
+                    # G1.5 (R4-GRID): unless it carries its OWN marks cell —
+                    # 2012-2016 grids interleave guidance inside a block and
+                    # print the NEXT scored row's cell on that row ('by
+                    # bacteria / microbes ... Ignore naturally / enzymes  1'
+                    # after 'M2 can be awarded', 4CH0 1C Jun 2015 q8(f)(i);
+                    # the guidance reset orphaned cur_point, so the row sank
+                    # here and f.i lost its second mark). Score it under the
+                    # open block instead.
+                    mt_c, mk_c = tail_marks_at(line, marks_col)
+                    if mk_c is not None and (mt_c.group("body") or "").strip() \
+                            and re.search(r"\D", (mt_c.group("body") or "")) \
+                            and not NOTE_KW_START_RE.match(
+                                (mt_c.group("body") or "").strip()):
+                        body_c = (mt_c.group("body") or "").strip()
+                        chunks_c = [c.strip()
+                                    for c in re.split(r"\s{2,}", body_c)
+                                    if c.strip()]
+                        c_part, c_sub = cur_group if cur_group else \
+                            (last_part, None)
+                        cp = new_point(c_part, c_sub, chunks_c, mk_c, pageno,
+                                       answer_col=len(line)
+                                       - len(line.lstrip()))
+                        buckets["point"] += lbl_n
+                        continue
                     cur["guidance"].append({"page": pageno, "text": st})
                     buckets["guidance"] += lbl_n
                     prev_line_guidance = True
