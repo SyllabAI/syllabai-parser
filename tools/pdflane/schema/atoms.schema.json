@@ -753,6 +753,13 @@
       "null"
      ]
     },
+    "summaryHint": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "description": "G5 card source field: first sentence of the stem text, verbatim token-subset, <=200 chars; null when no sentence text exists."
+    },
     "stem": {
      "type": "array",
      "items": {

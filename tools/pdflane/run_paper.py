@@ -82,6 +82,53 @@ def clean_layout_md(pages):
     return "\n".join(lines) + "\n"
 
 
+def _emit_vision_prep(pdf_path, unit, meta_dir):
+    """G6 (pdflane-parsing-analysis.md §4 G6): route a SCANNED unit into the
+    vision lane by emitting its DETERMINISTIC pre-products — full-page
+    rasterizations (dpi 130) + figure crops — under <meta>/vision/<unit>/.
+
+    The anti-role is preserved: run_paper never transcribes; the agent
+    classification/transcription + k-run freeze stays a separate step,
+    gated on the review queue, consuming exactly these artifacts. Raises on
+    any failure — the caller degrades to the historical not-wired escalation
+    (fail-safe, never silent).
+    """
+    import fitz  # lazy: only when a SCANNED unit actually routes
+    from pdflane import vision_lane
+
+    out_dir = os.path.join(meta_dir, "vision", unit)
+    os.makedirs(out_dir, exist_ok=True)
+    with fitz.open(pdf_path) as doc:
+        page_count = doc.page_count
+    rendered = 0
+    for page in range(1, page_count + 1):
+        vision_lane.render_page(pdf_path, page, out_dir=out_dir)
+        rendered += 1
+    crops = list(vision_lane.extract_figure_crops(pdf_path, out_dir))
+    return {"pagesRendered": rendered, "figureCrops": len(crops),
+            "dir": os.path.join("vision", unit)}
+
+
+def _scanned_escalation(kind, pdf_path, meta_dir):
+    """G6 routing decision for one SCANNED unit: emit the deterministic
+    vision pre-products and record the route (fail-safe to the not-wired
+    escalation when the vision lane itself fails)."""
+    try:
+        prep = _emit_vision_prep(pdf_path, kind, meta_dir)
+    except Exception as e:  # fail-safe: the unit escalates unwired
+        return {"unit": kind, "code": "SCANNED-PDF-NO-VISION-LANE-WIRED",
+                "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
+                "detail": "vision pre-products failed: %s; unit escalates "
+                          "unwired" % e}
+    return {"unit": kind, "code": "SCANNED-VISION-PREP-EMITTED",
+            "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
+            "detail": "vision lane routed: deterministic pre-products (page "
+                      "renders + figure crops) emitted; agent transcription "
+                      "+ k-run freeze remains gated on the review queue "
+                      "(anti-role preserved)",
+            "visionPrep": prep}
+
+
 def main_ms_only(args):
     """MS-only pipeline: no QP lanes, no QP crosscheck, honest ms-only atoms.
 
@@ -96,10 +143,8 @@ def main_ms_only(args):
     # ---- S0 probe / routing (MS only) ----
     pr = probe_mod.probe_ms_only(args.ms)
     if pr["MS"]["verdict"] == "SCANNED":
-        escalations.append({"unit": "MS", "code": "SCANNED-PDF-NO-VISION-LANE-WIRED",
-                            "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
-                            "detail": "vision lane available (pdflane.vision_lane); "
-                                      "auto-wiring into run_paper pending"})
+        escalations.append(_scanned_escalation(
+            "MS", args.ms, args.meta_dir or os.path.join(args.out, "_meta")))
 
     # ---- S1 extraction (MS lanes only) ----
     base_ms = pdftotext_extract(args.ms, os.path.join(meta, "pdftotext"), "MS")
@@ -296,10 +341,8 @@ def main():
     escalations, review = [], []
     for kind, p in pr.items():
         if p["verdict"] == "SCANNED":
-            escalations.append({"unit": kind, "code": "SCANNED-PDF-NO-VISION-LANE-WIRED",
-                                "taxonomy": "EXTERNAL-PROVIDER-LIMIT",
-                                "detail": "vision lane available (pdflane.vision_lane); "
-                                          "auto-wiring into run_paper pending"})
+            escalations.append(_scanned_escalation(
+                kind, args.qp if kind == "QP" else args.ms, meta))
 
     # ---- S1 extraction (per-engine outputs kept separate) ----
     base_qp = pdftotext_extract(args.qp, os.path.join(meta, "pdftotext"), "QP")

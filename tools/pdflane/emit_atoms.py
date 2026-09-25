@@ -41,6 +41,107 @@ ATOM_FLAGS_ORDER = ["MS-ONLY-NO-QP", "QP-TOTAL-MISSING", "MS-QUESTION-MISSING",
                     "PART-MARKS-MISMATCH",
                     "QP-STEM-MARKS-MARKER", "MS-PART-NO-POINTS", "MS-POINT-UNKNOWN-PART"]
 
+# ---------------------------------------------------------------------------
+# G5 — question-card source fields (retrieval plan §7 bank layer;
+# pdflane-parsing-analysis.md §4 G5). Ports the Java lane's
+# com.syllabai.parser.structure.CommandWordLexicon faithfully: same three
+# cognitive tiers, longest-match-wins, sentence-initial scan, optional
+# leading part label. Every returned value is a VERBATIM substring of the
+# printed text — the parser selects, never authors (I1 holds).
+# ---------------------------------------------------------------------------
+
+_COMMAND_WORD_TIERS = (
+    # low-order recall
+    ("state", "name", "give", "identify", "label", "complete", "draw", "write",
+     "plot", "circle", "tick", "put a cross", "select", "choose", "which"),
+    # mid-order explanation/application
+    ("describe", "explain", "calculate", "deduce", "determine", "estimate",
+     "predict", "sketch", "outline", "measure", "comment", "show that",
+     "show", "find", "convert", "balance", "refer to", "look at"),
+    # high-order evaluation/discussion
+    ("discuss", "justify", "evaluate", "compare", "contrast", "analyse",
+     "analyze", "suggest", "interpret", "assess", "consider"),
+)
+_COMMAND_WORDS = sorted((w for tier in _COMMAND_WORD_TIERS for w in tier),
+                        key=len, reverse=True)
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+
+_SUMMARY_HINT_MAX_CHARS = 200
+
+
+def _strip_leading_part_label(text):
+    """Java CommandWordLexicon.stripLeadingPartLabel: optional '(b)'/'(iii)'
+    label prefix removed before command-word matching."""
+    text = re.sub(r"^\(?[a-h]\)\s*", "", text, count=1)
+    text = re.sub(r"^\(?(i{1,3}|iv|v|vi{1,3}|ix|x)\)\s*", "", text, count=1)
+    return text
+
+
+def _match_command_at_start(sentence):
+    lowered = sentence.lower()
+    for word in _COMMAND_WORDS:  # longest first
+        if lowered.startswith(word + " ") or lowered.startswith(word + ",") \
+                or lowered == word:
+            return sentence[:len(word)]  # verbatim token-subset
+    return None
+
+
+def detect_command_word(text):
+    """Leading command word of an exam prompt, verbatim from the text.
+
+    Mirrors the Java lexicon: part label stripped, then the first
+    sentence-initial command word wins (stems often open with a context
+    sentence: 'Copper is extracted… State the type of reaction.').
+    """
+    if not text:
+        return None
+    cleaned = _strip_leading_part_label(text.strip())
+    for sentence in _SENTENCE_SPLIT_RE.split(cleaned):
+        candidate = _match_command_at_start(sentence.strip())
+        if candidate:
+            return candidate
+    return None
+
+
+def _blocks_text(blocks):
+    """Flatten stem/prompt blocks to ordered plain text (paras + choices)."""
+    out = []
+    for b in blocks or []:
+        t = b.get("type")
+        if t == "para" and b.get("md"):
+            out.append(b["md"].strip())
+        elif t == "choices":
+            for it in b.get("items", []):
+                md = it.get("md") if isinstance(it, dict) else it
+                if md:
+                    out.append(str(md).strip())
+    return " ".join(x for x in out if x)
+
+
+def _first_para_text(blocks):
+    for b in blocks or []:
+        if b.get("type") == "para" and b.get("md"):
+            return b["md"].strip()
+    return None
+
+
+def summary_hint(blocks):
+    """First sentence of the stem text — the card's one-line summary source.
+
+    Deterministic token-subset of the printed stem (plan §7: header + tags +
+    one-line summary ≤60 tokens); cut at the first sentence terminator,
+    hard-capped at 200 chars on a word boundary. None when no sentence text
+    exists (honest absence, never invented).
+    """
+    text = _blocks_text(blocks)
+    if not text:
+        return None
+    sentence = _SENTENCE_SPLIT_RE.split(text)[0].strip()
+    if len(sentence) > _SUMMARY_HINT_MAX_CHARS:
+        cut = sentence[:_SUMMARY_HINT_MAX_CHARS].rsplit(" ", 1)[0]
+        sentence = cut.strip()
+    return sentence or None
+
 
 class EmitError(Exception):
     pass
@@ -898,12 +999,37 @@ def build_document(atoms, ms_questions, line_page=None, source_qp="qp.pdf",
                     "MS-QUESTION-MISSING", "MS-POINTS-DONT-CLOSE"}:
             verified_all = False
 
+        # G5 (plan §7 bank layer): command words + one-line summary hint are
+        # selected verbatim from the printed text — the first detected part
+        # command word carries the atom; the stem text (or first part prompt
+        # when the stem is context-only) yields the summary hint. Parts get
+        # their own command word when one opens their prompt. Honest absence:
+        # no detection ⇒ null, never invented.
+        atom_command_word = None
+        for part in a["parts"]:
+            ptxt = _first_para_text(part["prompt"])
+            pcw = detect_command_word(ptxt) if ptxt else None
+            if pcw:
+                part["commandWord"] = pcw
+                if atom_command_word is None:
+                    atom_command_word = pcw
+        if atom_command_word is None:
+            stxt = _first_para_text(a["stem"])
+            atom_command_word = detect_command_word(stxt) if stxt else None
+        hint = summary_hint(a["stem"])
+        if hint is None:
+            for part in a["parts"]:
+                hint = summary_hint(part["prompt"])
+                if hint:
+                    break
+
         atom = {
             "number": qnum,
             "type": "structured" if a["parts"] else (
                 "mcq" if any(b["type"] == "choices" for b in a["stem"]) else "open"),
             "marks": marks,
-            "commandWord": None,
+            "commandWord": atom_command_word,
+            "summaryHint": hint,
             "stem": a["stem"],
             "parts": a["parts"],
             "markScheme": ms,
@@ -947,6 +1073,7 @@ def build_document_ms_only(ms_questions, line_page=None, source_ms="ms.pdf"):
             "type": "ms-only",
             "marks": ms["totals"]["printed"],
             "commandWord": None,
+            "summaryHint": None,  # no QP stem exists — honest absence
             "stem": [],
             "parts": [],
             "markScheme": ms,
