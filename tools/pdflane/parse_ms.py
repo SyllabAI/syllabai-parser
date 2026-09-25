@@ -1237,7 +1237,23 @@ def parse_pages(pages, qp_totals=None):
                     # own cell, the lone cell stays with the current point).
                     oa = _opener_ahead_with_cell(raw_lines, idx, marks_col) \
                         if cur is not None else None
-                    if oa is not None and not oa[1]:
+                    # G1.5 regression guard (4CH1 1CR Jun 2019 q2): a tail-less
+                    # M/A STEP whose same part+sub block already captured its
+                    # cell is complete — the lone cell belongs to the opener
+                    # ahead (forward), never backward into the step. A part/
+                    # sub opener row point (P-label) with marks None is a LIVE
+                    # backward target (1CR Jun 2019 q2 (b)(ii) '1' rides below
+                    # its own row) and always fills first.
+                    step_with_captured = (
+                        cur_point is not None
+                        and re.match(r"[MA]\d{0,2}$", cur_point.get("label") or "")
+                        and any(
+                            p_ is not cur_point
+                            and p_.get("part") == cur_point.get("part")
+                            and (p_.get("sub") or None) == (cur_point.get("sub") or None)
+                            and p_.get("marks") is not None
+                            for p_ in cur["points"]))
+                    if oa is not None and not oa[1] and step_with_captured:
                         pending_marks_next = lval
                         buckets["continuation"] += lbl_n
                         continue
@@ -1252,6 +1268,10 @@ def parse_pages(pages, qp_totals=None):
                     if (cur is not None and cur_point is not None
                             and cur_point["marks"] is None):
                         cur_point["marks"] = lval
+                        buckets["continuation"] += lbl_n
+                        continue
+                    if oa is not None and not oa[1]:
+                        pending_marks_next = lval
                         buckets["continuation"] += lbl_n
                         continue
                     nxt = _next_content_line(raw_lines, idx)
