@@ -17,11 +17,31 @@ import shutil
 import subprocess
 
 from pdflane import emit_atoms, gates as gates_mod
+from pdflane import identity as identity_mod
 from pdflane import parse_ms, parse_qp, probe as probe_mod
 from pdflane import s2_structurer, validate_atoms
 from pdflane.extract_opendataloader import extract as odl_extract
 from pdflane.extract_pdftotext import extract as pdftotext_extract
 from pdflane.extract_pymupdf import extract as pymupdf_extract
+
+
+def _cover_identity(pages_json_path):
+    """Printed identity from page-1 text of a pdftotext pages.json (F10 gate feed)."""
+    try:
+        pages = parse_ms.load_pages(pages_json_path)
+    except Exception:
+        pages = []
+    if not pages:
+        return {"refs": [], "paper": None, "date": None}
+    return identity_mod.extract(pages[0].get("text", ""))
+
+
+def _expected_identity(args, printed_ms=None):
+    """Operator-claimed identity bundle for the G6 gate (None when not claimed)."""
+    if not getattr(args, "paper_code", ""):
+        return None
+    return {"paper_code": args.paper_code, "session": getattr(args, "session", ""),
+            "printed_ms": printed_ms or {"refs": [], "paper": None, "date": None}}
 
 
 def sha256_file(p):
@@ -83,6 +103,7 @@ def main_ms_only(args):
 
     # ---- S1 extraction (MS lanes only) ----
     base_ms = pdftotext_extract(args.ms, os.path.join(meta, "pdftotext"), "MS")
+    printed_ms = _cover_identity(base_ms["pages_json"])
     pm_ms = pymupdf_extract(args.ms, os.path.join(meta, "pymupdf", "MS"), "MS")
     try:
         odl_ms = odl_extract(args.ms, os.path.join(meta, "opendataloader", "MS"), "MS")
@@ -108,7 +129,8 @@ def main_ms_only(args):
     g = gates_mod.run_ms_only(pr, ms_parse, eng_texts,
                               {"refs": asset_refs,
                                "existing": sorted("assets/" + f for f in os.listdir(assets)),
-                               "embedded": embedded})
+                               "embedded": embedded},
+                              expected_identity=_expected_identity(args, printed_ms))
 
     for fl in g["flags"]:
         review.append({"code": fl["code"], "taxonomy": fl["taxonomy"], "detail": fl["detail"]})
@@ -282,6 +304,8 @@ def main():
     # ---- S1 extraction (per-engine outputs kept separate) ----
     base_qp = pdftotext_extract(args.qp, os.path.join(meta, "pdftotext"), "QP")
     base_ms = pdftotext_extract(args.ms, os.path.join(meta, "pdftotext"), "MS")
+    printed_qp = _cover_identity(base_qp["pages_json"])
+    printed_ms = _cover_identity(base_ms["pages_json"])
     pm_qp = pymupdf_extract(args.qp, os.path.join(meta, "pymupdf", "QP"), "QP")
     pm_ms = pymupdf_extract(args.ms, os.path.join(meta, "pymupdf", "MS"), "MS")
     try:
@@ -364,7 +388,11 @@ def main():
                       {"refs": asset_refs,
                        "existing": sorted("assets/" + f for f in os.listdir(assets)),
                        "embedded": embedded},
-                      reference, s2_arithmetic=s2_arithmetic)
+                      reference, s2_arithmetic=s2_arithmetic,
+                      expected_identity={"paper_code": args.paper_code,
+                                         "session": args.session,
+                                         "printed_qp": printed_qp,
+                                         "printed_ms": printed_ms})
 
     # review queue + escalations from gate outcomes
     for fl in g["flags"]:

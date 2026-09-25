@@ -51,7 +51,7 @@ def labels_in(text):
 
 
 def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None,
-        s2_arithmetic=None):
+        s2_arithmetic=None, expected_identity=None):
     """engine_texts: {"pymupdf_qp_md":..., "pdftotext_ms_pages":[...],
                       "odl_qp_md":..., "odl_ms_md":...}
     assets_check: {"refs": [...], "existing": [...], "embedded": n}
@@ -63,7 +63,12 @@ def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None,
                ms_point_arithmetic mismatch (merged-marks-cell layouts the
                line grammar cannot capture — designed path: S2 lane) is
                superseded, but the raw mismatch stays in the check detail and
-               a review flag keeps the substitution on record."""
+               a review flag keeps the substitution on record.
+    expected_identity: optional {"paper_code": "4CH1/1C", "session": "January 2020"}
+               — operator-claimed identity; when paper_code is non-empty the
+               G6 identity gate runs (printed cover refs must agree; see
+               pdflane.identity). Absent/empty -> no G6 block, preserving
+               byte-identical reports for existing callers."""
     rep = {"gates": {}, "flags": [], "escalations": []}
     ref = reference or {}
 
@@ -186,13 +191,24 @@ def run(probe, qp_parse, ms_parse, engine_texts, assets_check, reference=None,
     g5["verdict"] = "PASS" if g5["ok"] else "FAIL"
     rep["gates"]["G5"] = g5
 
+    # ---- G6 identity (only when the operator claims an identity) ----
+    if expected_identity and expected_identity.get("paper_code"):
+        from pdflane import identity as identity_mod
+        res = identity_mod.build(expected_identity["paper_code"],
+                                 expected_identity.get("session", ""),
+                                 expected_identity.get("printed_qp", {"refs": [], "paper": None, "date": None}),
+                                 expected_identity.get("printed_ms", {"refs": [], "paper": None, "date": None}))
+        if res:
+            rep["gates"]["G6"] = res["gate"]
+            rep["flags"].extend(res["flags"])
+
     fails = [k for k, v in rep["gates"].items() if v["verdict"] == "FAIL"]
     rep["overall"] = "FAIL" if fails else ("PASS_WITH_FLAGS" if rep["flags"] else "PASS")
     rep["failed_gates"] = fails
     return rep
 
 
-def run_ms_only(probe, ms_parse, engine_texts, assets_check):
+def run_ms_only(probe, ms_parse, engine_texts, assets_check, expected_identity=None):
     """Gate suite for MS-only products (COVID-session papers, no qp.pdf).
 
     Same shapes as run(); the QP-coupled checks (QP totals, QP/MS question-set
@@ -268,6 +284,18 @@ def run_ms_only(probe, ms_parse, engine_texts, assets_check):
     g5["ok"] = not problems
     g5["verdict"] = "PASS" if g5["ok"] else "FAIL"
     rep["gates"]["G5"] = g5
+
+    # ---- G6 identity (MS-only: rests on the MS cover prints) ----
+    if expected_identity and expected_identity.get("paper_code"):
+        from pdflane import identity as identity_mod
+        res = identity_mod.build(expected_identity["paper_code"],
+                                 expected_identity.get("session", ""),
+                                 {"refs": [], "paper": None, "date": None},
+                                 expected_identity.get("printed_ms", {"refs": [], "paper": None, "date": None}),
+                                 qp_present=False)
+        if res:
+            rep["gates"]["G6"] = res["gate"]
+            rep["flags"].extend(res["flags"])
 
     fails = [k for k, v in rep["gates"].items() if v["verdict"] == "FAIL"]
     rep["overall"] = "FAIL" if fails else ("PASS_WITH_FLAGS" if rep["flags"] else "PASS")
