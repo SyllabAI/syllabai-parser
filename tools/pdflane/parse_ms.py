@@ -33,7 +33,25 @@ TOTAL_BARE_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s*$")          # 4CH1: 'Total
 TOTAL_UPPER_RE = re.compile(r"^\s*TOTAL\s{2,}(\d{1,3})\s*$")       # 4CH0 2C: 'TOTAL   7'
 TOTAL_Q_RE = re.compile(r"Total\s+marks\s+for\s+Question\s+(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)
 TOTAL_Q_SHORT_RE = re.compile(r"Total\s+for\s+Q\s?(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)  # Nov 2020 COVID: 'Total for Q1 = 5'
-TOTAL_IMPLICIT_RE = re.compile(r"^\s*total\s+for\s+question\s*=\s*(\d{1,3})\s*$", re.I)  # 4CH1 2024: 'total for question = 5' — no question number in row; assigned to the open question by sequence
+TOTAL_IMPLICIT_RE = re.compile(r"^\s*total\s+for\s+question\s*=\s*(\d{1,3})\s*(?:marks?)?\s*$", re.I)  # 4CH1 2024: 'total for question = 5' — no question number in row; assigned to the open question by sequence. G1.7: Jan-2022 grids print the trailing 'marks' word ('= 7 marks', 4CH1 1C Jan 2022 p3) — optional suffix accepted
+# G1.7 (rw-11 re-gate): 2021-2022 table grids print the question total as a
+# BARE '6 marks' line at the table end — no 'Total' word at all (evidence:
+# 4CH1 1C Jan 2021 q1 p3 tail '6 marks' closes q1; every Jan-2021/Jan-2022
+# 4CH1 C-paper question). Assigned to the open question by sequence, mirroring
+# TOTAL_IMPLICIT_RE semantics; lowest cascade priority so every explicit
+# 'Total ...' variant wins first.
+# TWO false-positive guards are required at the call site (the line shape is
+# otherwise identical to a wrapped guidance phrase — 4CH1 1C Jan 2022 q11(b):
+# '... without working scores' / '5 marks' in the NOTE column):
+#   (a) column guard — the digit must sit at the page's header-anchored
+#       marks column (floor - MARKS_COL_SLACK) when the page prints a grid
+#       header; the note-wrap prints at the note column, far left of it.
+#   (b) page-tail guard — genuine table-end totals are the LAST content
+#       line of their page (sparse continuation pages print no header and
+#       squeeze the total left, e.g. Jan-2021 1C p9 '9 marks' at col 37 —
+#       but it is still the page's last content line).
+# A line failing BOTH guards is guidance wrap, never a total.
+TOTAL_MARKS_ONLY_RE = re.compile(r"^\s*(\d{1,3})\s+marks?\s*$", re.I)
 TOTAL_SPLIT_RE = re.compile(r"^(?P<pre>.*?\S)?\s*Tota(?:l)?\s*$")  # 4CH1 2019: number on next line ('Tota' = clipped)
 TOTAL_SPLIT_NUM_RE = re.compile(r"^(?P<pre>.*?\S)?\s{2,}(?P<n>\d{1,3})\s*$|^(?P<bare>\d{1,3})\s*$")
 NOTE_KW_TAIL_RE = re.compile(r"\b(ALLOW|ACCEPT|REJECT|IGNORE)\s*$", re.I)
@@ -77,6 +95,28 @@ PART_BARE_COL0_RE = re.compile(
 # following rows inherited the PREVIOUS sub's label (ms a5 vs qp a6).
 QPART_BARE_SUB_RE = re.compile(
     r"^\s*(?P<qn>\d{1,2})\s+(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+# G1.7 (rw-11 re-gate): squeezed-scan compact opener forms (4CH1 1C Jun 2019
+# MS — the only corpus paper with a degraded text layer). pdftotext squeezed
+# the question/part/sub column gaps away: '10ai     M1 ...' (qn+part+sub, no
+# spaces), 'bi      (C5H12 + Br2) ...' (part+sub), and sub openers printed at
+# 9-12 leading spaces (beyond SUB_BARE_RE's 1-8 bound: 'ii   A description').
+# Zero exposure in the other 14 corrected papers (empirical corpus scan);
+# the QPART form gets the standard MAX_QN guard, the PART form a
+# same/next-letter sequential guard (mirroring PART_BARE_COL0_RE) because a
+# no-space letter+roman is weaker opener evidence than a spaced one.
+QPART_COMPACT_RE = re.compile(
+    r"^\s{0,6}(?P<qn>\d{1,2})(?P<part>[a-h])(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+PART_COMPACT_RE = re.compile(
+    r"^\s{1,8}(?P<part>[a-h])(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+SUB_DEEP_RE = re.compile(
+    r"^\s{9,12}(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
+# G1.7: column-0 sub opener — the question continues on a new page with an
+# EMPTY qn/part columns, so pdftotext prints the bare roman at the left
+# margin ('iii   An explanation that links together the following      3',
+# 4CH1 1C Jun 2019 q11(b)(iii) p16 — one corpus occurrence, verified opener).
+# Guarded by the sm-chain's last_part requirement (a sub needs its parent).
+SUB_COL0_RE = re.compile(
+    r"^(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
 # G1.3-r3 (RC-C round 3): bare part letter ALONE (no qn, no text, no marks
 # cell — 'b' on its own line, 4CH1 1C Jun 2019 q9(b) p13: the question
 # continues from the previous page so the qn column is empty and the marks
@@ -160,10 +200,42 @@ MARKS_COL_MIN = 48        # real marks columns sit >= 73 in the corpus; data
 MARKS_COL_SLACK = 12      # one-sided tolerance: reject tails far LEFT only
 
 
-def tail_marks_at(line, marks_col):
+def header_marks_col(raw_lines):
+    """G1.7 (rw-11 re-gate): the marks-column x-position anchored by the
+    page's own grid header. The header line ('... Answer ... Notes   Marks')
+    repeats on every grid page and prints the Marks column word at the true
+    right-edge column. Returns that column, or None when the page carries no
+    header containing a Marks token (older free-form layouts, continuation
+    pages) — in which case the parser falls back to the first-acceptance
+    establishment it always used.
+
+    Why: the first tail candidate on a page establishes marks_col, and table
+    ANSWER content that happens to end in a small digit (Jan-2020 1C q2:
+    'number of the group that   2' — group number 2, column 59) establishes a
+    FALSE column that admits the rest of the answer digits as marks (parsed
+    q2 sum 13 vs printed 8). The header floor rejects any tail printed left
+    of the true column regardless of establishment order."""
+    best = None
+    for raw in raw_lines:
+        st = raw.strip()
+        if not st or not re.search(r"\bMarks\b", st, re.I):
+            continue
+        if not any(r.match(st) for r in GRID_HEADER_RES):
+            continue
+        m = re.search(r"\bMarks\b", raw, re.I)
+        col = m.start()
+        if best is None or col < best:
+            best = col  # leftmost header wins: tightest honest floor
+    return best
+
+
+def tail_marks_at(line, marks_col, floor=None):
     """Column-disciplined tail_marks: `line` is the full layout line, so the
     tail's absolute column can be checked against the page's established
-    marks column. Returns (mt, value) or (None, None) when rejected."""
+    marks column. `floor` (G1.7) is the page's header-anchored marks column
+    when the page has a grid header — tails printed left of it are table
+    data even before any tail establishes the column. Returns (mt, value) or
+    (None, None) when rejected."""
     mt = MARKS_TAIL_RE.match(line.rstrip())
     if not mt:
         return None, None
@@ -171,6 +243,8 @@ def tail_marks_at(line, marks_col):
     if not 0 < v <= MARKS_CELL_MAX:
         return None, None
     col = len(line.rstrip()) - len(mt.group("mk"))
+    if floor is not None and col < floor - MARKS_COL_SLACK:
+        return None, None
     if marks_col is not None:
         if col < marks_col - MARKS_COL_SLACK:
             return None, None
@@ -251,7 +325,8 @@ def _labeled_row_ahead(raw_lines, idx, window=3):
     return False
 
 
-def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24):
+def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24,
+                            floor=None):
     """G1.5 (R4-GRID): decide whether a lone marks cell printed ABOVE a block
     opener belongs to that opener's block.
 
@@ -292,7 +367,7 @@ def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24):
     # lone '1' under a tail-less M2 row, the following '(iii)' row carries
     # its own '1' — the forward must not fire and the r3 backward fill
     # applies instead)
-    mt_o, mk_o = tail_marks_at(raw_lines[opener_j], marks_col)
+    mt_o, mk_o = tail_marks_at(raw_lines[opener_j], marks_col, floor=floor)
     if mt_o is not None and mk_o is not None \
             and len(raw_lines[opener_j]) - len(raw_lines[opener_j].lstrip()) <= 24:
         return opener_j, True
@@ -317,6 +392,10 @@ def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24):
                               or PART_PAREN_COMPACT_RE.match(st)
                               or PART_BARE_COL0_RE.match(st)
                               or QPART_BARE_SUB_RE.match(st)
+                              or QPART_COMPACT_RE.match(st)
+                              or PART_COMPACT_RE.match(st)
+                              or SUB_DEEP_RE.match(st)
+                              or SUB_COL0_RE.match(st)
                               or PART_BARE_SOLO_RE.match(st)
                               or PART_BARE_SOLO_COL0_RE.match(st)
                               or PART_PAREN_SOLO_QNLESS_RE.match(st)):
@@ -328,7 +407,7 @@ def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24):
         # 'ALLOW Mg  1' two rows above '(d)') — counting them would block the
         # forward hand-off and bleed the lone cell backward instead.
         if len(raw_lines[k]) - len(raw_lines[k].lstrip()) <= 24:
-            mt, mk = tail_marks_at(raw_lines[k], marks_col)
+            mt, mk = tail_marks_at(raw_lines[k], marks_col, floor=floor)
             if mt is not None and mk is not None:
                 has_cell = True
                 break
@@ -362,6 +441,10 @@ def _is_opener_shaped(st):
                 or PART_PAREN_COMPACT_RE.match(st)
                 or PART_BARE_COL0_RE.match(st)
                 or QPART_BARE_SUB_RE.match(st)
+                or QPART_COMPACT_RE.match(st)
+                or PART_COMPACT_RE.match(st)
+                or SUB_DEEP_RE.match(st)
+                or SUB_COL0_RE.match(st)
                 or PART_BARE_SOLO_RE.match(st)
                 or PART_BARE_SOLO_COL0_RE.match(st)
                 or PART_PAREN_SOLO_QNLESS_RE.match(st))
@@ -567,11 +650,18 @@ def parse_pages(pages, qp_totals=None):
     def _discipline(mt, mk, line):
         """G1.2 (RC-B): column-discipline a matched marks tail against the
         page's established marks column; establish the column on first
-        acceptance. Returns (mt, mk) — (None, None) when rejected."""
-        nonlocal marks_col
+        acceptance. G1.7: additionally disciplined against the page's
+        header-anchored marks column when the page prints a grid header —
+        a tail left of the true column is answer/table data even on the
+        first tail candidate (Jan-2020 1C q2 '... group that   2').
+        Returns (mt, mk) — (None, None) when rejected."""
+        nonlocal marks_col, page_marks_floor
         if mt is None:
             return None, None
         tcol = len(line.rstrip()) - len(mt.group("mk"))
+        if page_marks_floor is not None \
+                and tcol < page_marks_floor - MARKS_COL_SLACK:
+            return None, None
         if marks_col is not None:
             if tcol < marks_col - MARKS_COL_SLACK:
                 return None, None
@@ -582,6 +672,7 @@ def parse_pages(pages, qp_totals=None):
 
     prev_line_guidance = False  # G1 upgrade: note-wrap adjacency tracker
     marks_col = None        # G1.2 (RC-B): established marks-column position, per page
+    page_marks_floor = None  # G1.7: header-anchored marks column, per page
     pending_marks_next = None  # G1.2 (RC-A/E): lone cell deferred to the next opener
     for p in pages:
         pageno = p["page"]
@@ -592,6 +683,11 @@ def parse_pages(pages, qp_totals=None):
             continue
         raw_lines = raw_text.splitlines()
         marks_col = None  # column geometry is a per-page property
+        page_marks_floor = header_marks_col(raw_lines)  # G1.7
+        # G1.7: index of the page's last non-blank line (page-tail guard for
+        # the bare 'N marks' total-row variant)
+        page_last_content = max((i for i, l in enumerate(raw_lines)
+                                 if l.strip()), default=-1)
         for idx, raw in enumerate(raw_lines):
             carry_guidance = prev_line_guidance   # flag from the previous line
             prev_line_guidance = False
@@ -637,6 +733,22 @@ def parse_pages(pages, qp_totals=None):
                 if mi:
                     m = True
                     total_val = int(mi.group(1))
+            if not m:
+                # G1.7: bare '6 marks' table-end row (2021-2022 grids) —
+                # sequence-assigned like TOTAL_IMPLICIT_RE, open-question
+                # guard applies at the dispatch below. Dual false-positive
+                # guard (see TOTAL_MARKS_ONLY_RE): column floor OR page-tail
+                # position — the note-column wrap '... scores' / '5 marks'
+                # (Jan-2022 1C q11(b) p15) fails both.
+                mm = TOTAL_MARKS_ONLY_RE.match(line)
+                if mm:
+                    mcol = len(line.rstrip()) - len(mm.group(1))
+                    col_ok = (page_marks_floor is not None
+                              and mcol >= page_marks_floor - MARKS_COL_SLACK)
+                    tail_ok = idx == page_last_content
+                    if col_ok or tail_ok:
+                        m = True
+                        total_val = int(mm.group(1))
             if m:
                 if cur is not None and cur["total_row"] is None:
                     cur["total_row"] = total_val
@@ -660,7 +772,8 @@ def parse_pages(pages, qp_totals=None):
             if pending_total:
                 nm = TOTAL_SPLIT_NUM_RE.match(line)
                 pending_total = False
-                opener = QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line)
+                opener = QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line) \
+                    or QPART_COMPACT_RE.match(line) or PART_COMPACT_RE.match(line)
                 if nm and cur is not None and not opener:
                     # anything opener-shaped is a grid row whose marks tail
                     # must not be eaten as the total
@@ -684,6 +797,7 @@ def parse_pages(pages, qp_totals=None):
             #     this line starts with its digit(s) ---
             if pending_label is not None:
                 if QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line) \
+                        or QPART_COMPACT_RE.match(line) \
                         or QPART_PAREN_SOLO_RE.match(line) \
                         or QPART_BARE_SOLO_RE.match(line):
                     pending_label = None  # a question opener wins; the bare
@@ -1011,7 +1125,9 @@ def parse_pages(pages, qp_totals=None):
                                or ord(_m.group("part")) == ord(last_part) + 1):
                         bsolo = _m
                         break
-            qpm = None if (solo or bsolo) else (QPART_PAREN_RE.match(line) or QPART_BARE_RE.match(line))
+            qpm = None if (solo or bsolo) else (QPART_PAREN_RE.match(line)
+                                                or QPART_BARE_RE.match(line)
+                                                or QPART_COMPACT_RE.match(line))
             if solo:
                 # G1.2 (RC-A): opener-only row — '1 (a)' / '5 a' with no text.
                 # 2012+ table grids print the opener alone; the part's merged
@@ -1065,7 +1181,19 @@ def parse_pages(pages, qp_totals=None):
                 if prm and prm.group("part") in ("i", "v", "x") \
                         and last_part is not None:
                     prm = None
-                brm = None if prm else PART_BARE_RE.match(line)
+                brm = None if prm else (PART_BARE_RE.match(line)
+                                        or PART_COMPACT_RE.match(line))
+                # G1.7: the compact 'bi' form is weaker opener evidence (no
+                # space between letter and sub) — open a part only when the
+                # letter is the SAME or NEXT of the open question (the
+                # PART_BARE_COL0_RE sequential guard)
+                if brm and PART_COMPACT_RE.match(line) \
+                        and not PART_BARE_RE.match(line):
+                    if cur is None or not (
+                            last_part is None
+                            or brm.group("part") == last_part
+                            or ord(brm.group("part")) == ord(last_part) + 1):
+                        brm = None
                 # same guard for the bare form ('v  text') — prefer the roman
                 # sub-part reading (SUB_BARE) when a part context is open
                 if brm and brm.group("part") in ("i", "v", "x") \
@@ -1156,9 +1284,33 @@ def parse_pages(pages, qp_totals=None):
                         buckets["point"] += lbl_n
                 else:
                     sm = SUB_PAREN_RE.match(line) or SUB_BARE_RE.match(line) \
+                        or SUB_DEEP_RE.match(line) \
+                        or SUB_COL0_RE.match(line) \
                         or SUB_PAREN_NUM_RE.match(line)
                     if sm and last_part:
                         sub = sm.group("sub")
+                        rest = sm.group("rest")
+                        # G1.7: solo sub opener whose only following content
+                        # is a lone marks cell — 'ii   2' (4CH1 1C Jun 2019
+                        # q10(a)(ii) p13: the block's merged cell prints on
+                        # the opener row, answer rows below are tail-less).
+                        # The digit is the block's marks, never body text.
+                        cellm = re.match(r"^\s*(?P<v>\d{1,3})\s*$", rest)
+                        if cellm and 0 < int(cellm.group("v")) <= MARKS_CELL_MAX:
+                            ccol = len(line.rstrip()) - len(cellm.group("v"))
+                            if (page_marks_floor is None
+                                    or ccol >= page_marks_floor - MARKS_COL_SLACK) \
+                                    and (marks_col is None
+                                         or ccol >= marks_col - MARKS_COL_SLACK):
+                                marks_col = ccol
+                                gp = new_point(last_part, sub, [],
+                                               int(cellm.group("v")), pageno,
+                                               answer_col=len(line)
+                                               - len(rest.lstrip()))
+                                cur_group = (last_part, sub)
+                                group_start = len(cur["points"]) - 1
+                                buckets["point"] += lbl_n
+                                continue
                         if not ROMAN_RE_MS.match(sub or ""):
                             # G1.3-r3: arabic option numbers ('(2)'-'(5)') are
                             # option leads, not sub-parts — the atoms schema
@@ -1201,10 +1353,12 @@ def parse_pages(pages, qp_totals=None):
                 lval = int(lone.group("v"))
                 # G1.2 (RC-B): the cell must sit at the established marks
                 # column — deep-left lone digits are fraction denominators
-                # ('OR answer to M1 / 2')
+                # ('OR answer to M1 / 2'). G1.7: also below the page's
+                # header-anchored floor (answer-table digits).
                 col_ok = (lcol >= marks_col - MARKS_COL_SLACK) \
                     if marks_col is not None else (lcol >= MARKS_COL_MIN)
-                if col_ok:
+                if col_ok and (page_marks_floor is None
+                               or lcol >= page_marks_floor - MARKS_COL_SLACK):
                     # G1.5 (R4-MCQ): 2019+ MSs print the question total as a
                     # BARE right-column digit (black-box total; pdftotext drops
                     # everything but the digit), identical in shape to a
@@ -1235,7 +1389,8 @@ def parse_pages(pages, qp_totals=None):
                     # G1.5 (R4-GRID): opener-attached cell — the opener's block
                     # scan guards the r3 backward fill (when the block has its
                     # own cell, the lone cell stays with the current point).
-                    oa = _opener_ahead_with_cell(raw_lines, idx, marks_col) \
+                    oa = _opener_ahead_with_cell(raw_lines, idx, marks_col,
+                                                 floor=page_marks_floor) \
                         if cur is not None else None
                     # G1.5 regression guard (4CH1 1CR Jun 2019 q2): a tail-less
                     # M/A STEP whose same part+sub block already captured its
@@ -1426,7 +1581,8 @@ def parse_pages(pages, qp_totals=None):
                     # the guidance reset orphaned cur_point, so the row sank
                     # here and f.i lost its second mark). Score it under the
                     # open block instead.
-                    mt_c, mk_c = tail_marks_at(line, marks_col)
+                    mt_c, mk_c = tail_marks_at(line, marks_col,
+                                               floor=page_marks_floor)
                     if mk_c is not None and (mt_c.group("body") or "").strip() \
                             and re.search(r"\D", (mt_c.group("body") or "")) \
                             and not NOTE_KW_START_RE.match(

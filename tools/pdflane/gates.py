@@ -34,16 +34,76 @@ def totals_from_qp_md(md_text):
     return out
 
 
+LAYOUT_TOTAL_IMPLICIT_RE = re.compile(
+    r"^\s*Total\s+for\s+question\s*=\s*(\d{1,3})\s*(?:marks?)?\s*$", re.I)
+# numbered variants mirror parse_ms.TOTAL_Q_RE / TOTAL_Q_SHORT_RE — the value
+# carries its own question number ('Total for Q1 = 5', 4CH1 2C Nov 2020)
+LAYOUT_TOTAL_Q_NUM_RE = re.compile(
+    r"Total\s+marks\s+for\s+Question\s+(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)
+LAYOUT_TOTAL_Q_SHORT_RE = re.compile(
+    r"Total\s+for\s+Q\s?(\d{1,2})\s*=\s*(\d{1,3})\s*$", re.I)
+LAYOUT_TOTAL_SPLIT_RE = re.compile(r"^\s*Tota(?:l)?\s*$")
+LAYOUT_TOTAL_SPLIT_NUM_RE = re.compile(r"^\s*(\d{1,3})\s*$")
+LAYOUT_TOTAL_MARKS_ONLY_RE = re.compile(r"^\s*(\d{1,3})\s+marks?\s*$", re.I)
+
+
 def totals_from_layout(pages):
     """Sequence-resolved total rows from the layout text: in reading order,
-    the i-th total row closes question i."""
-    vals = []
+    the i-th total row closes question i.
+
+    G1.7: mirrors the parse_ms total-row cascade so the base-layer witness
+    sees the same total rows the deterministic parser closes questions with:
+      - 'Total N marks' / 'Total N' (explicit, 2012-2020)
+      - 'Total for question = N [marks]' (implicit, 2020-11..2022 grids)
+      - 'Total' with the number on the next line (split cell, 2020-01)
+      - bare 'N marks' table-end row (2021-2022 grids) — dual false-positive
+        guard mirroring the parser: the digit must sit at the page's
+        header-anchored marks column OR the line must be the page's last
+        content line. The note-column wrap '... without working scores' /
+        '5 marks' (4CH1 1C Jan 2022 q11(b) p15) fails both guards."""
+    from pdflane import parse_ms as _pms  # header-floor + slack single source
+    out = {}
     for p in pages:
-        for line in p["text"].splitlines():
+        lines = p["text"].splitlines()
+        floor = _pms.header_marks_col(lines)
+        last_content = max((i for i, l in enumerate(lines) if l.strip()),
+                           default=-1)
+        pending_split = False
+        for idx, line in enumerate(lines):
+            if not line.strip():
+                continue
+            if pending_split:
+                pending_split = False
+                nm = LAYOUT_TOTAL_SPLIT_NUM_RE.match(line)
+                if nm:
+                    out[len(out) + 1] = int(nm.group(1))
+                    continue
+                # pattern broken: process this line through the cascade
             m = LAYOUT_TOTAL_RE.match(line) or LAYOUT_TOTAL_BARE_RE.match(line)
             if m:
-                vals.append(int(m.group(1)))
-    return {i + 1: v for i, v in enumerate(vals)}
+                out[len(out) + 1] = int(m.group(1))
+                continue
+            mq = (LAYOUT_TOTAL_Q_SHORT_RE.search(line)
+                  or LAYOUT_TOTAL_Q_NUM_RE.search(line))
+            if mq:
+                out[int(mq.group(1))] = int(mq.group(2))
+                continue
+            mi = LAYOUT_TOTAL_IMPLICIT_RE.match(line)
+            if mi:
+                out[len(out) + 1] = int(mi.group(1))
+                continue
+            if LAYOUT_TOTAL_SPLIT_RE.match(line):
+                pending_split = True
+                continue
+            mo = LAYOUT_TOTAL_MARKS_ONLY_RE.match(line)
+            if mo:
+                col = len(line.rstrip()) - len(mo.group(1))
+                col_ok = (floor is not None
+                          and col >= floor - _pms.MARKS_COL_SLACK)
+                if col_ok or idx == last_content:
+                    out[len(out) + 1] = int(mo.group(1))
+                continue
+    return out
 
 
 def labels_in(text):

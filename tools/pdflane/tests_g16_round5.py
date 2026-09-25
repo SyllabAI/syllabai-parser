@@ -43,10 +43,10 @@ class OpenerAttachedLoneCellForward(unittest.TestCase):
 
     def test_lone_cell_above_cellless_opener_forwards(self):
         lines = GRID_HEADER + [
-            "4 (a)   (i)   24" + " " * 60 + "1",
-            "        (ii)  M1 12 x 8 + 1 x 10 + 14 x 4 + 16 x 2" + " " * 8 + "2",
+            "4 (a)   (i)   24" + " " * 62 + "1",
+            "        (ii)  M1 12 x 8 + 1 x 10 + 14 x 4 + 16 x 2" + " " * 29 + "2",
             "              M2 194",
-            "  (b)  (i)    (simple) distillation" + " " * 30 + "1",
+            "  (b)  (i)    (simple) distillation" + " " * 43 + "1",
             _cell("        (ii)  A description that refers to two of the following", "2", 78),
             "              M1 (the condenser/X) cools the (ethanol) vapour",
             "              M2 so it condenses OR forms liquid (ethanol)",
@@ -137,12 +137,12 @@ class RedirectedCellStepMaterialization(unittest.TestCase):
 
     def test_pending_cell_becomes_deferred_point_at_step_row(self):
         lines = GRID_HEADER + [
-            "11 (a)      oxidised AND gain of oxygen" + " " * 30 + "1",
-            "  (b)      M1 more reactive than titanium" + " " * 30 + "1",
-            "           M2 has displaced titanium" + " " * 34 + "1",
+            "11 (a)      oxidised AND gain of oxygen" + " " * 39 + "1",
+            "  (b)      M1 more reactive than titanium" + " " * 37 + "1",
+            "           M2 has displaced titanium" + " " * 41 + "1",
             "           M2 dep on M1",
-            "  (c)      different/lower boiling point" + " " * 30 + "1",
-            "  (d)      M1 high strength-to-weight ratio" + " " * 28 + "1",
+            "  (c)      different/lower boiling point" + " " * 37 + "1",
+            "  (d)      M1 high strength-to-weight ratio" + " " * 34 + "1",
             _cell("                                            high strength-to-weight ratio /", "1", 78),
             "           M2 (hip replacements) - non-toxic",
             _cell("                                                              not corrosive", "1", 78),
@@ -165,12 +165,12 @@ class GuidanceInterleavedScoredRow(unittest.TestCase):
 
     def test_scored_row_after_guidance_keeps_its_cell(self):
         lines = GRID_HEADER + [
-            "8  f   i (polymer) breaks down / decomposes" + " " * 22 + "1",
+            "8  f   i (polymer) breaks down / decomposes" + " " * 34 + "1",
             "                                                    Do not penalise compound",
             "                                                    If reference to not breaking down etc, only",
             "                                                    M2 can be awarded",
             "        by bacteria / microbes / microorganisms     Ignore naturally / enzymes" + " " * 2 + "1",
-            "       ii  inert / unreactive / OWTTE" + " " * 32 + "1",
+            "       ii  inert / unreactive / OWTTE" + " " * 41 + "1",
             "                                                                                        Total 10",
         ]
         r = parse_ms.parse_pages([pg(1, "\n".join(lines))])
