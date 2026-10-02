@@ -332,6 +332,44 @@ def _labeled_row_ahead(raw_lines, idx, window=3):
     return False
 
 
+def _lone_cell_ahead(raw_lines, idx, marks_col, floor=None, window=6):
+    """G3.1 (grid-layout lane G3): True when a LONE marks-cell line appears
+    ahead of `idx` BEFORE any labeled row or block boundary — the signature
+    of a scored column-0 part lead whose merged cell prints below it
+    (evidence: 4CH0 1CR Jun 2016 q10(b) 'b   as the (hydrochloric) acid/HCl
+    is added' + lone '1' two lines below, past a notes wrap). Column
+    discipline mirrors the lone-cell branch (established marks column,
+    header-anchored floor, value cap). Prose banners ('f   In part (f):',
+    4CH0 1C Jun 2015 q8 p21) have a labeled row or opener before any lone
+    cell and keep the structural branch."""
+    lm0 = LABEL_RE.match(raw_lines[idx] if idx < len(raw_lines) else "")
+    if lm0 and lm0.group("labelbase"):
+        return False
+    for j in range(idx + 1, min(idx + 1 + window, len(raw_lines))):
+        ln = raw_lines[j]
+        st = ln.strip()
+        if not st or st in FURNITURE_EXACT:
+            continue
+        cleaned = clean_line(ln)
+        if cleaned is None:
+            continue
+        st = cleaned.strip()
+        lm = LABEL_RE.match(ln)
+        if lm and lm.group("labelbase"):
+            return False  # a labeled row got here first: not our cell
+        m = re.match(r"^(\s{4,})(?P<v>\d{1,2})\s*$", cleaned)
+        if m:
+            v = int(m.group("v"))
+            if not (0 < v <= MARKS_CELL_MAX):
+                return False
+            lcol = len(ln.rstrip()) - len(m.group("v"))
+            col_ok = (lcol >= marks_col - MARKS_COL_SLACK) \
+                if marks_col is not None else (lcol >= MARKS_COL_MIN)
+            return bool(col_ok and (floor is None
+                                    or lcol >= floor - MARKS_COL_SLACK))
+    return False
+
+
 def _opener_ahead_with_cell(raw_lines, idx, marks_col, window=4, block_cap=24,
                             floor=None):
     """G1.5 (R4-GRID): decide whether a lone marks cell printed ABOVE a block
@@ -1312,7 +1350,30 @@ def parse_pages(pages, qp_totals=None):
                         # only — the scored rows below carry their own marks
                         # cells; creating a marks-less point here would leak a
                         # None into the letter sums
-                        cur_group = (part, sub)
+                        # G3.1 (grid-layout lane G3): EXCEPT when the lead
+                        # carries answer content and its block's marks cell
+                        # prints as a LONE line below (before any labeled
+                        # row) — then it IS a scored row (1CR Jun 2016 q10(b)
+                        # 'b   as the (hydrochloric) acid/HCl is added' +
+                        # lone '1'): create the provisional point so the
+                        # backward lone-cell fill assigns the cell to it.
+                        # Legacy branch left the row point-less and the cell
+                        # backward-filled the PREVIOUS part's unresolved
+                        # point (b's mark stolen; the cascade also spawned
+                        # q10(c)(i)'s deferred point under (a,ii)).
+                        if _lone_cell_ahead(raw_lines, idx, marks_col,
+                                            floor=page_marks_floor):
+                            chunks_g = [c.strip()
+                                        for c in re.split(r"\s{2,}", rest)
+                                        if c.strip()]
+                            gp = new_point(part, sub, chunks_g, None, pageno,
+                                           answer_col=len(line)
+                                           - len(rest.lstrip()))
+                            cur_group = (part, sub)
+                            group_start = len(cur["points"]) - 1
+                            buckets["point"] += lbl_n
+                        else:
+                            cur_group = (part, sub)
                     continue
                 if prm or brm:
                     mm = prm or brm
@@ -1683,6 +1744,55 @@ def parse_pages(pages, qp_totals=None):
                 if diff > 0:
                     unresolved[0]["marks"] = diff
                     break
+        elif unresolved:
+            # G3.3 (grid-layout lane G3): part-block residual recovery. A
+            # whole part block whose marks cell was never PRINTED (1CR Jun
+            # 2016 q10 a(ii): the fraction-stack layout leaves the block
+            # cell-less while every sibling block carries its printed cell)
+            # recovers the residual total - resolved_sum on its opener row
+            # when (a) exactly ONE cell-less block exists — every other
+            # unresolved row being a STEP of a resolved block, (b) diff > 0,
+            # and (c) diff equals the block's MAIN-route row count — an M/A
+            # label whose number restarts inside the block (M1 after M2)
+            # begins an OR-route alternative, never additional marks
+            # (a(ii) main route M1+M2 == 2 == 15 - 13). Any gate failure
+            # keeps the legacy demotion behavior (fail-closed, no guesses).
+            groups, order = {}, []
+            for p_ in unresolved:
+                k_ = (p_.get("part"), p_.get("sub"))
+                if k_ not in groups:
+                    groups[k_] = []
+                    order.append(k_)
+                groups[k_].append(p_)
+            # cell-less = NO row of the block resolved anywhere (the block's
+            # marks cell was never printed). A block whose cell prints on a
+            # LATER row (e.g. the e-block's cell on its M4 row, 1CR Jun 2016
+            # q10) has a resolved member and its unresolved rows are steps.
+            cellless = [k_ for k_ in order if not any(
+                p_.get("marks") is not None for p_ in q["points"]
+                if (p_.get("part"), p_.get("sub")) == k_)]
+            if len(cellless) == 1:
+                rows = groups[cellless[0]]
+                for src_total in (q["total_row"],
+                                  (qp_totals or {}).get(q["number"])):
+                    if src_total is None:
+                        continue
+                    diff = src_total - resolved_sum
+                    if diff <= 0:
+                        continue
+                    main = 0
+                    seen = 0
+                    for p_ in rows:
+                        m_ = re.match(r"[MA](\d{1,2})$", p_.get("label") or "")
+                        n_ = int(m_.group(1)) if m_ else None
+                        if n_ is not None and seen and n_ <= seen:
+                            break  # OR-route alternative begins
+                        if n_ is not None:
+                            seen = max(seen, n_)
+                        main += 1
+                    if main == diff:
+                        rows[0]["marks"] = diff
+                        break
         # rows whose marks cell never resolved are answer-cell descriptors,
         # not scored points: demote to the previous point's notes (or question
         # guidance) — text preserved, never a None-marks point downstream
