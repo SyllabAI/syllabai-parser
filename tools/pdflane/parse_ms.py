@@ -141,6 +141,13 @@ SUB_PAREN_NUM_RE = re.compile(
 SUB_BARE_RE = re.compile(r"^\s{1,8}(?P<sub>[ivx]{1,4})\s{2,}(?P<rest>\S.*)$")
 ROMAN_RE_MS = re.compile(r"^[ivx]{1,4}$")
 
+# G2.6 (grid-layout lane): doubled part letter in the label position (see the
+# parse_pages application site). The lookahead requires the label gap (2+
+# spaces), a following M/A label token, or end-of-line — mid-line doubled
+# letters in answer prose never match.
+G2_DUP_LETTER_RE = re.compile(
+    r"(?P<pre>^\s*(?:\d{1,2}\s+)?)(?P<l>[a-h])(?P=l)(?=\s{2,}|\s+[MA]\b|$)")
+
 # --- G1.3 (RC-C letter-level residual): opener rows whose ONLY content is
 # the marks cell — the answer body is empty (a table / step rows follow on
 # the next lines) and the printed marks sit on the opener line itself:
@@ -558,6 +565,19 @@ def is_grid_page(text):
                 or QPART_PAREN_RE.match(st) or OPENER_MARKS_S_RE.match(st) \
                 or OPENER_MARKS_PS_RE.match(st):
             return True
+    # G2.5 (grid-layout lane): a bare column-0 part lead with content is grid
+    # content — short continuation pages holding ONLY such rows (no [MA]
+    # token, no total row, no grid header) were skipped whole as furniture and
+    # the rows were lost (evidence: 4CH0 1C Jun 2015 q11(c) 'c   ∆H (value)/
+    # enthalpy change is small ... 1' p29; 4CH0 1CR Jun 2016 q10 p20 where the
+    # part rows' marks cells print as lone lines). The 2+ space label gap
+    # keeps prose lines ('a box . If you change...') out; empirical corpus
+    # scan of the 12 lane papers: exactly one page flips, the genuine q10
+    # continuation page.
+    for ln in text.splitlines():
+        st = ln.strip()
+        if re.match(r"^[a-h]\s{2,}\S", st):
+            return True
     return False
 
 
@@ -689,6 +709,13 @@ def parse_pages(pages, qp_totals=None):
         page_last_content = max((i for i, l in enumerate(raw_lines)
                                  if l.strip()), default=-1)
         for idx, raw in enumerate(raw_lines):
+            # G2.6 (grid-layout lane): regional-variant bold rendering
+            # duplicates the part letter in the label position ('bb' for a
+            # bold 'b', 4CH0 2CR Jun 2016 q1). Normalized to the single
+            # letter + one space — LENGTH-PRESERVING, so every column
+            # computation on the raw line stays valid.
+            raw = G2_DUP_LETTER_RE.sub(
+                lambda m: m.group("pre") + m.group("l") + " ", raw)
             carry_guidance = prev_line_guidance   # flag from the previous line
             prev_line_guidance = False
             # note-column continuity: a line directly following one that ends
@@ -906,6 +933,37 @@ def parse_pages(pages, qp_totals=None):
                         # 4CH0 q7 a-ii landed part-less -> PART-MARKS-MISMATCH)
                         last_part = part
                     buckets["point"] += lbl_n  # line consumed by point handling
+                    # G2.4 (grid-layout lane): a bare label row that already
+                    # carries its marks tail AND answer body on the SAME line
+                    # is a complete row, never a split label — the label-split
+                    # layouts put the digit on the NEXT line (no same-line tail
+                    # by definition). Previously the pending machinery
+                    # swallowed the row and the next non-digit line silently
+                    # discarded it, text and marks both (evidence: 4CH0 2CR
+                    # Jun 2016 q1(a) 'A (the crystal dissolves) 1' and q3(b)
+                    # 'A (argon) 1'; 4CH0 1C Jun 2015 q7(a)/(b)
+                    # '(addition)' / '(a molecule used to make a polymer)').
+                    # A column-discipline rejection keeps the legacy pending
+                    # path (status quo).
+                    if mt and (mt.group("body") or "").strip():
+                        mt_h, mk_h = _discipline(mt, int(mt.group("mk")), line)
+                        if mt_h is not None:
+                            body_h = (mt_h.group("body") or "").strip()
+                            chunks_h = [c.strip()
+                                        for c in re.split(r"\s{2,}", body_h)
+                                        if c.strip()]
+                            pt_h = {"label": base, "part": part, "sub": sub,
+                                    "text": [chunks_h[0]] if chunks_h else [],
+                                    "notes": chunks_h[1:] if len(chunks_h) > 1 else [],
+                                    "marks": int(mt_h.group("mk")),
+                                    "page": pageno,
+                                    "answer_col": len(line) - len(rest.lstrip())}
+                            cur["points"].append(pt_h)
+                            if bare_opener:
+                                group_start = len(cur["points"]) - 1
+                            cur["pages"].add(pageno)
+                            cur_point = pt_h
+                            continue
                     if mt:
                         body = (mt.group("body") or "").strip()
                         chunks = [c.strip() for c in re.split(r"\s{2,}", body) if c.strip()]
