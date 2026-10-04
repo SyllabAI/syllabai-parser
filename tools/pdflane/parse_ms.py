@@ -553,6 +553,19 @@ COLON_CHAIN_TAIL_RE = re.compile(r"\d{1,2}\s*:\s*\d{1,2}\s*:\s*$")
 # the alternative's M1 row (Q7 13 vs QP 12). Full-line form only (the
 # observed print); a mid-line mention stays untouched (fail-closed).
 ALT_METHOD_RE = re.compile(r"^allow alternative method\b\.?:?$", re.I)
+
+# G5 (grid-layout lane G5): a STANDALONE 'Alternative Method' line is a
+# full-page OR-route divider — the pages that follow it (to the page end)
+# RE-PRESENT an already-parsed part block with its own printed marks cell
+# (evidence: 4CH0 2C Jun 2017 q5(b)(ii) reprinted whole on p16 with the
+# same printed cell 4 after the main block on p15; the duplicate minted a
+# second 4-mark point and q5 summed 19 vs printed Total 15 / QP 15 — the
+# T-C80 recorded-NOT-fixed route-hint finding). Points minted while the
+# divider is active carry _alt_method_reprint; they are demoted ONLY by
+# the Total-row-conflict reconciliation when every gate attributes the
+# over-sum to them EXACTLY (fail-closed otherwise). Full-line title-case
+# form only (the observed print) — mid-line mentions stay untouched.
+ALT_METHOD_PAGE_RE = re.compile(r"^Alternative Method\s*:?\s*$")
 GUIDANCE_RE = re.compile(
     r"(dependent|independent|can\s+(?:still\s+)?(?:be\s+)?award|can\s+score|"
     r"Do\s+not\s+award|do\s+not\s+award|do\s+not\s+allow|Reject|Max\s*\d|"
@@ -708,7 +721,7 @@ def parse_pages(pages, qp_totals=None):
               "marks": marks, "page": pageno, "answer_col": answer_col}
         if deferred_flag:
             pt["_from_deferred"] = True
-        cur["points"].append(pt)
+        _append_point(pt)
         cur["pages"].add(pageno)
         cur_point = pt
         return pt
@@ -757,6 +770,92 @@ def parse_pages(pages, qp_totals=None):
     marks_col = None        # G1.2 (RC-B): established marks-column position, per page
     page_marks_floor = None  # G1.7: header-anchored marks column, per page
     pending_marks_next = None  # G1.2 (RC-A/E): lone cell deferred to the next opener
+    alt_method_active = False  # G5: 'Alternative Method' divider seen on the
+    #                          current page — minted points are reprints
+
+    def _append_point(pt):
+        """Single point-append seam (G5): tag points minted while an
+        'Alternative Method' divider is active on the current page."""
+        if alt_method_active:
+            pt["_alt_method_reprint"] = True
+        cur["points"].append(pt)
+
+    def _total_row_conflict_reconcile(total_val, pageno):
+        """G5 (grid-layout lane G5): the Total-row-conflict rule — the
+        T-C80 Lane-B recorded-NOT-fixed finding (4CH0/2C Jun 2017 q5 sums
+        19 vs printed Total 15 / QP 15). Print archaeology re-adjudicated
+        the T-C80 hint-vs-cell framing: BOTH `Route 1:   4` lines are REAL
+        merged block cells (Jun-2017 5(c) = 4 marks; Jan-2017 6(b) = 4
+        marks, no Total row until q6's footer); the over-sum mint is the
+        'Alternative Method' full-page reprint of (b)(ii) carrying the
+        SAME printed cell. When the question's printed total row lands,
+        demote the tagged reprint points ONLY when every gate holds:
+          (a) the over-sum EXACTLY equals the tagged points' marks sum;
+          (b) each tagged point has EXACTLY ONE earlier untagged twin in
+              the same question with identical (part, sub) AND marks;
+          (c) twins are pairwise distinct; no tagged point is a
+              capped-group member.
+        Any gate failure keeps the legacy fail-closed behavior (no
+        demotion; the arithmetic disagreement stays disclosed via
+        arithmetic_ok). Deterministic throughout; the demotion preserves
+        every demoted row's text as question guidance and records the
+        receipt in cur['_total_row_conflict'].
+        """
+        nonlocal cur_point
+        if cur is None:
+            return
+        tagged = [p for p in cur["points"]
+                  if p.get("_alt_method_reprint")
+                  and p.get("marks") is not None]
+        if not tagged:
+            return
+        for g_ in cur.get("capped_groups") or []:
+            for m_ in g_.get("_members") or []:
+                if any(m_ is p for p in tagged):
+                    return  # (c) capped-group membership — fail-closed
+        resolved_sum = sum(p["marks"] for p in cur["points"]
+                           if p["marks"] is not None)
+        over = resolved_sum - total_val
+        if over <= 0:
+            return
+        if sum(p["marks"] for p in tagged) != over:  # (a) exact over-sum
+            return
+        used = []
+        for p in tagged:
+            twins = [q_ for q_ in cur["points"]
+                     if q_ is not p and not q_.get("_alt_method_reprint")
+                     and (q_.get("part"), q_.get("sub"))
+                     == (p.get("part"), p.get("sub"))
+                     and q_.get("marks") == p.get("marks")
+                     and (q_.get("page") or 10**9) < (p.get("page") or -1)
+                     and not any(q_ is u_ for u_ in used)]
+            if len(twins) != 1:  # (b) exactly one earlier twin
+                return
+            used.append(twins[0])
+        # all gates hold: demote the reprint points, text preserved
+        demoted = []
+        for p in tagged:
+            cur["points"].remove(p)
+            frags = [t for t in (p["text"] or []) if t] + \
+                    [n for n in (p["notes"] or []) if n]
+            body = " | ".join(frags) if frags else p["label"]
+            cur["guidance"].append({
+                "page": p["page"],
+                "text": "%s (alternative-method reprint of %s%s, "
+                        "Total-row-conflict demotion: printed Total %d vs "
+                        "raw sum %d): %s"
+                        % (p["label"], p.get("part") or "?",
+                           p.get("sub") or "", total_val, resolved_sum,
+                           body)})
+            demoted.append({"label": p["label"], "part": p.get("part"),
+                            "sub": p.get("sub"), "marks": p["marks"],
+                            "page": p["page"]})
+        cur["_total_row_conflict"] = {"total_row": total_val,
+                                      "raw_sum": resolved_sum,
+                                      "demoted": demoted, "page": pageno}
+        if cur_point is not None and any(cur_point is p for p in tagged):
+            cur_point = None
+
     for p in pages:
         pageno = p["page"]
         raw_text = p["text"]
@@ -767,6 +866,7 @@ def parse_pages(pages, qp_totals=None):
         raw_lines = raw_text.splitlines()
         marks_col = None  # column geometry is a per-page property
         page_marks_floor = header_marks_col(raw_lines)  # G1.7
+        alt_method_active = False  # G5: the divider is a per-page boundary
         # G1.7: index of the page's last non-blank line (page-tail guard for
         # the bare 'N marks' total-row variant)
         page_last_content = max((i for i, l in enumerate(raw_lines)
@@ -864,6 +964,10 @@ def parse_pages(pages, qp_totals=None):
                     cur["total_row_page"] = pageno
                     cur_point = None
                     pending_label = None
+                    # G5: the Total-row-conflict rule (the T-C80 route-hint
+                    # finding) — attribute an exact over-sum to the
+                    # 'Alternative Method' reprint points, fail-closed.
+                    _total_row_conflict_reconcile(total_val, pageno)
                 else:
                     unclassified.append({"page": pageno, "text": st,
                                          "reason": "total-row-without-open-question"})
@@ -924,7 +1028,7 @@ def parse_pages(pages, qp_totals=None):
                             pt["notes"].append(dm.group("rest").strip())
                         if cur is not None:
                             _consume_pending(pt)
-                            cur["points"].append(pt)
+                            _append_point(pt)
                             if prev.get("opener"):
                                 # G1 upgrade: the completed opener row starts a
                                 # new part-block (capped-group membership)
@@ -936,6 +1040,23 @@ def parse_pages(pages, qp_totals=None):
                             buckets["unclassified"] += lbl_n
                         continue
                     pending_label = None  # pattern broken; fall through
+
+            # G5 (grid-layout lane G5): a STANDALONE 'Alternative Method'
+            # line is a full-page OR-route divider — everything scored from
+            # here to the page end is a REPRINT of an already-parsed block
+            # (evidence: 4CH0 2C Jun 2017 q5(b)(ii), p16 after the main
+            # block on p15). Points minted while the flag is active carry
+            # _alt_method_reprint; they are demoted ONLY at a Total-row
+            # conflict the reconciliation gates attribute exactly
+            # (fail-closed otherwise). Placement: after the pending-label
+            # block, so the legacy label-breaking semantics are untouched;
+            # the line itself is recorded with its own unclassified reason
+            # (it previously fell through as 'unclassified').
+            if ALT_METHOD_PAGE_RE.match(st):
+                alt_method_active = True
+                unclassified.append({"page": pageno, "text": st,
+                                     "reason": "alternative-method-page-divider"})
+                continue
 
             lm = LABEL_RE.match(line)
             if lm and lm.group("labelbase") and not lm.group("labelnum") \
@@ -1040,7 +1161,7 @@ def parse_pages(pages, qp_totals=None):
                                     "marks": int(mt_h.group("mk")),
                                     "page": pageno,
                                     "answer_col": len(line) - len(rest.lstrip())}
-                            cur["points"].append(pt_h)
+                            _append_point(pt_h)
                             if bare_opener:
                                 group_start = len(cur["points"]) - 1
                             cur["pages"].add(pageno)
@@ -1086,7 +1207,7 @@ def parse_pages(pages, qp_totals=None):
                           "notes": chunks[1:] if len(chunks) > 1 else [],
                           "marks": marks, "page": pageno,
                           "answer_col": rest_col}
-                    cur["points"].append(pt)
+                    _append_point(pt)
                     if is_opener:
                         group_start = len(cur["points"]) - 1
                     cur["pages"].add(pageno)
@@ -1183,7 +1304,7 @@ def parse_pages(pages, qp_totals=None):
                       "marks": None, "page": pageno,
                       "answer_col": rest_col}
                 _consume_pending(pt)
-                cur["points"].append(pt)
+                _append_point(pt)
                 if is_opener:
                     group_start = len(cur["points"]) - 1
                 cur["pages"].add(pageno)
