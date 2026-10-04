@@ -531,6 +531,28 @@ GRID_HEADER_RES = [
     re.compile(r"^Answer\s{2,}.*\bNotes\b.*\bMarks\b\s*$", re.I),
 ]
 MARKS_TAIL_RE = re.compile(r"^(?P<body>.*?)\s{2,}(?P<mk>\d{1,3})\s*$")
+
+# G4.1 (grid-layout lane G4): a captured tail that COMPLETES a colon-chain
+# of at least TWO pairs is table/ratio data, never a marks cell. Evidence:
+# 4CH0 1CR Jun 2016 q7 f(i) prints 'M3 for whole number ratio   2   :   4
+# :   1' — the ratio's final '1' sat in the marks column and was captured
+# as a phantom 1-mark point (Q7 sum 13 vs QP print 12). The guard requires
+# the body to end 'N : N :' (two pairs) — single 'N:' lines are a REAL
+# cell shape elsewhere ('Route 1:   4' prints the block's cell on the
+# Route-1 line: 4CH0 2C Jan 2017 q6(b) QP 13, 2017-06 q5(c) route hint),
+# so a single-pair guard over-fires (regression-proven this lane).
+COLON_CHAIN_TAIL_RE = re.compile(r"\d{1,2}\s*:\s*\d{1,2}\s*:\s*$")
+
+# G4.2 (grid-layout lane G4): the printed words 'allow alternative method'
+# are an OR-route boundary inside the current part block. A lone marks cell
+# PENDING at the boundary belongs to the MAIN route (the block's last
+# cell-less point), never to the alternative route's rows — the boundary
+# stops the deferred-cell hand-off. Evidence: 4CH0 1CR Jun 2016 q7 f(i)
+# prints the block's cell '3' as a lone line, then 'allow alternative
+# method:' with its own M1/M2/M3 restart; the pending '3' was consumed by
+# the alternative's M1 row (Q7 13 vs QP 12). Full-line form only (the
+# observed print); a mid-line mention stays untouched (fail-closed).
+ALT_METHOD_RE = re.compile(r"^allow alternative method\b\.?:?$", re.I)
 GUIDANCE_RE = re.compile(
     r"(dependent|independent|can\s+(?:still\s+)?(?:be\s+)?award|can\s+score|"
     r"Do\s+not\s+award|do\s+not\s+award|do\s+not\s+allow|Reject|Max\s*\d|"
@@ -717,6 +739,9 @@ def parse_pages(pages, qp_totals=None):
         if mt is None:
             return None, None
         tcol = len(line.rstrip()) - len(mt.group("mk"))
+        # G4.1: a tail that completes a colon-chain is ratio/table data
+        if COLON_CHAIN_TAIL_RE.search(line.rstrip()[:tcol]):
+            return None, None
         if page_marks_floor is not None \
                 and tcol < page_marks_floor - MARKS_COL_SLACK:
             return None, None
@@ -767,6 +792,25 @@ def parse_pages(pages, qp_totals=None):
                 continue
             st = line.strip()
             lbl_n = len(re.findall(r"\b[MA]\d{1,2}\b", st))  # per-line accounting unit
+
+            # G4.2 (grid-layout lane G4): 'allow alternative method' closes
+            # the main route of the current block. A pending lone cell alive
+            # here belongs to the main route's last cell-less point — assign
+            # it BACKWARD now, before the alternative route's rows exist, so
+            # the deferred-cell hand-off can never cross the boundary. The
+            # line itself falls through to the legacy continuation path
+            # (text preserved). Fail-closed: with no open question/block or
+            # no cell-less owner, the pending keeps the legacy behavior.
+            if ALT_METHOD_RE.match(st):
+                if pending_marks_next is not None and cur is not None \
+                        and cur_group is not None:
+                    for p_ in reversed(cur["points"]):
+                        if (p_.get("part"), p_.get("sub")) == cur_group \
+                                and p_.get("marks") is None:
+                            p_["marks"] = pending_marks_next
+                            p_["_from_deferred"] = True
+                            break
+                    pending_marks_next = None
 
             m = TOTAL_RE.match(line)
             if not m:
