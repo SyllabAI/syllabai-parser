@@ -1,0 +1,93 @@
+{
+  "board": "PEARSON_EDEXCEL",
+  "retrievedAt": "2026-10-04T00:00:00Z",
+  "dataset": "exam_series",
+  "version": "1.0",
+  "scope": "Edexcel International GCSE + International A Level (IAL) sittings, 2026-2027 published finals",
+  "cadenceNote": "Cadence is DATA (ADR-035 D1 ruling, trace 1a10493e233cb521): International GCSE two sittings/year (May/June, November); IAL three sittings/year (January, May/June, October/November). Per-subject availability varies sharply by sitting (measured: October 2026 IAL = 7 subjects; May/June 2027 International GCSE = 49). Nothing here hardcodes the cadence or the coverage.",
+  "provenance": {
+    "keyDatesTable": {
+      "title": "Key Dates Table International 2026-2027 (XLSX)",
+      "url": "https://qualifications.pearson.com/content/dam/pdf/Support/Information-manual/key-dates-table-international-2026-2027.xlsx",
+      "via": "Pearson Entries & information manual (qualifications.pearson.com)",
+      "provides": "entry deadlines + results dates per series"
+    },
+    "timetables": {
+      "title": "Exam timetables — final timetables per sitting (PDF/XLSX)",
+      "url": "https://qualifications.pearson.com/en/support/support-topics/exams/exam-timetables.html",
+      "provides": "exam windows (first/last paper dates) per series"
+    },
+    "retrievalDirective": "The operator directed the retrieval themselves ('Search the web yourself and find the dates', zai-web trace 1a10626076367841); the documents were fetched live from qualifications.pearson.com on the retrievedAt date and parsed locally (windows from the final-timetable 'All papers' sheets column A; deadlines/results from the key-dates table rows).",
+    "honestyNote": "The not-yet-published November 2027 / January 2028 / May-June 2028 sittings are deliberately ABSENT from this dataset — no invented dates (anti-fabrication applies to reference data with the same force as to content, ADR-035 Ruling section). Estimated rows may only enter when a window is announced without a published timetable."
+  },
+  "series": [
+    {
+      "qualification": "IAL",
+      "seriesCode": "2026-october-november",
+      "label": "October/November 2026",
+      "windowStart": "2026-10-08",
+      "windowEnd": "2026-10-30",
+      "entryDeadline": "2026-08-28",
+      "resultsDate": "2027-01-21",
+      "published": true,
+      "estimated": false,
+      "sourceUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Examination-timetables-for-International-Advanced-Levels/ial-october2026-final.pdf",
+      "subjectsAvailable": ["Accounting", "Biology", "Business", "Chemistry", "Economics", "Mathematics", "Physics"]
+    },
+    {
+      "qualification": "INTERNATIONAL_GCSE",
+      "seriesCode": "2026-november",
+      "label": "November 2026",
+      "windowStart": "2026-10-27",
+      "windowEnd": "2026-11-19",
+      "entryDeadline": "2026-09-12",
+      "resultsDate": "2027-01-21",
+      "published": true,
+      "estimated": false,
+      "sourceUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Examination-timetables-for-Edexcel-International-GCSE/intgcse-nov-2026-final.pdf"
+    },
+    {
+      "qualification": "IAL",
+      "seriesCode": "2027-january",
+      "label": "January 2027",
+      "windowStart": "2027-01-08",
+      "windowEnd": "2027-01-25",
+      "entryDeadline": "2026-10-16",
+      "resultsDate": "2027-03-04",
+      "published": true,
+      "estimated": false,
+      "sourceUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Examination-timetables-for-International-Advanced-Levels/ial-january-2027-final.pdf"
+    },
+    {
+      "qualification": "IAL",
+      "seriesCode": "2027-may-june",
+      "label": "May/June 2027",
+      "windowStart": "2027-05-04",
+      "windowEnd": "2027-06-10",
+      "entryDeadline": "2027-03-21",
+      "resultsDate": "2027-08-12",
+      "published": true,
+      "estimated": false,
+      "sourceUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Examination-timetables-for-International-Advanced-Levels/ial-summer-2027-final.pdf"
+    },
+    {
+      "qualification": "INTERNATIONAL_GCSE",
+      "seriesCode": "2027-may-june",
+      "label": "May/June 2027",
+      "windowStart": "2027-05-10",
+      "windowEnd": "2027-06-18",
+      "entryDeadline": "2027-03-21",
+      "resultsDate": "2027-08-19",
+      "published": true,
+      "estimated": false,
+      "sourceUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Examination-timetables-for-Edexcel-International-GCSE/int-gcse-summer-2027-final.pdf"
+    }
+  ],
+  "keyDateReceipts": {
+    "2026-october-november": "entry r9 (2026-08-28), results r74/r76 (2027-01-20 centres / 2027-01-21 candidates)",
+    "2026-november": "entry r19 (2026-09-12), results r75/r77 (2027-01-20 / 2027-01-21)",
+    "2027-january": "entry r37 (2026-10-16), results r85/r86 (2027-03-03 / 2027-03-04)",
+    "IAL 2027-may-june": "entry r91 (2027-03-21), results r130/r131 (2027-08-11 / 2027-08-12)",
+    "IGCSE 2027-may-june": "entry r91 (2027-03-21), results r132/r133 (2027-08-18 / 2027-08-19)"
+  }
+}
