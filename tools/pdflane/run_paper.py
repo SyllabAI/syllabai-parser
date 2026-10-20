@@ -18,7 +18,7 @@ import subprocess
 
 from pdflane import emit_atoms, gates as gates_mod
 from pdflane import identity as identity_mod
-from pdflane import parse_ms, parse_ms_maths, parse_qp, probe as probe_mod
+from pdflane import parse_ms, parse_ms_maths, parse_ms_maths_b, parse_qp, probe as probe_mod
 from pdflane import s2_structurer, validate_atoms
 from pdflane.extract_opendataloader import extract as odl_extract
 from pdflane.extract_pdftotext import extract as pdftotext_extract
@@ -160,9 +160,12 @@ def main_ms_only(args):
     # ---- deterministic structuring (no QP totals: recovery paths MS-only) ----
     ms_pages = parse_ms.load_pages(base_ms["pages_json"])
     # maths-B grid dialect routes to its own deterministic parser;
+    # the 2018-06 legacy 7-column dialect routes to the B parser;
     # chemistry/other dialects keep parse_ms byte-unchanged
     if parse_ms_maths.detects_dialect(ms_pages):
         ms_parse = parse_ms_maths.parse_pages(ms_pages, qp_totals=None)
+    elif parse_ms_maths_b.detects_dialect_b(ms_pages):
+        ms_parse = parse_ms_maths_b.parse_pages(ms_pages, qp_totals=None)
     else:
         ms_parse = parse_ms.parse_pages(ms_pages, qp_totals=None)
 
@@ -389,9 +392,12 @@ def main():
     qp_totals = {q["number"]: q["total"] for q in qp_parse["questions"]
                  if q.get("total") is not None and not q.get("orphan_total")}
     # maths-B grid dialect routes to its own deterministic parser;
+    # the 2018-06 legacy 7-column dialect routes to the B parser;
     # chemistry/other dialects keep parse_ms byte-unchanged
     if parse_ms_maths.detects_dialect(ms_pages):
         ms_parse = parse_ms_maths.parse_pages(ms_pages, qp_totals=qp_totals)
+    elif parse_ms_maths_b.detects_dialect_b(ms_pages):
+        ms_parse = parse_ms_maths_b.parse_pages(ms_pages, qp_totals=qp_totals)
     else:
         ms_parse = parse_ms.parse_pages(ms_pages, qp_totals=qp_totals)
 
