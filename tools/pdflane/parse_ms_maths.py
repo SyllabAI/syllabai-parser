@@ -26,12 +26,16 @@ import re
 
 TOTAL_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s+marks?\s*$", re.I)
 
-# dialect A header: five named columns on one layout line
+# dialect A header: five named columns on one layout line. Round 2: the
+# corpus census (66 ms.pdfs) found 4 papers whose first column prints as the
+# abbreviation 'Ques'/'Qu' instead of 'Question' (2018-06 4MB1-02R,
+# 2021-11 4MB1-02, 2022-01 4MB1-02R, 2023-06 4MB1-02R) — same column ORDER,
+# so the alias is accepted and the x-map uses the printed token's position.
 HEADER_A_RE = re.compile(
-    r"^\s*Question\s+Working\s+Answer\s+Mark\s+Notes\b")
+    r"^\s*(?:Question|Ques|Qu)\s+Working\s+Answer\s+Mark\s+Notes\b")
 # dialect B header (2018-06 legacy): Notes BEFORE Mark, plus Sub-Total/Total
 HEADER_B_RE = re.compile(
-    r"^\s*Question\s+Working\s+Answer\s+Notes\s+Mark\b")
+    r"^\s*(?:Question|Ques|Qu)\s+Working\s+Answer\s+Notes\s+Mark\b")
 
 # col-0 opener: question number, optional part label(s): '1 (a)', '26 (a)(i)'
 OPENER_RE = re.compile(
@@ -41,8 +45,39 @@ OPENER_RE = re.compile(
 PART_ONLY_RE = re.compile(
     r"^\s*(?P<labels>\((?:[a-z]|\d+|i{1,3}|iv|v|vi{1,3}|ix|x)\)"
     r"(?:\s*\((?:[a-z]|\d+|i{1,3}|iv|v|vi{1,3}|ix|x)\))*)\s*(?P<rest>.*)$")
-# mark-type codes: B1/M1/A1/B2/M2/A2/B1ft/M1dep...
-MARK_CODE_RE = re.compile(r"\b([BMA])(\d)(?:[a-z]{2,3})?\b")
+# mark-type codes: B1/M1/A1/B2/M2/A2/B1ft/M1dep... Round 2 (q22 2024-06):
+# pdftotext sometimes glues the suffix word to the code ('A1allow', 5 letters),
+# so the suffix run is widened 2..6 letters; the leading \b still anchors the
+# code, and 'M marks'/'M1s' still never tokenize.
+MARK_CODE_RE = re.compile(r"\b([BMA])(\d)(?:[a-z]{2,6})?\b")
+
+# round 2: ordinal cross-reference words — a code whose immediately preceding
+# token is one of these is a REFERENCE to another mark ('the 4th M1' in the
+# guidance 'May be implied by award of the 4th M1'), never a scored award
+# (proven on 4MB1-01 2024-06 q24; q20's real 'A1 dep on 3 M marks awarded' is
+# row-initial and unaffected).
+XREF_PREV_RE = re.compile(
+    r"^(?:1st|2nd|3rd|4th|5th|6th|first|second|third|fourth|fifth|next|previous|"
+    r"respective|each|both)$")
+
+# round 2: the Notes column carries big-bracket alternative blocks printed in
+# the Symbol PUA range. Glyph census of 4MB1-01 2024-06 (24/39/24 paired
+# counts) proves the extensible-paren piece pairs: LEFT = \uf0e6 top,
+# \uf0e7 extender, \uf0e8 bottom; RIGHT = \uf0f6/\uf0f7/\uf0f8; \uf0e9..\uf0eb /
+# \uf0f9..\uf0fb the bracket/brace siblings. The SAME family renders Working-
+# column matrices ('\uf0e6 1 -6 \uf0f6'), so glyph identity alone cannot
+# discriminate: the law is band-gated to the Notes column (x within the
+# header Notes position, less a small tolerance). Codes inside an open Notes
+# band block are the PARTIAL award of the route the block annotates
+# ('\uf0e6 M1 for TAB = 10' under an M2; q9/q24 2024-06) — the same semantics
+# as the proven '(B1 ...)' ASCII split-award rule, never additive to the
+# merged cell.
+BRACKET_LEFT = set("\uf0e6\uf0e7\uf0e8\uf0e9\uf0ea\uf0eb")   # left-edge pieces (top/ext/bottom + bracket/brace siblings)
+BRACKET_RIGHT = set("\uf0f6\uf0f7\uf0f8\uf0f9\uf0fa\uf0fb")  # right-edge pieces (close side)
+BRACKET_TOP = set("\uf0e6\uf0e9\uf0ea")                    # left top pieces = a NEW block opens
+BRACKET_BOTTOM = set("\uf0e8\uf0f8")                       # bottom pieces terminate the block
+BRACKET_FAMILY = BRACKET_LEFT | BRACKET_RIGHT
+BRACKET_BAND_TOL = 12           # Notes-band tolerance (layout-char space)
 QNUM_CODE_RE = re.compile(r"^(\d{1,2})\s*\(")  # '26(a)(i)' glued form
 
 OPENER_X_MAX = 8   # col-0 test in layout-char space: a question opener's
@@ -57,7 +92,12 @@ FURNITURE_RES = [
 
 
 def _find_header(line):
-    """Return (dialect, names, x-positions dict) for a header line, else None."""
+    """Return (dialect, names, x-positions dict) for a header line, else None.
+
+    Round 2: the first column may print as 'Question', 'Ques' or 'Qu' — the
+    x-map takes the printed alias token's own position so column geometry
+    stays true to the page (proven on the 4 abbreviated-header papers).
+    """
     if HEADER_A_RE.match(line):
         dialect, names = "A", ["Question", "Working", "Answer", "Mark", "Notes"]
     elif HEADER_B_RE.match(line):
@@ -65,9 +105,11 @@ def _find_header(line):
     else:
         return None
     pos = {}
-    for n in names:
-        i = line.find(n)
-        pos[n] = i
+    m0 = re.match(r"\s*(Question|Ques|Qu)\s+", line)
+    pos["Question"] = m0.start(1) if m0 else 0
+    qend = m0.end() if m0 else 0
+    for n in names[1:]:
+        pos[n] = line.find(n, qend)
     return dialect, names, pos
 
 
@@ -140,6 +182,31 @@ def _clean(s):
     return s
 
 
+def _alt_ahead(plines, li, pos):
+    """Round 2 (L4): True when an 'Alt' col-0 line occurs within the current
+    grid section below line li (before its Total row or the next sequential
+    opener). Bounded scan; deterministic. Proven on 4MB1-01 2024-06 q18: the
+    Alt section's first mark row prints its code on the row's FIRST line
+    while the 'Alt' token prints on the vertically-centred line below, so the
+    v0 flag fired one line late and the Alt M1 scored into the main route.
+    """
+    expected_ahead = None
+    for j in range(li + 1, min(li + 60, len(plines))):
+        s2 = plines[j].strip()
+        if not s2:
+            continue
+        if TOTAL_RE.match(s2):
+            return False
+        x2 = len(plines[j]) - len(plines[j].lstrip())
+        if x2 <= pos["Question"] + OPENER_X_MAX:
+            if re.match(r"^Alt\b", s2):
+                return True
+            om2 = OPENER_RE.match(plines[j].rstrip())
+            if om2 and om2.group("qn"):
+                return False   # a real opener arrived first — not an Alt row
+    return False
+
+
 def parse_pages(pages, qp_totals=None):
     """pages: [{"page": n, "text": str}] from pdftotext -layout split.
 
@@ -171,6 +238,14 @@ def parse_pages(pages, qp_totals=None):
     alt_route = False   # inside an 'Alt' alternative-method block: its codes
     #                       are reprints of the main route — never re-scored
     point_seq = 0
+    # round 2 state:
+    pending = False     # a Total closed the previous question; code rows
+    #                       arriving before the next opener are STAGED, never
+    #                       attached to the closed question (q19/q20 2024-06:
+    #   q20's number prints vertically-centred on a later line, so its first
+    #   M1 row precedes the opener — v0 leaked it backward into q19)
+    staged = []         # points awaiting their question
+    bracket_open = False   # round 2: a Notes-band big-bracket block is open
 
     def ensure_question(qn, page):
         nonlocal cur, cur_part, cur_sub, cur_point, point_seq
@@ -207,13 +282,22 @@ def parse_pages(pages, qp_totals=None):
         open_cell = None
 
     def add_point(marks, text, page):
-        """Point contract mirrors parse_ms: label/text/notes/page singular."""
+        """Point contract mirrors parse_ms: label/text/notes/page singular.
+
+        Round 2 (staging law): while `pending` (previous question closed by
+        its Total, next opener not yet seen) the point is staged, not
+        attached to the closed question; the flush moves it into the opened
+        question. The merged-cell code ledger is untouched — the staged mark
+        still validates the cell it was printed under.
+        """
         nonlocal cur_point, point_seq
         point_seq += 1
         pt = {"label": "P%d" % point_seq, "part": cur_part, "sub": cur_sub,
               "marks": marks, "text": text.strip(), "notes": [], "page": page}
         cur_point = pt
-        if cur is not None:
+        if pending:
+            staged.append(pt)
+        elif cur is not None:
             cur["points"].append(pt)
             cur["pages"].add(page)
         buckets["point"] += 1
@@ -221,11 +305,43 @@ def parse_pages(pages, qp_totals=None):
             open_cell["codes"].append(marks)
         return pt
 
+    def drop_staged(page):
+        """Record staged points whose question never opened (honest, loud)."""
+        nonlocal staged
+        for pt in staged:
+            unclassified.append({
+                "page": pt["page"],
+                "text": "MS-STAGED-POINT-UNATTRIBUTED marks=%d: %s"
+                        % (pt["marks"], (pt["text"] or "(bare code)")[:80])})
+        staged = []
+
+    def flush_staged(page):
+        """Move staged points into the current (just opened) question.
+
+        Labels are reassigned sequentially from the freshly reset point_seq
+        so the product's P-numbers stay monotonic per question.
+        """
+        nonlocal staged, point_seq
+        if not staged:
+            return
+        if cur is None or cur["total_row"] is not None:
+            # no OPEN question for the staged section — honest record
+            drop_staged(page)
+            return
+        for pt in staged:
+            point_seq += 1
+            pt["label"] = "P%d" % point_seq
+            cur["points"].append(pt)
+            cur["pages"].add(pt["page"])
+            cur["pages"].add(page)
+        staged = []
+
     for p in pages:
         page = p["page"]
         pos = None
         x_mark = None
-        for raw in p.get("text", "").splitlines():
+        plines = p.get("text", "").splitlines()
+        for li, raw in enumerate(plines):
             line = raw.rstrip()
             if not line.strip():
                 continue
@@ -233,6 +349,26 @@ def parse_pages(pages, qp_totals=None):
             if st == "PMT":
                 buckets["furniture_pages"] += 1
                 continue
+            # round 2: big-bracket carry state — piece-transition model. A
+            # multi-row alternatives block prints LEFT-edge pieces (top,
+            # extenders, bottom) down the notes gutter; inline fraction pairs
+            # print balanced left+right on ONE line and never open a carry.
+            # The carry band starts at the Answer column so Working-column
+            # matrices never participate.
+            if pos is not None:
+                band_lo = pos["Answer"]
+                bl = sum(1 for i, ch in enumerate(line)
+                         if ch in BRACKET_LEFT and i >= band_lo)
+                br = sum(1 for i, ch in enumerate(line)
+                         if ch in BRACKET_RIGHT and i >= band_lo)
+                if br:
+                    bracket_open = False        # right side closes/balances the line
+                elif bl:
+                    if any(ch in BRACKET_TOP for ch in line if ch in BRACKET_LEFT):
+                        bracket_open = True     # top piece without a close: block opens
+                    elif any(ch in BRACKET_BOTTOM for ch in line if ch in BRACKET_LEFT):
+                        bracket_open = False    # bottom piece: block ended
+                    # extender-only line: carry unchanged (spine row)
             h = _find_header(line)
             if h:
                 dialect, names, hpos = h
@@ -247,6 +383,12 @@ def parse_pages(pages, qp_totals=None):
                 continue
             tm = TOTAL_RE.match(st)
             if tm:
+                if pending and staged:
+                    # a whole section staged but its number never printed —
+                    # honest unattributed record, never silently attached
+                    close_cell(page)
+                    drop_staged(page)
+                    pending = False
                 if cur is not None:
                     close_cell(page)
                     cur["total_row"] = int(tm.group(1))
@@ -259,6 +401,11 @@ def parse_pages(pages, qp_totals=None):
                             "page": page,
                             "text": "MS-QUESTION-MARKS-MISMATCH q=%d total=%d sum=%d"
                                     % (cur["number"], cur["total_row"], s)})
+                    # round 2: arm staging — code rows before the next opener
+                    # belong to the NEXT question (number-absent opener), not
+                    # to the question this Total just closed
+                    pending = True
+                    staged = []
                 continue
             if pos is None:
                 if dialect_b_pages and dialect_b_pages[-1] == page:
@@ -287,22 +434,40 @@ def parse_pages(pages, qp_totals=None):
                 if expected is None or cand == expected:
                     qn = cand
                     labels = om.group("labels")
+                elif (cur is not None and cand == cur["number"]
+                      and cur["total_row"] is None
+                      and _alt_ahead(plines, li, pos)):
+                    # round 2 (L4): re-print of the OPEN question = Alt
+                    # section restart — its first mark row carries the code
+                    # before the 'Alt' token prints (q18 2024-06)
+                    alt_route = True
             elif po and in_col0:
                 labels = po.group("labels")
             elif glued and in_col0:
                 cand = int(glued.group(1))
                 if expected is None or cand == expected:
                     qn = cand
-                    labels = line.strip()[len(glued.group(1)):]
+                    labels = line.strip()[len(glued.group(1)):]  # noqa: E501
+                elif (cur is not None and cand == cur["number"]
+                      and cur["total_row"] is None
+                      and _alt_ahead(plines, li, pos)):
+                    alt_route = True
             elif in_col0 and re.match(r"^\s*\d{1,2}\s*$", line):
                 cand = int(st)
                 if expected is None or cand == expected:
                     qn = cand  # bare question number (vertical centering)
+                elif (cur is not None and cand == cur["number"]
+                      and cur["total_row"] is None
+                      and _alt_ahead(plines, li, pos)):
+                    alt_route = True
             if qn is not None:
                 if cur is not None and qn != cur["number"]:
                     close_cell(page)
                 alt_route = False   # a new question leaves any Alt block
                 ensure_question(qn, page)
+                pending = False
+                if cur is not None and cur["number"] == qn:
+                    flush_staged(page)
             if labels:
                 part, sub = _labels_of(labels if isinstance(labels, str) else "")
                 if part is not None and (cur_part != part or sub != cur_sub):
@@ -327,6 +492,47 @@ def parse_pages(pages, qp_totals=None):
                 # ('(B1 for an expression ...)'), not a scored point
                 before = scan[:m_.start()].rstrip()
                 if before.endswith("("):
+                    continue
+                # round 2 (L1): big-bracket partial-award block — codes whose
+                # immediately-preceding glyph is a LEFT-family paren piece
+                # (top/extender/bottom) sit inside an alternatives block that
+                # annotates the route above them as its partial award; same
+                # non-additive semantics as the proven '(B1 ...)' ASCII rule.
+                # No band gate needed here: Working-column matrices CLOSE with
+                # RIGHT-family pieces ('\uf0e6 1 -6 \uf0f6' — F6 never fires),
+                # and only a LEFT piece can sit directly left of a code.
+                in_bracket = False
+                stripped_gap = len(scan[:m_.start()]) - len(before)
+                gx = m_.start() - stripped_gap - 1
+                if before and before[-1] in BRACKET_LEFT:
+                    in_bracket = True   # left piece immediately left of the code
+                elif bracket_open:
+                    # carry: spine-row codes with text between the spine and
+                    # the code; band-gated right of the Answer column so
+                    # Working-column math never participates
+                    band_lo = pos["Answer"]
+                    closed_before = any(
+                        (ch in BRACKET_RIGHT or ch in BRACKET_BOTTOM)
+                        for i, ch in enumerate(scan[:m_.start()])
+                        if ch in BRACKET_FAMILY and i >= band_lo)
+                    if not closed_before:
+                        in_bracket = True   # block carried open from an earlier line
+                if in_bracket:
+                    unclassified.append({
+                        "page": page,
+                        "text": "MS-BRACKET-PARTIAL-CODE-SKIPPED q=%d: %s"
+                                % (cur["number"] if cur else -1, st[:90])})
+                    continue
+                # round 2 (L2): ordinal cross-reference — a code whose
+                # preceding token is an ordinal is a REFERENCE to another
+                # mark ('May be implied by award of the 4th M1'), never an
+                # award of its own
+                toks = before.split()
+                if toks and XREF_PREV_RE.match(toks[-1]):
+                    unclassified.append({
+                        "page": page,
+                        "text": "MS-CODE-XREF-SKIPPED q=%d: %s"
+                                % (cur["number"] if cur else -1, st[:90])})
                     continue
                 codes.append(m_)
             # dep-reference law: a code whose gap from the previous kept code

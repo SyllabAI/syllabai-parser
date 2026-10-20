@@ -100,20 +100,29 @@ def test_sc_codes_are_not_scored():
 
 
 def test_alt_route_codes_are_reprints():
-    """The 'Alt' block repeats the main route's codes; never re-scored (q18)."""
+    """The 'Alt' block repeats the main route's codes; never re-scored (q18).
+
+    Round 2, order-faithful to page 17 of 4MB1-01 2024-06: the Alt section's
+    FIRST mark row prints its code on the row's first line while the 'Alt'
+    token prints on the vertically-centred line below — the section-restart
+    lookahead (L4) must arm the Alt route BEFORE that row's codes are seen.
+    The main route (M1 + M1dep + M1 + A1) closes at 4; nothing from the Alt
+    section adds to it.
+    """
     r = m.parse_pages(pages(
         HDR + "\n"
         " 18               x - 54                            4     M1 setting up a correct equation in x\n"
         "                                                            M1 dep on M1 for a correct method to collect the x\n"
+        "                                                            M1 for correct substitution to find n\n"
         "                                                            A1\n"
-        "                                                                Total 4 marks\n"
-        + HDR + "\n"
         " 18                  90 ( 2n - 4 )                  4     M1 for forming a pair of simultaneous equations in x\n"
         "Alt              2x =\n"
         "                                                            M1 for a correct method to substitute to eliminate one\n"
         "                                                                Total 4 marks\n"))
     q = q_by_num(r, 18)
+    assert q["total_row"] == 4
     assert sum(p["marks"] for p in q["points"]) == 4
+    assert all("simultaneous" not in p["text"] for p in q["points"])
     assert any("ALT-ROUTE-CODE-SKIPPED" in u.get("text", "") for u in r["unclassified"])
 
 
