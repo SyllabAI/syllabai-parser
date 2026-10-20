@@ -238,6 +238,8 @@ def parse_pages(pages, qp_totals=None):
     alt_route = False   # inside an 'Alt' alternative-method block: its codes
     #                       are reprints of the main route — never re-scored
     point_seq = 0
+    pos = None          # round 2b: header column geometry persists across
+    x_mark = None       # pages (headerless grid continuation pages)
     # round 2 state:
     pending = False     # a Total closed the previous question; code rows
     #                       arriving before the next opener are STAGED, never
@@ -338,8 +340,6 @@ def parse_pages(pages, qp_totals=None):
 
     for p in pages:
         page = p["page"]
-        pos = None
-        x_mark = None
         plines = p.get("text", "").splitlines()
         for li, raw in enumerate(plines):
             line = raw.rstrip()
@@ -381,6 +381,11 @@ def parse_pages(pages, qp_totals=None):
                 # a repeated header re-opens a grid section; the Alt flag is
                 # set by the 'Alt' row INSIDE the section, so keep it here
                 continue
+            # round 2b: pages without a repeated header keep the previous
+            # page's column geometry — 2020-06-era MSs continue the grid on
+            # headerless pages (proven: 2020-06 4MB1-01 p7 has no header and
+            # v0 dropped every row on it); the header pos/x_mark therefore
+            # persist across pages by design
             tm = TOTAL_RE.match(st)
             if tm:
                 if pending and staged:
