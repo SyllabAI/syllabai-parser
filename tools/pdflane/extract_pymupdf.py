@@ -16,6 +16,8 @@ import re
 import fitz
 
 TOTAL_ROW_RE = re.compile(r"^\s*Total\s+(\d{1,3})\s+marks?\s*$", re.I)
+QP_TOTAL_FOR_Q_RE = re.compile(
+    r"Total\s+for\s+Question\s*\d{1,2}\s*(?:=|is)\s*\d{1,3}\s*marks?", re.I)
 
 
 def page_to_md(page, doc, assets_dir, prefix, asset_counter):
@@ -61,6 +63,14 @@ def page_to_md(page, doc, assets_dir, prefix, asset_counter):
                 m = TOTAL_ROW_RE.match(s.strip())
                 if m:  # ---- total-row span patch (F2) ----
                     items.append((bb[1], "total-row", [s.rstrip()], bb))
+                elif QP_TOTAL_FOR_Q_RE.search(s):
+                    # ---- QP-footer span patch (OCR lane, 2019-06 4MB1/02R):
+                    # a printed "(Total for Question N is M marks)" row is
+                    # QUESTION furniture — table detectors sweep it into a
+                    # pseudo-table region on scanned/OCR-layer papers and the
+                    # covered-line law above would silently eat the census.
+                    # Mirrors the F2 patch: re-admit at the true y-position.
+                    items.append((bb[1], "text-line", [s.rstrip()], bb))
                 # else: genuinely inside a ruled table -> handled by table emit
                 continue
             items.append((bb[1], "text-line", [s.rstrip()], bb))
