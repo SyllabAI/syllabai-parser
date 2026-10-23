@@ -100,7 +100,7 @@ The operator's "Go" (trace `1a169fc63e946759`) fired the Phase-B real write via 
 CI gate. This directory now carries the **frozen deterministic driver** mandated by
 spec §4.2 (no LLM, ADR-037):
 
-- **`phase_b_apply.py`** (sha256 `6b66bf2f0103ab5a1881a540187f102b172e9036772a04fa0e30b09ef0f37f72`,
+- **`phase_b_apply.py`** (sha256 `b0697399dbd733afcbc669cb768233e8c88aa1c12cf43c56a39b9809399512f0`,
   pinned in the v2 workflow) — modes `verify` (read-only pre-gates + in-memory
   simulation) and `apply` (ONE transaction per paper-batch with per-batch
   post-gates before commit; fail-closed restore from before-images on any gate

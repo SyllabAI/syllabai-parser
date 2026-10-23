@@ -566,64 +566,72 @@ def main():
                "operator_gate": "workflow_dispatch fire order = operator go (trace 1a169fc63e946759)",
                "disclosures": [], "batches": [], "restore": {"attempted": False}}
 
-    table = load_table(args.table)
-    normalize, seqs, singles = normalize_factory(table)
-    log(f"table pinned OK ({len(table['entries'])} entries + {len(table['sequence_rules'])} seq rules)")
-
-    db_url = args.db_url
-    if not db_url and args.db_file:
-        for line in open(args.db_file).read().strip().splitlines():
-            val = line.split("=", 1)[1] if "=" in line and "://" in line else line
-            if "://" in val:
-                db_url = val.strip()
-                break
-    if not db_url:
-        raise FailClosed("no --db-url / --db-file with a valid URL")
-
-    conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
     try:
-        snapshot, pre_gates, control = preflight(conn, table, args.v2_repo)
-        receipt["pre_gates"] = pre_gates
-        log(f"pre-write gates GREEN: scope {pre_gates['scope']['union_rows']} rows, C9 pin-exact, "
-            f"before-images pin-exact, control group identical")
+        table = load_table(args.table)
+        normalize, seqs, singles = normalize_factory(table)
+        log(f"table pinned OK ({len(table['entries'])} entries + {len(table['sequence_rules'])} seq rules)")
 
-        sim = simulate(snapshot, normalize, seqs, singles)
-        acc = assert_accounting(sim, table)
-        receipt["G-C_bounded_delta"] = acc
-        log(f"G-C simulation EXACT: {json.dumps(acc, sort_keys=True)}")
+        db_url = args.db_url
+        if not db_url and args.db_file:
+            for line in open(args.db_file).read().strip().splitlines():
+                line = line.strip()
+                if "://" not in line:
+                    continue
+                eq = line.find("=")
+                if eq != -1 and line.find("://") > eq:
+                    line = line[eq + 1:]  # KEY=URL form (env-style creds file)
+                db_url = line
+                break
+        if not db_url:
+            raise FailClosed("no --db-url / --db-file with a valid URL")
 
-        os.makedirs(args.artifacts_dir, exist_ok=True)
-        raw = serialize_snapshot(snapshot)
-        gz_path = os.path.join(args.artifacts_dir, "before-images.jsonl.gz")
-        with gzip.open(gz_path, "wb") as f:
-            f.write(raw)
-        receipt["before_images_artifact"] = {"path": os.path.basename(gz_path), "rows": len(snapshot),
-                                             "uncompressed_sha256": sha256_bytes(raw)}
+        conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
+        try:
+            snapshot, pre_gates, control = preflight(conn, table, args.v2_repo)
+            receipt["pre_gates"] = pre_gates
+            log(f"pre-write gates GREEN: scope {pre_gates['scope']['union_rows']} rows, C9 pin-exact, "
+                f"before-images pin-exact, control group identical")
 
-        if args.mode == "verify":
-            receipt["verdict"] = "GREEN-VERIFY (zero writes)"
-            receipt["sim_gates"] = {"G-B_violations": len(sim["gB_fail"]), "G-D_exceptions": len(sim["gD_fail"]),
-                                    "residual_pua": dict(sim["residual"]), "idempotence_failures": sim["idem_fail"]}
-        else:
-            apply_conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
+            sim = simulate(snapshot, normalize, seqs, singles)
+            acc = assert_accounting(sim, table)
+            receipt["G-C_bounded_delta"] = acc
+            log(f"G-C simulation EXACT: {json.dumps(acc, sort_keys=True)}")
+
+            os.makedirs(args.artifacts_dir, exist_ok=True)
+            raw = serialize_snapshot(snapshot)
+            gz_path = os.path.join(args.artifacts_dir, "before-images.jsonl.gz")
+            with gzip.open(gz_path, "wb") as f:
+                f.write(raw)
+            receipt["before_images_artifact"] = {"path": os.path.basename(gz_path), "rows": len(snapshot),
+                                                 "uncompressed_sha256": sha256_bytes(raw)}
+
+            if args.mode == "verify":
+                receipt["verdict"] = "GREEN-VERIFY (zero writes)"
+                receipt["sim_gates"] = {"G-B_violations": len(sim["gB_fail"]), "G-D_exceptions": len(sim["gD_fail"]),
+                                        "residual_pua": dict(sim["residual"]), "idempotence_failures": sim["idem_fail"]}
+            else:
+                apply_conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
+                try:
+                    n = apply_batches(apply_conn, snapshot, sim["expected"], receipt)
+                    log(f"APPLY complete: {n}/{len(receipt['batches'])} batches committed")
+                finally:
+                    apply_conn.close()
+                post_conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
+                try:
+                    receipt["post_gates"] = postgates(post_conn, snapshot, sim["expected"], control, receipt)
+                    log(f"post-write gates: {json.dumps(receipt['post_gates'], default=str)[:400]}...")
+                finally:
+                    post_conn.close()
+                receipt["verdict"] = "GREEN-APPLY"
+        finally:
             try:
-                n = apply_batches(apply_conn, snapshot, sim["expected"], receipt)
-                log(f"APPLY complete: {n}/{len(receipt['batches'])} batches committed")
-            finally:
-                apply_conn.close()
-            post_conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
-            try:
-                receipt["post_gates"] = postgates(post_conn, snapshot, sim["expected"], control, receipt)
-                log(f"post-write gates: {json.dumps(receipt['post_gates'], default=str)[:400]}...")
-            finally:
-                post_conn.close()
-            receipt["verdict"] = "GREEN-APPLY"
+                conn.close()
+            except Exception:
+                pass
     except FailClosed as e:
         receipt["verdict"] = "FAIL-CLOSED"
         receipt["failure"] = str(e)
         log(f"FAIL-CLOSED: {e}")
-    finally:
-        conn.close()
 
     with open(args.receipt, "w") as f:
         json.dump(receipt, f, ensure_ascii=False, indent=1, default=str)
