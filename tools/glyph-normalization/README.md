@@ -119,3 +119,52 @@ spec §4.2 (no LLM, ADR-037):
   job 2 prod-apply behind `needs: cow-proof` green. Patch law: `content` ← mapped
   text, `embed_rev` ← 1 stale marker (vectors KEPT serving; Phase D restores 2),
   `content_tsv` GENERATED ALWAYS auto-refresh asserted post-write.
+
+## run-007 — Phase-D re-embed fold-in driver of record (`phase_d_reembed.py`)
+
+The operator's "Proceed" (trace `1a16aeddae71c715`) fires the Phase-D re-embed
+fold-in per spec §6. This directory carries the deterministic driver + the
+rollback unit + the pre-flight census artifacts of record
+(`evidence/T-MIG-141/run007-phase-d/`):
+
+- **`phase_d_reembed.py`** — modes `verify` (READ ONLY: bank/selector pins, C9-D
+  recompute, born-clean subset law, per-row old-vector sha proof = bank-undrifted,
+  model law, tranche preview; ZERO writes, ZERO API calls) and `apply` (tranche =
+  first N rows of the live selector ordered `(document_row_id, id)` — the live DB
+  is the resume pointer; embed-validate-EVERYTHING-first via the frozen provider
+  shape verbatim (gemini-embedding-001, plain embedContent, outputDimensionality
+  768, no taskType); HARD drift gate = FULL per-tranche census of
+  cosine(old, new), median >= 0.85 else ZERO writes + exit 3 (operator ruling);
+  soft neighbor-Jaccard report (serving plane, <= 300 rows); ONE transaction of
+  guarded updates (`WHERE ... AND (embedding IS NULL OR embed_rev < 2)`,
+  rowcount must be 1); RPD-wall honesty (429 surviving the 4-retry chain ->
+  row + not-attempted remainder recorded to `skipped-rows.txt`, exit 0 after
+  writing what it embedded; non-rate failure -> exit 1 honest red).
+- **`phase_d_rollback.py`** — spec §9 restore unit: from the byte-pinned
+  before-images archive, restore `embedding`/`embedding_model`/`embedded_at` +
+  `embed_rev` <- 1 for any already-flipped rows (guarded `WHERE ... embed_rev = 2`).
+- **Pre-flight census pins (2026-10-24, t0_readonly, zero writes)** — bank
+  13,765 / embed_hist `{1: 2949, 2: 10816}` / no_vec 1,330 (run-006 pins
+  reproduced); selector 4,006 = stale_with_vec 2,676 + stale_no_vec 273 +
+  nullvec_rev2 1,057 across 333 documents (158 QP + 157 MS + 18 EXTERNAL_QUESTIONS);
+  C9-D selector id-set sha `eb43f28c…2720`; selector-ids anchor
+  `1a1bc83d…e201d` (4,006 ids, born-clean subset law); before-manifest sha
+  `a12b1d41…4ee8` (2,676 rows); before-images `.gz` sha `2e021ce6…b83c5`
+  (8,348,334 B, deterministic mtime=0), uncompressed sha `101a3450…cf558`;
+  every embedded row's model = `gemini-embedding-001` (2,676 stale + 12,435 bank).
+- **WHY A NEW DRIVER (disclosed deviation)**: the frozen T-MIG-133d port
+  `embedDocument()` selects `embedding IS NULL` only and never writes
+  `embed_rev` — it cannot re-embed the 2,676 stale-marked rows Phase D exists
+  to refresh. `mode=backfill-sharded` is superseded by T-MIG-138 run-003's
+  empirical finding (operator pool keys carry no legacy 1000-RPD embedding
+  class); the sharded RPD-wall LAW is preserved here in single-key sequential
+  form. Spec §6 "machinery" intent (same provider, same space, gated, honest)
+  is kept; the letter of the acceptance line is amended by this disclosure.
+- **Lane-side verify preflight (2026-10-24, zero writes, t0_readonly)**: ALL
+  GREEN — bank/selector pins EXACT, C9-D EXACT, 2,676/2,676 old-vector shas
+  match the manifest (bank undrifted), tranche preview 1,000 rows / 667
+  with old vector.
+- **Runner of record**: syllabai-v2 `.github/workflows/t-mig-141-phase-d.yml`
+  — job 1 verify (read-only pins), job 2 apply behind job-1 green. Secrets of
+  record: `T138_PROD_DATABASE_URL` (proven run-005) + `T138_GEMINI_KEY`
+  (operator pool key #1). Region law: apply runs in CI only.

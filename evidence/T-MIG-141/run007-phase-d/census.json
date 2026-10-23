@@ -1,0 +1,62 @@
+{
+ "bank_total": 13765,
+ "embed_hist": {
+  "1": 2949,
+  "2": 10816
+ },
+ "no_vec_bank": 1330,
+ "selector": {
+  "total": 4006,
+  "stale_with_vec": 2676,
+  "stale_no_vec": 273,
+  "nullvec_rev2": 1057,
+  "rev_null_rows": []
+ },
+ "c9d_selector_ids_sha256": "eb43f28cf405817db5bc14c7f744003130f7b9b9d1a116f2d45d0e37503a2720",
+ "stale_vec_models": {
+  "gemini-embedding-001": 2676
+ },
+ "bank_models": {
+  "gemini-embedding-001": 12435
+ },
+ "selector_documents": 333,
+ "doc_kind_hist": {
+  "EXTERNAL_QUESTIONS": 18,
+  "QUESTION_PAPER": 158,
+  "MARK_SCHEME": 157
+ },
+ "before_images_uncompressed_sha256": "101a3450dc409d8a20cee79e39ca40bb8375990855cedd7e92ac33a55fdcf558",
+ "before_images": {
+  "rows": 2676,
+  "gz_sha256": "2e021ce651e20b057289d79c10ebc54ac09c24ce0d8bf55ad8e24a11276b83c5",
+  "gz_bytes": 8348334,
+  "manifest_sha256": "a12b1d418af7c359fa084d458abe07a6b3309c65756980dbdbfb62a03f3b4ee8"
+ },
+ "tranche_plan": [
+  {
+   "start": 0,
+   "size": 1000,
+   "with_old_vec": 667
+  },
+  {
+   "start": 1000,
+   "size": 1000,
+   "with_old_vec": 609
+  },
+  {
+   "start": 2000,
+   "size": 1000,
+   "with_old_vec": 723
+  },
+  {
+   "start": 3000,
+   "size": 1000,
+   "with_old_vec": 675
+  },
+  {
+   "start": 4000,
+   "size": 6,
+   "with_old_vec": 2
+  }
+ ]
+}
