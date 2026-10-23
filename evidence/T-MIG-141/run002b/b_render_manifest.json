@@ -1,0 +1,1326 @@
+{
+ "jobs_total": 59,
+ "ok": 59,
+ "fails": [],
+ "manifest": {
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2014-01/4CH0-1C/ms.pdf|5|F067|primary": {
+   "paper": "4CH0/1C JAN 2014",
+   "why": "primary",
+   "page_rescan": [
+    7,
+    11,
+    14,
+    22
+   ],
+   "crops": [
+    {
+     "file": "UFF067_primaryscan_p7_0.png",
+     "words": "\uf067",
+     "box_pt": [
+      280,
+      88,
+      289,
+      99
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2014-06/4CH0-1C/ms.pdf|11|1067|run:1067": {
+   "paper": "4CH0/1C JUN 2014 MS",
+   "why": "run:1067",
+   "crops": [
+    {
+     "file": "UF1067_run_p11_0.png",
+     "words": "\uf067",
+     "box_pt": [
+      235,
+      251,
+      244,
+      263
+     ]
+    },
+    {
+     "file": "UF1067_run_p11_1.png",
+     "words": "\uf067",
+     "box_pt": [
+      514,
+      251,
+      524,
+      263
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2014-06/4CH0-1C/ms.pdf|11|F067|primary": {
+   "paper": "4CH0/1C JUN 2014",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF067_primary_p11_0.png",
+     "words": "\uf067",
+     "box_pt": [
+      235,
+      251,
+      244,
+      263
+     ]
+    },
+    {
+     "file": "UFF067_primary_p11_1.png",
+     "words": "\uf067",
+     "box_pt": [
+      514,
+      251,
+      524,
+      263
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2017-06/4CH0-1C/qp.pdf|22|F0B6|primary": {
+   "paper": "4CH0/1C JUN 2017",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF0B6_primary_p22_0.png",
+     "words": "\uf0b6",
+     "box_pt": [
+      277,
+      111,
+      289,
+      125
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2020-11/4CH1-2C/ms.pdf|11|F072|primary": {
+   "paper": "4CH1/2C NOV 2020",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF072_primary_p11_0.png",
+     "words": "\uf072H",
+     "box_pt": [
+      108,
+      652,
+      125,
+      664
+     ]
+    },
+    {
+     "file": "UFF072_primary_p11_1.png",
+     "words": "\uf072H",
+     "box_pt": [
+      480,
+      699,
+      496,
+      710
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2021-01/4CH1-2CR/ms.pdf|11|1072|run:1072": {
+   "paper": "4CH1/2CR JAN 2021 MS",
+   "why": "run:1072",
+   "crops": [
+    {
+     "file": "UF1072_run_p11_0.png",
+     "words": "\uf072H",
+     "box_pt": [
+      258,
+      568,
+      275,
+      580
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2021-01/4CH1-2CR/ms.pdf|11|F072|primary": {
+   "paper": "4CH1/2CR JAN 2021",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF072_primary_p11_0.png",
+     "words": "\uf072H",
+     "box_pt": [
+      258,
+      568,
+      275,
+      580
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2021-01/4CH1-2CR/qp.pdf|12|F097|primary": {
+   "paper": "4CH1/2CR JAN 2021",
+   "why": "primary",
+   "page_rescan": [
+    14
+   ],
+   "crops": [
+    {
+     "file": "UFF097_primaryscan_p14_0.png",
+     "words": "\t\t\uf097|\t\t\uf097",
+     "box_pt": [
+      71,
+      132,
+      114,
+      166
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-1H/qp.pdf|20|F8EB|brace:F8EB+F8F6": {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "why": "brace:F8EB+F8F6",
+   "page_rescan": [
+    21
+   ],
+   "crops": [
+    {
+     "file": "UFF8EB_bracescan_p21_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      184,
+      453,
+      189,
+      468
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-1H/qp.pdf|20|F8EC|brace:F8EC+F8F7": {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "why": "brace:F8EC+F8F7",
+   "page_rescan": [
+    21
+   ],
+   "crops": [
+    {
+     "file": "UFF8EC_bracescan_p21_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      184,
+      462,
+      189,
+      478
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-1H/qp.pdf|20|F8ED|brace:F8ED+F8F8": {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "why": "brace:F8ED+F8F8",
+   "page_rescan": [
+    21
+   ],
+   "crops": [
+    {
+     "file": "UFF8ED_bracescan_p21_0.png",
+     "words": "\uf8ed",
+     "box_pt": [
+      184,
+      468,
+      189,
+      483
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-2H/qp.pdf|20|F8EB|brace:F8EB+F8F6": {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "why": "brace:F8EB+F8F6",
+   "page_rescan": [
+    21,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EB_bracescan_p21_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      382,
+      462,
+      387,
+      478
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-2H/qp.pdf|20|F8EC|brace:F8EC+F8F7": {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "why": "brace:F8EC+F8F7",
+   "page_rescan": [
+    21,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EC_bracescan_p21_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      382,
+      474,
+      387,
+      490
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-2H/qp.pdf|20|F8ED|brace:F8ED+F8F8": {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "why": "brace:F8ED+F8F8",
+   "page_rescan": [
+    21,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8ED_bracescan_p21_0.png",
+     "words": "\uf8ed",
+     "box_pt": [
+      382,
+      479,
+      387,
+      495
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-2H/qp.pdf|23|F8EB|brace:F8EB+F8F6": {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "why": "brace:F8EB+F8F6",
+   "page_rescan": [
+    21,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EB_bracescan_p21_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      382,
+      462,
+      387,
+      478
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-01/4MA1-2H/qp.pdf|23|F8EC|brace:F8EC+F8ED+F8F7+F8F8": {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "why": "brace:F8EC+F8ED+F8F7+F8F8",
+   "page_rescan": [
+    21,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EC_bracescan_p21_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      382,
+      474,
+      387,
+      490
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-06/4MA1-1HR/qp.pdf|15|F061|primary": {
+   "paper": "4MA1/1HR JUN 2020",
+   "why": "primary",
+   "page_rescan": [
+    16
+   ],
+   "crops": [
+    {
+     "file": "UFF061_primaryscan_p16_0.png",
+     "words": "\uf061|\uf061",
+     "box_pt": [
+      305,
+      116,
+      319,
+      159
+     ]
+    },
+    {
+     "file": "UFF061_primaryscan_p16_1.png",
+     "words": "\uf061",
+     "box_pt": [
+      350,
+      539,
+      362,
+      555
+     ]
+    },
+    {
+     "file": "UFF061_primaryscan_p16_2.png",
+     "words": "\uf061",
+     "box_pt": [
+      452,
+      757,
+      464,
+      773
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-06/4MA1-2HR/ms.pdf|21|F06C|primary": {
+   "paper": "4MA1/2HR JUN 2020",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF06C_primary_p21_0.png",
+     "words": "\uf06c|\uf06c|\uf06c",
+     "box_pt": [
+      234,
+      272,
+      259,
+      339
+     ]
+    },
+    {
+     "file": "UFF06C_primary_p21_1.png",
+     "words": "\uf06c|\uf06c|\uf06c",
+     "box_pt": [
+      314,
+      272,
+      341,
+      339
+     ]
+    },
+    {
+     "file": "UFF06C_primary_p21_2.png",
+     "words": "\uf06c|\uf06c|\uf06c",
+     "box_pt": [
+      241,
+      349,
+      273,
+      416
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-11/4MA1-2FR/ms.pdf|13|F026|primary": {
+   "paper": "4MA1/2FR NOV 2020",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF026_primary_p13_0.png",
+     "words": "\uf026",
+     "box_pt": [
+      656,
+      87,
+      660,
+      99
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-11/4MA1-2H/qp.pdf|13|F8EB|brace:F8EB+F8F6": {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "why": "brace:F8EB+F8F6",
+   "page_rescan": [
+    14
+   ],
+   "crops": [
+    {
+     "file": "UFF8EB_bracescan_p14_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      151,
+      174,
+      155,
+      190
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-11/4MA1-2H/qp.pdf|13|F8EC|brace:F8EC+F8F7": {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "why": "brace:F8EC+F8F7",
+   "page_rescan": [
+    14
+   ],
+   "crops": [
+    {
+     "file": "UFF8EC_bracescan_p14_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      151,
+      184,
+      155,
+      199
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-11/4MA1-2H/qp.pdf|13|F8ED|brace:F8ED+F8F8": {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "why": "brace:F8ED+F8F8",
+   "page_rescan": [
+    14
+   ],
+   "crops": [
+    {
+     "file": "UFF8ED_bracescan_p14_0.png",
+     "words": "\uf8ed",
+     "box_pt": [
+      151,
+      189,
+      155,
+      204
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2021-06/4MA1-2H/qp.pdf|15|F8EB|brace:F8EB+F8F6": {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "why": "brace:F8EB+F8F6",
+   "page_rescan": [
+    16,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EB_bracescan_p16_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      162,
+      99,
+      167,
+      115
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2021-06/4MA1-2H/qp.pdf|15|F8EC|brace:F8EC": {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "why": "brace:F8EC",
+   "page_rescan": [
+    16,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8EC_bracescan_p16_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      162,
+      112,
+      167,
+      128
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2021-06/4MA1-2H/qp.pdf|15|F8ED|brace:F8ED+F8F7+F8F8": {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "why": "brace:F8ED+F8F7+F8F8",
+   "page_rescan": [
+    16,
+    24
+   ],
+   "crops": [
+    {
+     "file": "UFF8ED_bracescan_p16_0.png",
+     "words": "\uf8ed",
+     "box_pt": [
+      162,
+      117,
+      167,
+      133
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-01/4MA1-1HR/ms.pdf|19|F06C|primary": {
+   "paper": "4MA1/1HR JAN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF06C_primary_p19_0.png",
+     "words": "\uf06c|\uf06c",
+     "box_pt": [
+      130,
+      49,
+      154,
+      84
+     ]
+    },
+    {
+     "file": "UFF06C_primary_p19_1.png",
+     "words": "\uf06c",
+     "box_pt": [
+      182,
+      49,
+      188,
+      64
+     ]
+    },
+    {
+     "file": "UFF06C_primary_p19_2.png",
+     "words": "\uf06c|\uf06c|\uf06c",
+     "box_pt": [
+      205,
+      49,
+      239,
+      114
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-01/4MA1-2H/ms.pdf|6|F02F|primary": {
+   "paper": "4MA1/2H JAN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF02F_primary_p6_0.png",
+     "words": "\uf02f",
+     "box_pt": [
+      185,
+      223,
+      188,
+      237
+     ]
+    },
+    {
+     "file": "UFF02F_primary_p6_1.png",
+     "words": "\uf02f|\uf02f",
+     "box_pt": [
+      213,
+      243,
+      222,
+      257
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-1H/qp.pdf|14|F061|primary": {
+   "paper": "4MA1/1H JUN 2022",
+   "why": "primary",
+   "page_rescan": [
+    15
+   ],
+   "crops": [
+    {
+     "file": "UFF061_primaryscan_p15_0.png",
+     "words": "\uf061",
+     "box_pt": [
+      288,
+      126,
+      300,
+      138
+     ]
+    },
+    {
+     "file": "UFF061_primaryscan_p15_1.png",
+     "words": "\uf061",
+     "box_pt": [
+      359,
+      284,
+      371,
+      297
+     ]
+    },
+    {
+     "file": "UFF061_primaryscan_p15_2.png",
+     "words": "\uf061",
+     "box_pt": [
+      453,
+      593,
+      465,
+      605
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8EB|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8EB_primary_p3_0.png",
+     "words": "\uf8eb",
+     "box_pt": [
+      365,
+      561,
+      370,
+      577
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8EC|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8EC_primary_p3_0.png",
+     "words": "\uf8ec",
+     "box_pt": [
+      365,
+      573,
+      370,
+      589
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8ED|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8ED_primary_p3_0.png",
+     "words": "\uf8ed",
+     "box_pt": [
+      365,
+      579,
+      370,
+      594
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8F6|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F6_primary_p3_0.png",
+     "words": "\uf8f6",
+     "box_pt": [
+      384,
+      561,
+      389,
+      577
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8F7|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F7_primary_p3_0.png",
+     "words": "\uf8f7",
+     "box_pt": [
+      384,
+      573,
+      389,
+      589
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf|3|F8F8|primary": {
+   "paper": "4MA1/2HR JUN 2022",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F8_primary_p3_0.png",
+     "words": "\uf8f8",
+     "box_pt": [
+      384,
+      579,
+      389,
+      594
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8EB|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8EB_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8EC|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8EC_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8ED|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8ED_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8F6|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F6_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8F7|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F7_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf|3|F8F8|primary": {
+   "paper": "4MA1/2HR JAN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF8F8_primary_p3_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-06/4MA1-1F/ms.pdf|12|F041|primary": {
+   "paper": "4MA1/1F JUN 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF041_primary_p12_0.png",
+     "words": "\uf041",
+     "box_pt": [
+      299,
+      84,
+      307,
+      98
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-06/4MA1-1HR/qp.pdf|16|1026|run:1026": {
+   "paper": "4MA1/1HR JUN 2023 QP",
+   "why": "run:1026",
+   "crops": [
+    {
+     "file": "UF1026_run_p16_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      545,
+      847,
+      581,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-11/4MA1-1H/qp.pdf|27|F06F|primary": {
+   "paper": "4MA1/1H NOV 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF06F_primary_p27_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-11/4MA1-2H/ms.pdf|27|1075|run:1075,1075,1075,1072": {
+   "paper": "4MA1/2H NOV 2023 MS",
+   "why": "run:1075,1075,1075,1072",
+   "crops": [
+    {
+     "file": "UF1075_run_p27_0.png",
+     "words": "\uf075\uf075\uf075\uf072|\uf03d|\uf06c|\uf075\uf075\uf075\uf072|\uf03d|\uf075\uf075\uf075\uf072|\uf03d|\uf06d",
+     "box_pt": [
+      145,
+      128,
+      191,
+      207
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_1.png",
+     "words": "\uf075\uf075\uf075\uf072|\uf03d|\uf02d",
+     "box_pt": [
+      261,
+      128,
+      296,
+      153
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_2.png",
+     "words": "\uf02d|\uf02d|\uf02d",
+     "box_pt": [
+      187,
+      137,
+      217,
+      172
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-11/4MA1-2H/ms.pdf|27|F075|primary": {
+   "paper": "4MA1/2H NOV 2023",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF075_primary_p27_0.png",
+     "words": "\uf075\uf075\uf075\uf072|\uf075\uf075\uf075\uf072",
+     "box_pt": [
+      145,
+      128,
+      171,
+      161
+     ]
+    },
+    {
+     "file": "UFF075_primary_p27_1.png",
+     "words": "\uf075\uf075\uf075\uf072",
+     "box_pt": [
+      261,
+      128,
+      277,
+      141
+     ]
+    },
+    {
+     "file": "UFF075_primary_p27_2.png",
+     "words": "\uf075\uf075\uf075\uf072|\uf075\uf075\uf075\uf072",
+     "box_pt": [
+      145,
+      181,
+      171,
+      215
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2024-11/4MA1-2H/ms.pdf|5|F02F|primary": {
+   "paper": "4MA1/2H NOV 2024",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF02F_primary_p5_0.png",
+     "words": "\uf02f",
+     "box_pt": [
+      155,
+      195,
+      158,
+      210
+     ]
+    },
+    {
+     "file": "UFF02F_primary_p5_1.png",
+     "words": "\uf02f",
+     "box_pt": [
+      163,
+      248,
+      166,
+      262
+     ]
+    },
+    {
+     "file": "UFF02F_primary_p5_2.png",
+     "words": "\uf02f",
+     "box_pt": [
+      154,
+      368,
+      158,
+      383
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-1H/ms.pdf|27|1075|run:1075,1075,1075,1075": {
+   "paper": "4MA1/1H NOV 2025 MS",
+   "why": "run:1075,1075,1075,1075",
+   "crops": [
+    {
+     "file": "UF1075_run_p27_0.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      548,
+      128,
+      573,
+      141
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_1.png",
+     "words": "\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      538,
+      195,
+      586,
+      241
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_2.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      709,
+      195,
+      732,
+      208
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-1H/ms.pdf|27|1075|run:1075,1075,1075,1075,1075,1075,1075,1075": {
+   "paper": "4MA1/1H NOV 2025 MS",
+   "why": "run:1075,1075,1075,1075,1075,1075,1075,1075",
+   "crops": [
+    {
+     "file": "UF1075_run_p27_0.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      548,
+      128,
+      573,
+      141
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_1.png",
+     "words": "\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      538,
+      195,
+      586,
+      241
+     ]
+    },
+    {
+     "file": "UF1075_run_p27_2.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      709,
+      195,
+      732,
+      208
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-1H/ms.pdf|27|F075|primary": {
+   "paper": "4MA1/1H NOV 2025",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF075_primary_p27_0.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      548,
+      128,
+      573,
+      141
+     ]
+    },
+    {
+     "file": "UFF075_primary_p27_1.png",
+     "words": "\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075|\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      538,
+      195,
+      586,
+      241
+     ]
+    },
+    {
+     "file": "UFF075_primary_p27_2.png",
+     "words": "\uf075\uf075\uf075\uf075",
+     "box_pt": [
+      709,
+      195,
+      732,
+      208
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-2F/ms.pdf|17|F0BC|primary": {
+   "paper": "4MA1/2F NOV 2025",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF0BC_primary_p17_0.png",
+     "words": "\uf0bc",
+     "box_pt": [
+      326,
+      135,
+      338,
+      148
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-2H/ms.pdf|20|1026|run:1026,1026": {
+   "paper": "4MA1/2H NOV 2025 MS",
+   "why": "run:1026,1026",
+   "crops": [
+    {
+     "file": "UF1026_run_p20_0.png",
+     "words": "\uf0b4",
+     "box_pt": [
+      235,
+      510,
+      242,
+      524
+     ]
+    },
+    {
+     "file": "UF1026_run_p20_1.png",
+     "words": "\uf026|\uf026",
+     "box_pt": [
+      525,
+      208,
+      537,
+      220
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-2H/ms.pdf|9|F0BC|primary": {
+   "paper": "4MA1/2H NOV 2025",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF0BC_primary_p9_0.png",
+     "words": "\uf0bc",
+     "box_pt": [
+      326,
+      138,
+      338,
+      152
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-1HR/ms.pdf|30|1026|run:1026,1026,1026,1026": {
+   "paper": "4MA1/1HR JUN 2026 MS",
+   "why": "run:1026,1026,1026,1026",
+   "crops": [
+    {
+     "file": "UF1026_run_p30_0.png",
+     "words": "\uf026\uf026\uf026\uf026|\uf06c|\uf026\uf026\uf026\uf026|\uf026\uf026\uf026\uf026",
+     "box_pt": [
+      168,
+      131,
+      202,
+      189
+     ]
+    },
+    {
+     "file": "UF1026_run_p30_1.png",
+     "words": "\uf026\uf026\uf026\uf026",
+     "box_pt": [
+      345,
+      154,
+      371,
+      166
+     ]
+    },
+    {
+     "file": "UF1026_run_p30_2.png",
+     "words": "\uf06d|\uf026\uf026\uf026\uf026",
+     "box_pt": [
+      189,
+      161,
+      227,
+      212
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-1HR/ms.pdf|6|F0D7|primary": {
+   "paper": "4MA1/1HR JUN 2026",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF0D7_primary_p6_0.png",
+     "words": "\uf0d7|\uf0d7",
+     "box_pt": [
+      682,
+      470,
+      703,
+      485
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-1HR/ms.pdf|7|F026|primary": {
+   "paper": "4MA1/1HR JUN 2026",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF026_primary_p7_0.png",
+     "words": "\uf026",
+     "box_pt": [
+      743,
+      260,
+      749,
+      273
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/ms.pdf|16|1067|run:1067,1067": {
+   "paper": "4MA1/2H JUN 2026 MS",
+   "why": "run:1067,1067",
+   "crops": [
+    {
+     "file": "UF1067_run_p16_0.png",
+     "words": "\uf067\uf067",
+     "box_pt": [
+      536,
+      205,
+      544,
+      212
+     ]
+    },
+    {
+     "file": "UF1067_run_p16_1.png",
+     "words": "\uf067\uf067",
+     "box_pt": [
+      131,
+      240,
+      138,
+      247
+     ]
+    },
+    {
+     "file": "UF1067_run_p16_2.png",
+     "words": "\uf0b4",
+     "box_pt": [
+      161,
+      492,
+      168,
+      506
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/ms.pdf|21|1067|run:1067,1067,1067,1067": {
+   "paper": "4MA1/2H JUN 2026 MS",
+   "why": "run:1067,1067,1067,1067",
+   "crops": [
+    {
+     "file": "UF1067_run_p21_0.png",
+     "words": "\uf067\uf067\uf067\uf067|\uf067\uf067\uf067\uf067|\uf0e6|\uf0e7|\uf0e8",
+     "box_pt": [
+      93,
+      73,
+      135,
+      123
+     ]
+    },
+    {
+     "file": "UF1067_run_p21_1.png",
+     "words": "\uf0f6|\uf0e6|\uf0f6|\uf0f7|\uf0e7|\uf0f7|\uf0f8|\uf0e8|\uf0f8|\uf0e6|\uf0f6|\uf0e6|\uf0e7|\uf0f7|\uf0e7|\uf0e8|\uf0f8|\uf0e8",
+     "box_pt": [
+      146,
+      73,
+      184,
+      145
+     ]
+    },
+    {
+     "file": "UF1067_run_p21_2.png",
+     "words": "\uf0e6|\uf0e6|\uf0b1|\uf0e7|\uf0e7|\uf0e8|\uf0e8|\uf0b1|\uf0f6|\uf0e6|\uf0f7|\uf0e7|\uf0f8|\uf0e8",
+     "box_pt": [
+      195,
+      72,
+      226,
+      146
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/ms.pdf|5|F0D7|primary": {
+   "paper": "4MA1/2H JUN 2026",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF0D7_primary_p5_0.png",
+     "words": "\uf0d7|\uf0d7",
+     "box_pt": [
+      712,
+      473,
+      731,
+      488
+     ]
+    }
+   ]
+  },
+  "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/qp.pdf|15|F06F|primary": {
+   "paper": "4MA1/2H JUN 2026",
+   "why": "primary",
+   "crops": [
+    {
+     "file": "UFF06F_primary_p15_0.png",
+     "words": "\uf0a2|\uf0a2|\uf0a2|\uf0a2",
+     "box_pt": [
+      71,
+      847,
+      106,
+      858
+     ]
+    }
+   ]
+  }
+ }
+}

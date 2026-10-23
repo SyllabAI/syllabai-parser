@@ -1,0 +1,386 @@
+{
+ "f02f_geometry": [
+  {
+   "paper": "4MA1/2F JAN 2022",
+   "page": 13,
+   "line": [
+    "or",
+    "27",
+    "\\uf02f",
+    "4",
+    "4",
+    "3",
+    "\\uf0b4",
+    "18",
+    "18"
+   ],
+   "prev": "27",
+   "next": "4",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": 1.01,
+   "h_pt": 14.4,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2F JAN 2022",
+   "page": 13,
+   "line": [
+    "or",
+    "189",
+    "27",
+    "4",
+    "\\uf0b4",
+    "72",
+    "18",
+    "\\uf02f\\uf02f",
+    "7"
+   ],
+   "prev": "18",
+   "next": "7",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": 1.07,
+   "h_pt": 14.5,
+   "w_pt": 9.3
+  },
+  {
+   "paper": "4MA1/2H JAN 2022",
+   "page": 6,
+   "line": [
+    "or",
+    "2",
+    "\\uf02f",
+    "4",
+    "7",
+    "3",
+    "\\uf0b4",
+    "18",
+    "7"
+   ],
+   "prev": "2",
+   "next": "4",
+   "raise_vs_prev": 0.03,
+   "raise_vs_next": 0.85,
+   "h_pt": 14.1,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2H JAN 2022",
+   "page": 6,
+   "line": [
+    "or",
+    "189",
+    "4",
+    "\\uf0b4",
+    "72",
+    "1",
+    "\\uf02f",
+    "8",
+    "\\uf02f"
+   ],
+   "prev": "1",
+   "next": "8",
+   "raise_vs_prev": 0.03,
+   "raise_vs_next": 0.03,
+   "h_pt": 14.1,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2H JAN 2022",
+   "page": 6,
+   "line": [
+    "or",
+    "189",
+    "4",
+    "\\uf0b4",
+    "72",
+    "1",
+    "\\uf02f",
+    "8",
+    "\\uf02f"
+   ],
+   "prev": "8",
+   "next": "2",
+   "raise_vs_prev": 0.03,
+   "raise_vs_next": 0.08,
+   "h_pt": 14.1,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2H NOV 2023",
+   "page": 10,
+   "line": [
+    "or",
+    "24",
+    "\\uf02f\\uf02f",
+    "7",
+    "3",
+    "\\uf0b4",
+    "8",
+    "3",
+    "56"
+   ],
+   "prev": "24",
+   "next": "7",
+   "raise_vs_prev": -0.11,
+   "raise_vs_next": 1.1,
+   "h_pt": 15.1,
+   "w_pt": 9.5
+  },
+  {
+   "paper": "4MA1/2F JUN 2024",
+   "page": 20,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f",
+    "4"
+   ],
+   "prev": "18",
+   "next": "\\uf02f",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": -0.01,
+   "h_pt": 16.2,
+   "w_pt": 3.4
+  },
+  {
+   "paper": "4MA1/2F JUN 2024",
+   "page": 20,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "1",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f"
+   ],
+   "prev": "\\uf02f",
+   "next": "2",
+   "raise_vs_prev": 0.01,
+   "raise_vs_next": 0.06,
+   "h_pt": 16.2,
+   "w_pt": 3.4
+  },
+  {
+   "paper": "4MA1/2F JUN 2024",
+   "page": 20,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f",
+    "4"
+   ],
+   "prev": "18",
+   "next": "\\uf02f",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": -0.0,
+   "h_pt": 16.2,
+   "w_pt": 3.4
+  },
+  {
+   "paper": "4MA1/2H JUN 2024",
+   "page": 9,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f",
+    "4"
+   ],
+   "prev": "18",
+   "next": "\\uf02f",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": -0.01,
+   "h_pt": 16.1,
+   "w_pt": 3.4
+  },
+  {
+   "paper": "4MA1/2H JUN 2024",
+   "page": 9,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "1",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f"
+   ],
+   "prev": "\\uf02f",
+   "next": "2",
+   "raise_vs_prev": 0.01,
+   "raise_vs_next": 0.06,
+   "h_pt": 16.1,
+   "w_pt": 3.4
+  },
+  {
+   "paper": "4MA1/2H JUN 2024",
+   "page": 9,
+   "line": [
+    "18",
+    "\\uf02f",
+    "\\uf02f",
+    "2",
+    "\\uf0b4",
+    "28",
+    "\\uf02f",
+    "\\uf02f",
+    "4"
+   ],
+   "prev": "18",
+   "next": "\\uf02f",
+   "raise_vs_prev": 0.02,
+   "raise_vs_next": -0.0,
+   "h_pt": 16.1,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2H NOV 2024",
+   "page": 5,
+   "line": [
+    "12",
+    "7",
+    "\\uf02f",
+    "3",
+    "16",
+    "\\uf0b4",
+    "35",
+    "112",
+    "5"
+   ],
+   "prev": "7",
+   "next": "3",
+   "raise_vs_prev": 1.11,
+   "raise_vs_next": -0.33,
+   "h_pt": 15.1,
+   "w_pt": 3.5
+  },
+  {
+   "paper": "4MA1/2H NOV 2024",
+   "page": 5,
+   "line": [
+    "eg",
+    "7",
+    "\\uf02f",
+    "1",
+    "\\uf0b4",
+    "16",
+    "=",
+    "16",
+    "oe"
+   ],
+   "prev": "7",
+   "next": "1",
+   "raise_vs_prev": -0.35,
+   "raise_vs_next": -0.29,
+   "h_pt": 14.6,
+   "w_pt": 3.3
+  },
+  {
+   "paper": "4MA1/2H NOV 2024",
+   "page": 5,
+   "line": [
+    "12",
+    "\\uf02f",
+    "3",
+    "\\uf0b4",
+    "35",
+    "5",
+    "=",
+    "15",
+    "="
+   ],
+   "prev": "12",
+   "next": "3",
+   "raise_vs_prev": -0.37,
+   "raise_vs_next": -0.33,
+   "h_pt": 15.1,
+   "w_pt": 3.3
+  }
+ ],
+ "dot_order": {
+  "F026": {
+   "after_digit": 4,
+   "before_digit": 2,
+   "other": 89,
+   "examples": [
+    "                  \\uf026 \\uf0266 == 35\\n16 Use ",
+    "                  \\uf026 \\uf026 = 101\\n16 Use a",
+    "                \\uf026 \\uf026 = 101\\n16 Use alg",
+    "                  \\uf026\\uf026 and (1000y =) 7"
+   ]
+  },
+  "F0BC": {
+   "after_digit": 2,
+   "before_digit": 0,
+   "other": 0,
+   "examples": []
+  }
+ },
+ "f072": {
+  "in_run_4ma1": 15,
+  "total": 22
+ },
+ "f072_standalone": [
+  {
+   "paper": "4CH1/2CR",
+   "ctx": "ii), O=O bond energy and \\uf072H\\nnote: M2 correct calcu"
+  },
+  {
+   "paper": "4CH1/1CR",
+   "ctx": " alone\\nnote: to negative \\uf072H\\nnote: B is incorrect a"
+  },
+  {
+   "paper": "4CH1/1CR",
+   "ctx": "rrect temperature change/\\uf072T\\nallow: 2770, 2772\\nigno"
+  },
+  {
+   "paper": "4CH1/1CR",
+   "ctx": "itution into Q = m x c x \\uf072T\\nnote: M3 correct evalu"
+  },
+  {
+   "paper": "4CH1/1CR",
+   "ctx": "le calculation:\\nnote: M1 \\uf072T = (26.5 \\u2013 19.9) OR 6.6"
+  },
+  {
+   "paper": "4CH1/2C",
+   "ctx": "ks): Exp\\nallow: 3446 for \\uf072H\\nreject: arrow pointing"
+  },
+  {
+   "paper": "4CH1/2C",
+   "ctx": "note: downwards\\nnote: M4 \\uf072H correctly shown and la"
+  }
+ ],
+ "f06f_renders": [
+  {
+   "paper": "4MA1/2H JUN 2026",
+   "page": 16,
+   "file": "UFF06F_scan2_p16_0.png",
+   "words": "\\uf06f"
+  },
+  {
+   "paper": "4MA1/1H NOV 2023",
+   "page": 28,
+   "file": "UFF06F_scan2_p28_0.png",
+   "words": "\\uf06f"
+  }
+ ]
+}

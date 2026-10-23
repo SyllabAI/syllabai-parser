@@ -2,8 +2,8 @@
  "schema": "syllabai.glyph-normalization-table/1.0",
  "id": "table.v1",
  "task": "T-MIG-141",
- "generated_utc": "2026-10-23T12:40:00Z",
- "generated_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+ "generated_utc": "2026-10-24T00:00:00Z",
+ "generated_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6), run-002b (operator order trace 1a169bc10f7dc5c9)",
  "provenance": {
   "audit": "trace 1a16504bce9a8a0d (quality audit) -> SPEC-T-MIG-141 (v2 edd5a91d)",
   "donor_base": "syllabai-resources Official-ExamQuestion PUA_MAP @ 1ef9d5b8 (scripts/official_examq_extract.py sha b114f47a), imported per spec §3.1 precedence 1; donor repo NOT an edit surface",
@@ -15,9 +15,10 @@
    "sha256": "5c18c01e15e918cb36a8609a2c2ae6dbdb806ad3a5738822299c3c070c8c63d2",
    "source_receipt": "syllabai-v2 .syllabai/receipts/T-MIG-141/run-001-claim-census-reverify.json"
   },
-  "evidence_standard": "F48 transposed (SPEC-T-MIG-141 §3.3): rendered proof @150dpi + census match + canary pin + wrong-map disproof (disproof runs at Phase-B dry-run, run-003)"
+  "evidence_standard": "F48 transposed (SPEC-T-MIG-141 §3.3): rendered proof @150dpi + census match + canary pin + wrong-map disproof (disproof runs at Phase-B dry-run, run-003)",
+  "run002b": "pending-register resolution pass: 22 new single entries + 5 sequence rules; register 21 items -> 1 (F0CF fail-closed, no-ink glyph, 2 inst) + F0A6 closed-zero; V1 HOLE DISCLOSED: the v1 register listed 774 unmapped instances but the true unmapped set was 1,691 - run-002b's census-match law found 917 further instances in 5 CPs (F084 520 / F0B1 392 / F033 2 / F050 1 / F0CF 2) with NO entry AND NO register item; 915 now mapped, F0CF fail-closed; F084 spec-sqrt hypothesis OVERTURNED by evidence (<= proven, complementary pair with F085>=); post-state wired-bank PUA coverage: 25,397/25,399 mapped-or-dropped (99.99%), residual = U+F0CF x2 fail-closed; evidence: sheetB1-B5 + crops-run002b/ (~75 crops @150dpi) + phase-A crops for the hole CPs; oeq-donor corroboration: F0E0/F0E5/F8E7 confirmed, F8EE-F8F0/F8F9-F8FB upheld on donor+census+family-convergence (pieces edge-thin in renders, disclosed)"
  },
- "ordering_law": "single left-to-right pass; 1:1 substitution (all targets non-PUA); DROP class deletes the char (C7 exception, disclosed per-row); idempotence normalize(normalize(x))==normalize(x)",
+ "ordering_law": "single left-to-right pass; sequence_rules matched FIRST (longest sequence wins), then 1:1 single entries; all targets non-PUA; DROP class deletes the char (C7 exception, disclosed per-row); sequence collapse deletes (len-1) chars per run (C7 disclosed: 165 chars across 55 runs); idempotence normalize(normalize(x))==normalize(x)",
  "entries": [
   {
    "from": "U+F02D",
@@ -933,138 +934,623 @@
    },
    "canary": "C-Glyph-F8FB",
    "note": "Symbol big-bracket R-bot (OEQ 2CR render)"
+  },
+  {
+   "from": "U+F026",
+   "to": "U+0307",
+   "count": 95,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '8.49̇' dot-over-9; [4-dot run] over 0.7878 recurring digits",
+    "render_ref": "sheetB1_arrows.png + sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF026_primary_p7_0.png + UF026_run_p30_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F026",
+   "note": "recurring-decimal dot above (Symbol-law dot class); combining form attaches to the preceding digit where the text order carries it (e.g. '8.49'+dot -> 8.49̇); floating dot-words (the 4-dot runs over 0.7878-style digits) render as small marks equivalent to the print; 4/2/1-length dot runs map 1:1 (no collapse - dots are per-digit)"
+  },
+  {
+   "from": "U+F02F",
+   "to": "U+0338",
+   "count": 55,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '1̸2̸³/7̸¹' crossed digits in 12³/7¹ cancelling working",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF02F_primary_p5_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F02F",
+   "note": "cancel/out stroke over digits in fraction-cancelling working (combining long solidus overlay); bbox geometry: full line height 14-16pt x 3.3pt wide, baseline-aligned, box spans digit + written-above replacement; multi-digit cancellations yield stacked overlays on the last digit (cosmetic, disclosed)"
+  },
+  {
+   "from": "U+F041",
+   "to": "U+0041",
+   "count": 1,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): 'or A = 8'",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF041_primary_p12_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F041",
+   "note": "single instance; glyph prints as italic 'A' (Symbol 0x41 Alpha slot) in '2 : 5 = 8 : 20 or A = 8' (4MA1/1F JUN 2023 MS p12)"
+  },
+  {
+   "from": "U+F061",
+   "to": "U+21A6",
+   "count": 20,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): ':x ↦ ...' five renders",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF061_primaryscan_p15_0.png + UF061_primaryscan_p16_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F061",
+   "note": "function mapsto arrow: 'f:x ↦ 2/x', 'f : x ↦ 5x – 7' (4MA1 QP function-notation questions)"
+  },
+  {
+   "from": "U+F067",
+   "to": "U+2192",
+   "count": 41,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): 'Cl → N' (4CH0/1C JUN 2014 MS p11)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF067_primary_p11_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F067",
+   "note": "count 41 = census total: 9 standalone rightwards arrows in chemistry MS equations ('Cl → N', 'NaOH + HCl → NaCl + H2O') + 32 instances inside composed over-arrow runs consumed by sequence_rules SEQ-B4/SEQ-B5 before singles apply (ordering law); OEQ-donor agreement"
+  },
+  {
+   "from": "U+F06C",
+   "to": "U+03BB",
+   "count": 160,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): lambda in 7 vector-context renders",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF06C_primary_p19_0.png + UF06C_primary_p21_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F06C",
+   "note": "lowercase lambda (vector scalar parameter): 'λ(a + b)', '10λ = −2λ', '2k = 10λ' across 13 4MA1 vector MS chunks"
+  },
+  {
+   "from": "U+F06F",
+   "to": "U+00B0",
+   "count": 2,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): 'OC = 80°' + 'cos(x+q)°'",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF06F_scan2_p16_0.png + UF06F_scan2_p28_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F06F",
+   "note": "degree sign: 'angle AOC = 80°' (4MA1/2H JUN 2026 QP p15/16) and 'cos(x+q)° for 0 ≤ x ≤ ...' (4MA1/1H NOV 2023 QP p27/28)"
+  },
+  {
+   "from": "U+F072",
+   "to": "U+2206",
+   "count": 22,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '∆H' (4CH1/2CR) + arrow-head run crop (4MA1)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF072_primary_p11_0.png + UF072_run_p11_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F072",
+   "note": "count 22 = census total: 7 STANDALONE instances = increment/triangle delta in 4CH1 chemistry ('Q = m x c x ∆T', '∆H', '∆T = (26.5 – 19.9)') - all 7 standalone chunks are 4CH1 (asserted); 15 run instances consumed by SEQ-A1 first. OEQ-Delta CONFLICT RESOLVED: OEQ maps F072->Delta (their Wingdings3 font); OUR 4MA1 font prints the over-arrow HEAD at this slot - those 15 instances are consumed by SEQ-A1 BEFORE singles apply (ordering law), so the single-char map only ever touches the chemistry contexts; our-render evidence wins for our corpus"
+  },
+  {
+   "from": "U+F0B6",
+   "to": "U+21CC",
+   "count": 1,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '⇌' in equilibrium equation",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF0B6_primary_p22_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F0B6",
+   "note": "equilibrium arrow: 'H2(g) + I2(g) ⇌ 2HI(g)' (4CH0/1C JUN 2017 QP p22); converges with F083->U+21CC (37 inst)"
+  },
+  {
+   "from": "U+F0BC",
+   "to": "U+2026",
+   "count": 2,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '333…)' trailing dots",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF0BC_primary_p9_0.png + UF0BC_primary_p17_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F0BC",
+   "note": "recurring-decimal trailing dots ('(0.333…)' rendered '333....)'), baseline ellipsis class; F0BC follows its base digit directly (order-asserted 2/2)"
+  },
+  {
+   "from": "U+F0D7",
+   "to": "U+00B7",
+   "count": 8,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '2²·3²·5³'",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF0D7_primary_p5_0.png + UF0D7_primary_p6_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F0D7",
+   "note": "middle dot between prime factors: '2²·3²·5³', '2³·³²·7' (4MA1 JUN 2026 MS 'may be in any order' lines); U+22C5 dot-operator variant noted, U+00B7 chosen (typographic + universal rendering)"
+  },
+  {
+   "from": "U+F097",
+   "to": "U+2022",
+   "count": 2,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '• without/• with a catalyst' bullets",
+    "render_ref": "sheetB3_stragglers.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF097_primaryscan_p14_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F097",
+   "note": "list bullet before reaction-profile instruction lines (4CH1/2CR JAN 2021 QP); OEQ-donor (Wingdings2 bullet -> U+2022) corroborated by our render"
+  },
+  {
+   "from": "U+F8EB",
+   "to": "U+239B",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): tall parens around (y/2), (9/16), (4/6), (−7/3)",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8EB_bracescan_p21_0.png + UF8EB_primary_p3_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8EB",
+   "note": "tall-paren LEFT-UPPER hook (3-piece assemblies around column vectors: 'F8EB −7 F8F6 / F8EC F8F7 / F8ED 3 F8F8' = (−7 over 3); same glyph family as landed F0E6->U+239B (1,432 inst), different font slot; 12 papers all 4MA1 QP"
+  },
+  {
+   "from": "U+F8EC",
+   "to": "U+239C",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): paren extender row",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8EC_bracescan_p14_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8EC",
+   "note": "tall-paren LEFT-EXTENDER (see U+F8EB; middle-line scaffold 'F8EC F8F7')"
+  },
+  {
+   "from": "U+F8ED",
+   "to": "U+239D",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): paren lower hook",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8ED_bracescan_p14_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8ED",
+   "note": "tall-paren LEFT-LOWER hook (see U+F8EB; bottom-line scaffold 'F8ED 3 F8F8')"
+  },
+  {
+   "from": "U+F8F6",
+   "to": "U+239E",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): right paren upper hook",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8F6_primary_p3_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8F6",
+   "note": "tall-paren RIGHT-UPPER hook (mirror of U+F8EB; top-line scaffold 'F8EB −7 F8F6')"
+  },
+  {
+   "from": "U+F8F7",
+   "to": "U+239F",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): right paren extender",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8F7_primary_p3_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8F7",
+   "note": "tall-paren RIGHT-EXTENDER (mirror of U+F8EC)"
+  },
+  {
+   "from": "U+F8F8",
+   "to": "U+23A0",
+   "count": 32,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): right paren lower hook",
+    "render_ref": "sheetB2_braces.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF8F8_primary_p3_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F8F8",
+   "note": "tall-paren RIGHT-LOWER hook (mirror of U+F8ED; 'F8F7F8F8' adjacency on scaffold bottom line)"
+  },
+  {
+   "from": "U+F084",
+   "to": "U+2264",
+   "count": 520,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): inequality interval contexts x7 + pair context with F085",
+    "render_ref": "sheetB5_missing5.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF084_p19_14_4MA1-2H_past-papers.png (phase-A crop) + b_evidence/UFF0CF_tight300_p1.png-adjacent probes",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F084",
+   "note": "SPEC-SQRT HYPOTHESIS OVERTURNED: Appendix A guessed sqrt for F084, but the census + renders prove LESS-THAN-OR-EQUAL: 520/520 inequality placements ('10 < a ≤ 20', '0.25 ≤ x ≤ 8', '5y² − 17y ≤ 40'), incl. the complementary pair with landed F085=≥ ('x ≤ 4 and y ≥ −2'); zero before-paren (radical) placements; the radical in 'y = √(x+4)' contexts is vector-drawn (no text-layer char - out of patch scope)"
+  },
+  {
+   "from": "U+F0B1",
+   "to": "U+00B1",
+   "count": 392,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '±' in discriminant workings",
+    "render_ref": "sheetB5_missing5.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF0B1_p20_10_4MA1-1H_past-papers.png (phase-A crop, 30 available)",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F0B1",
+   "note": "plus-minus in quadratic-formula/discriminant workings: '24 ± (−24) − 4×11×4', '2 ± (−2)² − (4×15×−8)'; spec Appendix A pin confirmed by renders"
+  },
+  {
+   "from": "U+F033",
+   "to": "U+2713",
+   "count": 2,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '(✓)'",
+    "render_ref": "sheetB5_missing5.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF033_p4_0_4CH1-1CR_past-papers.png (phase-A crop)",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F033",
+   "note": "tick in instruction parens: 'Place ticks (✓) in three boxes' (4CH1/1CR QP); converges with landed F0FC->U+2713"
+  },
+  {
+   "from": "U+F050",
+   "to": "U+2713",
+   "count": 1,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): '(✓)'",
+    "render_ref": "sheetB5_missing5.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF050_p16_0_4CH1-2CR_past-papers.png (phase-A crop)",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "canary": "C-Glyph-F050",
+   "note": "tick in instruction parens: 'Add ticks (✓) to the table' (4CH1/2CR QP); converges with landed F0FC->U+2713"
   }
  ],
  "pending_register": {
-  "note": "NOT mapped in v1 (fail-closed: unmapped PUA never silently served); run-002 must evidence these before Phase B includes their rows",
+  "note": "run-002b (2026-10-24): register 21 items resolved (18 mapped via new entries/sequence rules, F0A6 closed-zero, F072 split) - RE-CARRYING U+F0CF (v1 hole CP, fail-closed, 2 inst); any FUTURE unmapped PUA re-registers here fail-closed (born-clean law)",
   "items": [
    {
-    "from": "U+F072",
-    "count": 22,
-    "reason": "OEQ=Wingdings3 Delta vs OUR renders=vector over-arrow; held for composed-arrow study",
-    "origin": "CONFLICT"
-   },
-   {
-    "from": "U+F8EB",
-    "count": 32,
-    "reason": "suspected big-brace LEFT pieces (exact L/R pairing F8EB/F8F6 x46, F8EC/F8F7 x44, F8ED/F8F8 x44); anchor render missed scaffold",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F8EC",
-    "count": 32,
-    "reason": "see F8EB",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F8ED",
-    "count": 32,
-    "reason": "see F8EB",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F8F6",
-    "count": 32,
-    "reason": "see F8EB",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F8F7",
-    "count": 32,
-    "reason": "see F8EB",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F8F8",
-    "count": 32,
-    "reason": "see F8EB",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F026",
-    "count": 95,
-    "reason": "composed long-arrow runs (shaft/head: words are pure F075xF3+F072 runs); needs sequence-rule design before mapping",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F067",
-    "count": 41,
-    "reason": "composed long-arrow runs",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F072",
-    "count": 22,
-    "reason": "composed long-arrow runs + OEQ Delta conflict (their font prints Delta at this slot; ours prints the over-arrow)",
-    "origin": "CONFLICT"
-   },
-   {
-    "from": "U+F075",
-    "count": 173,
-    "reason": "composed long-arrow runs",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F02F",
-    "count": 55,
-    "reason": "render ambiguous (acute-like marks over digits); tight-crop pass pending",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F041",
-    "count": 1,
-    "reason": "render ambiguous (A + overline class)",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F06C",
-    "count": 160,
-    "reason": "render ambiguous (bar/lambda contexts); tight-crop pass pending",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F0D7",
-    "count": 8,
-    "reason": "render ambiguous",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F0B6",
-    "count": 1,
-    "reason": "single instance; render ambiguous",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F0BC",
+    "from": "U+F0CF",
     "count": 2,
-    "reason": "dots class (ellipsis vs therefore)",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F061",
-    "count": 20,
-    "reason": "anchor render missed glyph (glm-ocr-origin chunk)",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F06F",
-    "count": 2,
-    "reason": "anchor render missed glyph",
-    "origin": "our-render"
-   },
-   {
-    "from": "U+F097",
-    "count": 2,
-    "reason": "anchor render missed glyph (OEQ donor says Wingdings2 bullet -> U+2022)",
-    "origin": "oeq-donor"
-   },
-   {
-    "from": "U+F0A6",
-    "count": 0,
-    "reason": "anchor render missed glyph",
-    "origin": "our-render"
+    "reason": "no-ink glyph at evidence standard; marks-grid spacer or unattributable arc - not nameable; 2 inst in 4MA1 JUN 2025 1FR/1HR marks grids",
+    "origin": "run-002b-v1-hole"
    }
   ]
  },
- "control_char_policy": "control chars (C0 class, 2,000 wired instances / 26 distinct per run-001) resolve per SPEC §3.4 in the run-002 evidence pass; unmapped ones fall back to single-space INSIDE scoped rows only, logged per-instance"
+ "control_char_policy": "control chars (C0 class, 2,000 wired instances / 26 distinct per run-001) resolve per SPEC §3.4 in the run-002 evidence pass; unmapped ones fall back to single-space INSIDE scoped rows only, logged per-instance",
+ "sequence_rules": [
+  {
+   "id": "SEQ-A1",
+   "from": [
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F072"
+   ],
+   "to": "U+2192",
+   "runs": 15,
+   "chars": 60,
+   "origin": "our-render",
+   "canary": "C-Glyph-SEQ-A1",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): long over-arrow over 'BC' (4MA1/2H NOV 2023 MS p27): 3 shaft pieces + right head",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF075_run_p27_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "note": "composed over-arrow: F075 = shaft piece, F072 = right arrowhead in the 4MA1 maths font; consumes all 15 observed runs"
+  },
+  {
+   "id": "SEQ-A2",
+   "from": [
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075"
+   ],
+   "to": "U+2192",
+   "runs": 30,
+   "chars": 120,
+   "origin": "our-render",
+   "canary": "C-Glyph-SEQ-A2",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): over-arrows over P/BP/CP vector names (4MA1/1H NOV 2025 MS p27)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF075_primary_p27_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "note": "4-shaft over-arrow assembly; head is vector-drawn (not a text glyph) in the 2025-era font"
+  },
+  {
+   "id": "SEQ-A3",
+   "from": [
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075",
+    "U+F075"
+   ],
+   "to": "U+2192",
+   "runs": 1,
+   "chars": 8,
+   "origin": "our-render",
+   "canary": "C-Glyph-SEQ-A3",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): 8-shaft run (4MA1/1H NOV 2025 MS p27)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF075_primary_p27_1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "note": "single 8-shaft run; longer/other shaft counts stay fail-closed (born-clean law)"
+  },
+  {
+   "id": "SEQ-B4",
+   "from": [
+    "U+F067",
+    "U+F067",
+    "U+F067",
+    "U+F067"
+   ],
+   "to": "U+2192",
+   "runs": 7,
+   "chars": 28,
+   "origin": "our-render",
+   "canary": "C-Glyph-SEQ-B4",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): over-arrow over 'AC' beside column vector (4MA1/2H JUN 2026 MS p21)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF067_run_p21_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "note": "4-piece over-arrow over 2-letter vector names"
+  },
+  {
+   "id": "SEQ-B5",
+   "from": [
+    "U+F067",
+    "U+F067"
+   ],
+   "to": "U+2192",
+   "runs": 2,
+   "chars": 4,
+   "origin": "our-render",
+   "canary": "C-Glyph-SEQ-B5",
+   "evidence": {
+    "source": "run-002b adjudication 2026-10-24 (150dpi render, CROP-REVIEW pattern): 2-piece over-arrow (4MA1/2H JUN 2026 MS p16)",
+    "render_ref": "sheetB1_arrows.png",
+    "crop_index": "evidence/T-MIG-141/crops-run002b/UF067_run_p16_0.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "run-002b (operator order trace 1a169bc10f7dc5c9)"
+   },
+   "note": "2-piece over-arrow; unobserved run lengths stay fail-closed"
+  }
+ ],
+ "register_resolutions": [
+  {
+   "from": "U+F072",
+   "registered_count": 22,
+   "wired_count": 22,
+   "disposition": "RESOLVED-SPLIT: 15 run instances -> SEQ-A1 (U+2192); 7 standalone (all 4CH1) -> single U+2206; OEQ-Delta conflict dissolved by sequence-first ordering"
+  },
+  {
+   "from": "U+F8EB",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+239B (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F8EC",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+239C (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F8ED",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+239D (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F8F6",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+239E (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F8F7",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+239F (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F8F8",
+   "registered_count": 32,
+   "wired_count": 32,
+   "disposition": "RESOLVED-MAPPED: tall-paren piece -> U+23A0 (32 inst; scaffold pairing F8EB/F8F6+F8EC/F8F7+F8ED/F8F8 render-confirmed)"
+  },
+  {
+   "from": "U+F026",
+   "registered_count": 95,
+   "wired_count": 95,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+0307 (95 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F067",
+   "registered_count": 41,
+   "wired_count": 41,
+   "disposition": "RESOLVED-MAPPED: runs via sequence_rules + standalone singles (41 inst total)"
+  },
+  {
+   "from": "U+F072",
+   "registered_count": 22,
+   "wired_count": 22,
+   "disposition": "RESOLVED-SPLIT: 15 run instances -> SEQ-A1 (U+2192); 7 standalone (all 4CH1) -> single U+2206; OEQ-Delta conflict dissolved by sequence-first ordering"
+  },
+  {
+   "from": "U+F075",
+   "registered_count": 173,
+   "wired_count": 173,
+   "disposition": "RESOLVED-MAPPED: runs via sequence_rules + standalone singles (173 inst total)"
+  },
+  {
+   "from": "U+F02F",
+   "registered_count": 55,
+   "wired_count": 55,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+0338 (55 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F041",
+   "registered_count": 1,
+   "wired_count": 1,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+0041 (1 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F06C",
+   "registered_count": 160,
+   "wired_count": 160,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+03BB (160 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F0D7",
+   "registered_count": 8,
+   "wired_count": 8,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+00B7 (8 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F0B6",
+   "registered_count": 1,
+   "wired_count": 1,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+21CC (1 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F0BC",
+   "registered_count": 2,
+   "wired_count": 2,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+2026 (2 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F061",
+   "registered_count": 20,
+   "wired_count": 20,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+21A6 (20 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F06F",
+   "registered_count": 2,
+   "wired_count": 2,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+00B0 (2 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F097",
+   "registered_count": 2,
+   "wired_count": 2,
+   "disposition": "RESOLVED-MAPPED: single entry -> U+2022 (2 inst, render-evidenced)"
+  },
+  {
+   "from": "U+F0A6",
+   "registered_count": 0,
+   "wired_count": 0,
+   "disposition": "CLOSED-ZERO: 0 wired instances (census re-verified); no map entry; stays fail-closed for any future appearance"
+  },
+  {
+   "from": "U+F0CF",
+   "registered_count": 2,
+   "wired_count": 2,
+   "disposition": "NEW-REGISTER (run-002b): v1 hole CP - glyph renders NO INK at its word box (300dpi render, 4MA1-1FR ms p1 box [430,85,435,101]) while the phase-A crop shows an unattributable arc from neighboring content; not nameable at the F48 standard -> stays FAIL-CLOSED (2 inst, both '(ii) F0CF 1 B1' marks-grid lines in 4MA1 JUN 2025 1FR/1HR); the 2 carrier rows are Phase-B scope exclusions or operator-ruling candidates"
+  }
+ ]
 }

@@ -50,3 +50,23 @@ adjudication contact sheets) + `evidence/T-MIG-141/crops/<CP>_representative.png
 - Conformance: each table class gets a fixture pair in the py/java conformance
   harness; born-clean law: a batch whose post-intake census holds PUA outside the
   mapped set fails the batch gate.
+
+## run-002b (2026-10-24) — pending register resolved + v1 hole closed
+
+- **22 new single entries + 5 `sequence_rules`** (composed over-arrow runs, ordering law
+  §3.5: sequences longest-first before singles). Table now: 83 entries, 5 sequence rules.
+- **Register 21 items → 22 resolutions**: 18 mapped (render-evidenced), F072 split
+  (SEQ-A1 head in 4MA1 runs vs standalone U+2206 in 4CH1 — OEQ-Delta conflict dissolved),
+  F0A6 closed-zero, **U+F0CF re-carried fail-closed** (no-ink glyph, 2 inst, not nameable
+  at the F48 standard).
+- **V1 hole disclosed**: the v1 register listed 774 unmapped instances; the true unmapped
+  set was 1,691. The census-match law (spec §3.3) found **917 further instances in 5 CPs
+  (F084 520 / F0B1 392 / F033 2 / F050 1 / F0CF 2) with NO entry and NO register item**.
+  915 now mapped; F0CF fail-closed.
+- **F084 spec-sqrt hypothesis OVERTURNED**: 520/520 inequality placements prove `≤`
+  (complementary pair with F085=`≥`); the radical is vector-drawn (no text-layer char).
+- **Post-state**: wired-bank PUA coverage 25,397/25,399 (99.99%); residual = U+F0CF ×2.
+- Evidence: `sheets/sheetB1..B5*.png` + `crops-run002b/` (75 crops @150dpi) +
+  `run002b/` (contexts, run patterns, render manifest, probes, validation).
+- Sequence-rule consumption EXACT: SEQ-A1 ×15, SEQ-A2 ×30, SEQ-A3 ×1, SEQ-B4 ×7, SEQ-B5 ×2;
+  C7 deletion disclosure: 165 chars collapsed across 55 runs + drop class 5,146.

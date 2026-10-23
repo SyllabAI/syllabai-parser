@@ -1,0 +1,406 @@
+{
+ "brace_line_signatures": {
+  "F8EB+F8F6": 29,
+  "F8ED+F8F8": 25,
+  "F8EC+F8F7": 24,
+  "F8EC+F8ED+F8F7+F8F8": 3,
+  "F8EC": 2,
+  "F8ED+F8F7+F8F8": 2,
+  "F8EB+F8EC+F8F6+F8F7": 1
+ },
+ "examples": [
+  {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "page": 15,
+   "chunk": "e507e6ba-70e0-455c-ad9a-49a9d124c323",
+   "line": "                   9x4  2",
+   "sigs": [
+    "F8EB",
+    "F8F6"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "page": 15,
+   "chunk": "e507e6ba-70e0-455c-ad9a-49a9d124c323",
+   "line": "14 Simplify fully ",
+   "sigs": [
+    "F8EC"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JUN 2021 QP",
+   "page": 15,
+   "chunk": "e507e6ba-70e0-455c-ad9a-49a9d124c323",
+   "line": "                   16 y10 ",
+   "sigs": [
+    "F8ED",
+    "F8F7",
+    "F8F8"
+   ]
+  },
+  {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "page": 13,
+   "chunk": "d9ee3c0a-b596-462a-9401-cf293b7a1b84",
+   "line": "                y",
+   "sigs": [
+    "F8EB",
+    "F8F6"
+   ]
+  },
+  {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "page": 13,
+   "chunk": "d9ee3c0a-b596-462a-9401-cf293b7a1b84",
+   "line": "   (b) Express           in the form ay n where a and n are integers.",
+   "sigs": [
+    "F8EC",
+    "F8F7"
+   ]
+  },
+  {
+   "paper": "4MA1/2H NOV 2020 QP",
+   "page": 13,
+   "chunk": "d9ee3c0a-b596-462a-9401-cf293b7a1b84",
+   "line": "                2",
+   "sigs": [
+    "F8ED",
+    "F8F8"
+   ]
+  },
+  {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "page": 20,
+   "chunk": "436c5a4e-ff6a-4e78-80f7-eb732fc6171d",
+   "line": "                       27 a12      3",
+   "sigs": [
+    "F8EB",
+    "F8F6"
+   ]
+  },
+  {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "page": 20,
+   "chunk": "436c5a4e-ff6a-4e78-80f7-eb732fc6171d",
+   "line": "   (b) Simplify fully  15 ",
+   "sigs": [
+    "F8EC",
+    "F8F7"
+   ]
+  },
+  {
+   "paper": "4MA1/1H JAN 2020 QP",
+   "page": 20,
+   "chunk": "436c5a4e-ff6a-4e78-80f7-eb732fc6171d",
+   "line": "                       t ",
+   "sigs": [
+    "F8ED",
+    "F8F8"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "page": 20,
+   "chunk": "0403a591-836d-4fc1-913b-1d689bba751e",
+   "line": "                                                                4",
+   "sigs": [
+    "F8EB",
+    "F8F6"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "page": 20,
+   "chunk": "0403a591-836d-4fc1-913b-1d689bba751e",
+   "line": "   The curve C is transformed to curve S under the translation  ",
+   "sigs": [
+    "F8EC",
+    "F8F7"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "page": 20,
+   "chunk": "0403a591-836d-4fc1-913b-1d689bba751e",
+   "line": "                                                                6",
+   "sigs": [
+    "F8ED",
+    "F8F8"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "page": 23,
+   "chunk": "0e49a781-eea7-44e5-aed2-5c632962d3b6",
+   "line": "                                    4         3          9 x − 4 x3",
+   "sigs": [
+    "F8EB",
+    "F8F6"
+   ]
+  },
+  {
+   "paper": "4MA1/2H JAN 2020 QP",
+   "page": 23,
+   "chunk": "0e49a781-eea7-44e5-aed2-5c632962d3b6",
+   "line": "                                          −        ÷ 2",
+   "sigs": [
+    "F8EC",
+    "F8ED",
+    "F8F7",
+    "F8F8"
+   ]
+  }
+ ],
+ "render_jobs": {
+  "U+F026": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-1HR/ms.pdf",
+    "page": 7,
+    "chunk_id": "192838a8-9736-4e5e-ab28-e11bb8f8cb57",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-11/4MA1-2FR/ms.pdf",
+    "page": 13,
+    "chunk_id": "26dfd9f6-a8ff-4d52-b5e8-dcb8f170ca01",
+    "why": "primary"
+   }
+  ],
+  "U+F067": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2014-01/4CH0-1C/ms.pdf",
+    "page": 5,
+    "chunk_id": "d4184740-ac2a-43be-8a0b-44e36963d300",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2014-06/4CH0-1C/ms.pdf",
+    "page": 11,
+    "chunk_id": "eb694d8c-3c04-4562-b920-3ba39e997d64",
+    "why": "primary"
+   }
+  ],
+  "U+F072": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2021-01/4CH1-2CR/ms.pdf",
+    "page": 11,
+    "chunk_id": "aaba59d2-0892-4747-ae59-52facb16f87b",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2020-11/4CH1-2C/ms.pdf",
+    "page": 11,
+    "chunk_id": "da93b715-a45f-4bf3-b2a5-a360e5926fb8",
+    "why": "primary"
+   }
+  ],
+  "U+F075": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-11/4MA1-2H/ms.pdf",
+    "page": 27,
+    "chunk_id": "ef8a38f9-c3cb-4e1c-856f-a094f7096971",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-1H/ms.pdf",
+    "page": 27,
+    "chunk_id": "ac1f822f-e400-4811-b652-cd547d6736cd",
+    "why": "primary"
+   }
+  ],
+  "U+F8EB": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F8EC": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F8ED": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F8F6": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F8F7": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F8F8": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-01/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-2HR/qp.pdf",
+    "page": 3,
+    "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+    "why": "primary"
+   }
+  ],
+  "U+F02F": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2024-11/4MA1-2H/ms.pdf",
+    "page": 5,
+    "chunk_id": "e754ed1c-b1ed-4b08-b56d-fc12ae19f0ed",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-01/4MA1-2H/ms.pdf",
+    "page": 6,
+    "chunk_id": "a981eab9-20da-4326-a6c0-9ccb201cafbd",
+    "why": "primary"
+   }
+  ],
+  "U+F041": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-06/4MA1-1F/ms.pdf",
+    "page": 12,
+    "chunk_id": "667367f1-19a3-4a9c-8443-303609717c1a",
+    "why": "primary"
+   }
+  ],
+  "U+F06C": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-01/4MA1-1HR/ms.pdf",
+    "page": 19,
+    "chunk_id": "b7513336-f832-419e-9886-8799254d6d3c",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-06/4MA1-2HR/ms.pdf",
+    "page": 21,
+    "chunk_id": "5d2cd352-5f51-433e-acf8-aca5d9d98636",
+    "why": "primary"
+   }
+  ],
+  "U+F0D7": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/ms.pdf",
+    "page": 5,
+    "chunk_id": "9c254cf5-d996-4960-b64b-78f69fbdfdf9",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-1HR/ms.pdf",
+    "page": 6,
+    "chunk_id": "019e6737-9360-41e7-93ff-3209d1344b50",
+    "why": "primary"
+   }
+  ],
+  "U+F0B6": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch0/past-papers/2017-06/4CH0-1C/qp.pdf",
+    "page": 22,
+    "chunk_id": "c279e434-22ea-47d4-92f8-393984f8b96c",
+    "why": "primary"
+   }
+  ],
+  "U+F0BC": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-2H/ms.pdf",
+    "page": 9,
+    "chunk_id": "85363e99-adfb-49d0-84df-40565fd91ad7",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2025-11/4MA1-2F/ms.pdf",
+    "page": 17,
+    "chunk_id": "e5b2e915-1f3d-41b7-af47-09da132f1bcb",
+    "why": "primary"
+   }
+  ],
+  "U+F061": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2022-06/4MA1-1H/qp.pdf",
+    "page": 14,
+    "chunk_id": "eeaf076e-68b4-45a1-94c8-9fd7de0d4420",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2020-06/4MA1-1HR/qp.pdf",
+    "page": 15,
+    "chunk_id": "21220866-784e-4bc3-b11b-d98c1101acfa",
+    "why": "primary"
+   }
+  ],
+  "U+F06F": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2026-06/4MA1-2H/qp.pdf",
+    "page": 15,
+    "chunk_id": "320bb263-1028-4c1d-a958-a06a036d407d",
+    "why": "primary"
+   },
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/mathematics-a/4ma1/past-papers/2023-11/4MA1-1H/qp.pdf",
+    "page": 27,
+    "chunk_id": "fab8052d-f595-480f-95de-c38cd47aa8ba",
+    "why": "primary"
+   }
+  ],
+  "U+F097": [
+   {
+    "pdf": "past-papers/pearson-edexcel/international-gcse/chemistry/4ch1/past-papers/2021-01/4CH1-2CR/qp.pdf",
+    "page": 12,
+    "chunk_id": "704921d8-a137-44df-b3ec-15b40c1bf87d",
+    "why": "primary"
+   }
+  ],
+  "U+F0A6": []
+ }
+}

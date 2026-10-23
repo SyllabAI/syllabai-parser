@@ -1,0 +1,86 @@
+{
+ "run_signatures": {
+  "1075,1075,1075,1072": 30,
+  "1075,1075,1075,1075": 30,
+  "1026,1026,1026,1026": 21,
+  "1026": 9,
+  "1067": 9,
+  "1067,1067,1067,1067": 7,
+  "1072": 7,
+  "1067,1067": 2,
+  "1026,1026": 1,
+  "1075,1075,1075,1075,1075,1075,1075,1075": 1
+ },
+ "examples": {
+  "1026": {
+   "ctx": "          ..⏎                                [1026] 6 == 35⏎16 Use algebra to show that 00.17⏎ ",
+   "paper": "4MA1/1HR JUN 2023 QP",
+   "page": 16,
+   "chunk": "e17a5239-3bc0-46ae-b3f9-57f1be0f6c8a",
+   "len": 1
+  },
+  "1026,1026": {
+   "ctx": "                                             [1026,1026] and (1000y =) 78.787... and (10y =) 0.78....",
+   "paper": "4MA1/2H NOV 2025 MS",
+   "page": 20,
+   "chunk": "8405e41d-23e3-4f00-9ed1-67472572daf7",
+   "len": 2
+  },
+  "1026,1026,1026,1026": {
+   "ctx": "                                             [1026,1026,1026,1026]⏎                            2               ",
+   "paper": "4MA1/1HR JUN 2026 MS",
+   "page": 30,
+   "chunk": "2b00547d-0f94-4956-acf4-31cfaeee1f77",
+   "len": 4
+  },
+  "1067": {
+   "ctx": " P5 (1 mark): red⏎Q6 P6 (1 mark): NaOH + HCl [1067] NaCl + H2O⏎ignore: state symbols even if inc",
+   "paper": "4CH0/1C JUN 2014 MS",
+   "page": 11,
+   "chunk": "eb694d8c-3c04-4562-b920-3ba39e997d64",
+   "len": 1
+  },
+  "1067,1067": {
+   "ctx": "                                             [1067,1067]⏎                                            ",
+   "paper": "4MA1/2H JUN 2026 MS",
+   "page": 16,
+   "chunk": "c3a46f49-b65c-4115-9f28-03542b62c4fa",
+   "len": 2
+  },
+  "1067,1067,1067,1067": {
+   "ctx": "d to find at least one of AC (or CA ),⏎      [1067,1067,1067,1067] 12   2    10                       ",
+   "paper": "4MA1/2H JUN 2026 MS",
+   "page": 21,
+   "chunk": "e920f697-14b5-403a-9181-7ce017da7ad1",
+   "len": 4
+  },
+  "1072": {
+   "ctx": "between⏎note: (i), (ii), O=O bond energy and [1072]H⏎note: M2 correct calculation⏎note: Example:",
+   "paper": "4CH1/2CR JAN 2021 MS",
+   "page": 11,
+   "chunk": "aaba59d2-0892-4747-ae59-52facb16f87b",
+   "len": 1
+  },
+  "1075,1075,1075,1072": {
+   "ctx": "1oe    need not be simplifed⏎                [1075,1075,1075,1072]                     ⏎     (b)     eg AP ",
+   "paper": "4MA1/2H NOV 2023 MS",
+   "page": 27,
+   "chunk": "ef8a38f9-c3cb-4e1c-856f-a094f7096971",
+   "len": 4
+  },
+  "1075,1075,1075,1075": {
+   "ctx": "      obvious incorrect working)⏎            [1075,1075,1075,1075]                                             ",
+   "paper": "4MA1/1H NOV 2025 MS",
+   "page": 27,
+   "chunk": "ac1f822f-e400-4811-b652-cd547d6736cd",
+   "len": 4
+  },
+  "1075,1075,1075,1075,1075,1075,1075,1075": {
+   "ctx": ") or                                     [1075,1075,1075,1075,1075,1075,1075,1075] ⏎                                   ",
+   "paper": "4MA1/1H NOV 2025 MS",
+   "page": 27,
+   "chunk": "ac1f822f-e400-4811-b652-cd547d6736cd",
+   "len": 8
+  }
+ }
+}

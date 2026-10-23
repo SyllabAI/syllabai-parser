@@ -1,0 +1,39 @@
+{
+ "entries_before": 61,
+ "entries_after": 83,
+ "added": 22,
+ "sequence_rules": 5,
+ "v1_hole": {
+  "register_listed": 774,
+  "true_unmapped_v1": 1691,
+  "hole_instances": 917,
+  "hole_cps": {
+   "U+F084": 520,
+   "U+F0B1": 392,
+   "U+F033": 2,
+   "U+F050": 1,
+   "U+F0CF": 2
+  }
+ },
+ "coverage": {
+  "single_census_sum": 20078,
+  "seq_covered_in_singles": 47,
+  "seq_chars": 220,
+  "drop": 5146,
+  "unmapped": 2,
+  "total": 25399
+ },
+ "residual_pua": {
+  "U+F0CF": 2
+ },
+ "seq_runs_used": {
+  "SEQ-A1": 15,
+  "SEQ-B5": 2,
+  "SEQ-B4": 7,
+  "SEQ-A2": 30,
+  "SEQ-A3": 1
+ },
+ "drop_counts": {
+  "U+F0A2": 5146
+ }
+}

@@ -1,0 +1,916 @@
+{
+ "wired_rows": 2765,
+ "census": {
+  "U+F026": 95,
+  "U+F067": 41,
+  "U+F072": 22,
+  "U+F075": 173,
+  "U+F8EB": 32,
+  "U+F8EC": 32,
+  "U+F8ED": 32,
+  "U+F8F6": 32,
+  "U+F8F7": 32,
+  "U+F8F8": 32,
+  "U+F02F": 55,
+  "U+F041": 1,
+  "U+F06C": 160,
+  "U+F0D7": 8,
+  "U+F0B6": 1,
+  "U+F0BC": 2,
+  "U+F061": 20,
+  "U+F06F": 2,
+  "U+F097": 2,
+  "U+F0A6": 0
+ },
+ "drift": {
+  "U+F072": {
+   "census": 22,
+   "register_sum": 44
+  }
+ },
+ "contexts": {
+  "U+F026": {
+   "wired_count": 95,
+   "chunk_count": 8,
+   "papers": [
+    "4MA1/1FR JUN 2026",
+    "4MA1/1HR JUN 2023",
+    "4MA1/1HR JUN 2025",
+    "4MA1/1HR JUN 2026",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H NOV 2025",
+    "4MA1/2HR JUN 2024"
+   ],
+   "samples": [
+    {
+     "chunk_id": "192838a8-9736-4e5e-ab28-e11bb8f8cb57",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1HR JUN 2026",
+     "doc": "MS",
+     "page_start": 7,
+     "page_end": 7,
+     "hits_in_chunk": 1,
+     "context": "i)   1178.5   1     B1       accept 1178.499(...) or 1178.49⏎                                   Award⏎                 "
+    },
+    {
+     "chunk_id": "26dfd9f6-a8ff-4d52-b5e8-dcb8f170ca01",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 13,
+     "page_end": 13,
+     "hits_in_chunk": 1,
+     "context": "                          33.85        1   B1   allow 33.849 or 33.849r or⏎                                            "
+    },
+    {
+     "chunk_id": "a4d8623c-c2d1-4bcb-8ff3-9e658f28aaaf",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1HR JUN 2025",
+     "doc": "QP",
+     "page_start": 15,
+     "page_end": 15,
+     "hits_in_chunk": 2,
+     "context": "n over⏎                                                       = 101⏎16 Use algebra to show that the recurring decimal "
+    },
+    {
+     "chunk_id": "e17a5239-3bc0-46ae-b3f9-57f1be0f6c8a",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1HR JUN 2023",
+     "doc": "QP",
+     "page_start": 16,
+     "page_end": 16,
+     "hits_in_chunk": 2,
+     "context": "                         ..⏎                                 6 == 35⏎16 Use algebra to show that 00.17⏎               "
+    }
+   ]
+  },
+  "U+F067": {
+   "wired_count": 41,
+   "chunk_count": 10,
+   "papers": [
+    "4CH0/1C JAN 2014",
+    "4CH0/1C JUN 2014",
+    "4MA1/2H JUN 2026"
+   ],
+   "samples": [
+    {
+     "chunk_id": "d4184740-ac2a-43be-8a0b-44e36963d300",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH0/1C JAN 2014",
+     "doc": "MS",
+     "page_start": 5,
+     "page_end": 7,
+     "hits_in_chunk": 1,
+     "context": "t imply          1⏎Q2 P8 (2 marks): iron + oxygen (+ water)  (hydrated) iron (III) oxide⏎note: ferric oxide/iron oxide⏎"
+    },
+    {
+     "chunk_id": "eb694d8c-3c04-4562-b920-3ba39e997d64",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH0/1C JUN 2014",
+     "doc": "MS",
+     "page_start": 11,
+     "page_end": 11,
+     "hits_in_chunk": 2,
+     "context": "ark): indigo⏎Q6 P5 (1 mark): red⏎Q6 P6 (1 mark): NaOH + HCl  NaCl + H2O⏎ignore: state symbols even if incorrect⏎note: H"
+    },
+    {
+     "chunk_id": "c3a46f49-b65c-4115-9f28-03542b62c4fa",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H JUN 2026",
+     "doc": "MS",
+     "page_start": 16,
+     "page_end": 16,
+     "hits_in_chunk": 4,
+     "context": ".39…                                                        ⏎                                                         "
+    }
+   ]
+  },
+  "U+F072": {
+   "wired_count": 22,
+   "chunk_count": 5,
+   "papers": [
+    "4CH1/1CR JAN 2021",
+    "4CH1/1CR JUN 2019",
+    "4CH1/2C NOV 2020",
+    "4CH1/2CR JAN 2021",
+    "4MA1/2H NOV 2023"
+   ],
+   "samples": [
+    {
+     "chunk_id": "aaba59d2-0892-4747-ae59-52facb16f87b",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH1/2CR JAN 2021",
+     "doc": "MS",
+     "page_start": 11,
+     "page_end": 11,
+     "hits_in_chunk": 1,
+     "context": "uation linking between⏎note: (i), (ii), O=O bond energy and H⏎note: M2 correct calculation⏎note: Example:⏎note: M1 [185"
+    },
+    {
+     "chunk_id": "da93b715-a45f-4bf3-b2a5-a360e5926fb8",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH1/2C NOV 2020",
+     "doc": "MS",
+     "page_start": 11,
+     "page_end": 11,
+     "hits_in_chunk": 2,
+     "context": "| Paper 2C | Q5 | p.11⏎Q5 P6 (4 marks): Exp⏎allow: 3446 for H⏎reject: arrow pointing; arrow pointing⏎note: M1 horizonta"
+    },
+    {
+     "chunk_id": "2f3e459a-683f-499f-8bc9-72037bca7c27",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH1/1CR JUN 2019",
+     "doc": "MS",
+     "page_start": 14,
+     "page_end": 15,
+     "hits_in_chunk": 1,
+     "context": "te: energy⏎note: 1⏎note: NOT energy alone⏎note: to negative H⏎note: B is incorrect as this is not a⏎note: displacement "
+    },
+    {
+     "chunk_id": "adc4dd9d-a3b8-4431-9ec7-e71320051715",
+     "kind": "MARK_SCHEME",
+     "paper": "4CH1/1CR JAN 2021",
+     "doc": "MS",
+     "page_start": 17,
+     "page_end": 18,
+     "hits_in_chunk": 3,
+     "context": "r 2⏎note: marks⏎Q9 M1 (3 marks): correct temperature change/T⏎allow: 2770, 2772⏎ignore: any sign⏎note: M2 correct subst"
+    }
+   ]
+  },
+  "U+F075": {
+   "wired_count": 173,
+   "chunk_count": 2,
+   "papers": [
+    "4MA1/1H NOV 2025",
+    "4MA1/2H NOV 2023"
+   ],
+   "samples": [
+    {
+     "chunk_id": "ef8a38f9-c3cb-4e1c-856f-a094f7096971",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H NOV 2023",
+     "doc": "MS",
+     "page_start": 27,
+     "page_end": 27,
+     "hits_in_chunk": 45,
+     "context": "– 3a          B1oe    need not be simplifed⏎                                     ⏎     (b)     eg AP  (4b  3a"
+    },
+    {
+     "chunk_id": "ac1f822f-e400-4811-b652-cd547d6736cd",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1H NOV 2025",
+     "doc": "MS",
+     "page_start": 27,
+     "page_end": 27,
+     "hits_in_chunk": 128,
+     "context": "r −4a + b⏎           obvious incorrect working)⏎                                                                    "
+    }
+   ]
+  },
+  "U+F8EB": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                             −7⏎        (b) On the grid, translate triangle A by the v"
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                             − 4⏎              (b) On the grid above, translate triang"
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "     (2)⏎                                                   10⏎  (b) On the grid, translate shape P by the vector  ⏎"
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "mon⏎           24 24       24n 24n⏎                 40 + 36  76                                                       "
+    }
+   ]
+  },
+  "U+F8EC": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "        (b) On the grid, translate triangle A by the vector  ⏎                                                        "
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "  (b) On the grid above, translate triangle A by the vector  ⏎                                                        "
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "    10⏎  (b) On the grid, translate shape P by the vector  ⏎                                                    8⏎"
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "          denominator, eg      +⏎           or eg           =                                                         "
+    }
+   ]
+  },
+  "U+F8ED": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                             3⏎\t\t         Label the new triangle C⏎                   "
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                             3⏎\t\t                          Label your triangle C⏎     "
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "ctor  ⏎                                                    8⏎\t\t Label the new shape R.⏎                             "
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "                           24 24⏎                   96       96 ⏎           10 9 19                         clearly sh"
+    }
+   ]
+  },
+  "U+F8F6": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                         −7⏎        (b) On the grid, translate triangle A by the vecto"
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                        − 4⏎              (b) On the grid above, translate triangle A "
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "  (2)⏎                                                   10⏎  (b) On the grid, translate shape P by the vector  ⏎   "
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "          24 24       24n 24n⏎                 40 + 36  76                                                            "
+    }
+   ]
+  },
+  "U+F8F7": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "      (b) On the grid, translate triangle A by the vector  ⏎                                                          "
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "(b) On the grid above, translate triangle A by the vector  ⏎                                                          "
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "  10⏎  (b) On the grid, translate shape P by the vector  ⏎                                                    8⏎\t\t"
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "       denominator, eg      +⏎           or eg           =                                                            "
+    }
+   ]
+  },
+  "U+F8F8": {
+   "wired_count": 32,
+   "chunk_count": 27,
+   "papers": [
+    "4MA1/1H JAN 2020",
+    "4MA1/1H JAN 2022",
+    "4MA1/1H JAN 2023",
+    "4MA1/1HR JAN 2021",
+    "4MA1/1HR JAN 2023",
+    "4MA1/1HR JUN 2022",
+    "4MA1/2FR JAN 2021",
+    "4MA1/2FR JAN 2023",
+    "4MA1/2FR JUN 2022",
+    "4MA1/2FR NOV 2020",
+    "4MA1/2H JAN 2020",
+    "4MA1/2H JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "433538cf-1ed5-430c-8a81-3f85c04d0ef0",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2023",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                          3⏎\t\t         Label the new triangle C⏎                      "
+    },
+    {
+     "chunk_id": "e165b344-5049-4de3-b336-e1c1146bbdc6",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JUN 2022",
+     "doc": "QP",
+     "page_start": 3,
+     "page_end": 3,
+     "hits_in_chunk": 1,
+     "context": "                                                          3⏎\t\t                          Label your triangle C⏎        "
+    },
+    {
+     "chunk_id": "184230cd-6e41-45c2-9a4f-ce010adada67",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2HR JAN 2021",
+     "doc": "QP",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 1,
+     "context": "r  ⏎                                                    8⏎\t\t Label the new shape R.⏎                                "
+    },
+    {
+     "chunk_id": "6573e62f-5e1a-4def-bdd9-032d3130806b",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2FR NOV 2020",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 1,
+     "context": "                      24 24⏎                   96       96 ⏎           10 9 19                         clearly shown  "
+    }
+   ]
+  },
+  "U+F02F": {
+   "wired_count": 55,
+   "chunk_count": 7,
+   "papers": [
+    "4MA1/2F JAN 2022",
+    "4MA1/2F JUN 2024",
+    "4MA1/2F NOV 2023",
+    "4MA1/2H JAN 2022",
+    "4MA1/2H JUN 2024",
+    "4MA1/2H NOV 2023",
+    "4MA1/2H NOV 2024"
+   ],
+   "samples": [
+    {
+     "chunk_id": "e754ed1c-b1ed-4b08-b56d-fc12ae19f0ed",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H NOV 2024",
+     "doc": "MS",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 3,
+     "context": "                multiplying the denominators⏎             12 3 35 5                                                    "
+    },
+    {
+     "chunk_id": "a981eab9-20da-4326-a6c0-9ccb201cafbd",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H JAN 2022",
+     "doc": "MS",
+     "page_start": 6,
+     "page_end": 6,
+     "hits_in_chunk": 3,
+     "context": "             the result of the multiplication e.g.⏎        2 7 3 7      21    5                                        "
+    },
+    {
+     "chunk_id": "252bfefe-ed2f-4bc6-be3b-72dc99385380",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H JUN 2024",
+     "doc": "MS",
+     "page_start": 9,
+     "page_end": 9,
+     "hits_in_chunk": 21,
+     "context": " M1     for correct improper fractions⏎      ,⏎     7 9⏎      2 28⏎    18      4                          2 28 56⏎"
+    },
+    {
+     "chunk_id": "e1d095f7-e649-4619-986d-8a9567c2ada1",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H NOV 2023",
+     "doc": "MS",
+     "page_start": 10,
+     "page_end": 10,
+     "hits_in_chunk": 2,
+     "context": " eg      must be seen or correct cancelling to⏎             ⏎             24 3⏎                    3 9         2      "
+    }
+   ]
+  },
+  "U+F041": {
+   "wired_count": 1,
+   "chunk_count": 1,
+   "papers": [
+    "4MA1/1F JUN 2023"
+   ],
+   "samples": [
+    {
+     "chunk_id": "667367f1-19a3-4a9c-8443-303609717c1a",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1F JUN 2023",
+     "doc": "MS",
+     "page_start": 12,
+     "page_end": 12,
+     "hits_in_chunk": 1,
+     "context": "total: 3 marks⏎16   12  (5 − 2) (= 4) or 2 : 5 = 8 : 20 or  = 8                      3   M1 for method to find the val"
+    }
+   ]
+  },
+  "U+F06C": {
+   "wired_count": 160,
+   "chunk_count": 13,
+   "papers": [
+    "4MA1/1H JAN 2021",
+    "4MA1/1H JAN 2023",
+    "4MA1/1H JUN 2025",
+    "4MA1/1H NOV 2025",
+    "4MA1/1HR JAN 2022",
+    "4MA1/1HR JUN 2026",
+    "4MA1/2H JUN 2022",
+    "4MA1/2H JUN 2024",
+    "4MA1/2H NOV 2023",
+    "4MA1/2HR JUN 2020",
+    "4MA1/2HR JUN 2022",
+    "4MA1/2HR JUN 2024"
+   ],
+   "samples": [
+    {
+     "chunk_id": "b7513336-f832-419e-9886-8799254d6d3c",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1HR JAN 2022",
+     "doc": "MS",
+     "page_start": 19,
+     "page_end": 19,
+     "hits_in_chunk": 44,
+     "context": " Question 24⏎Question 24 printed total: 5 marks⏎24    (ON =) (a + b)(= a + b) or                                     "
+    },
+    {
+     "chunk_id": "5d2cd352-5f51-433e-acf8-aca5d9d98636",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2HR JUN 2020",
+     "doc": "MS",
+     "page_start": 21,
+     "page_end": 21,
+     "hits_in_chunk": 18,
+     "context": "                                 uuur⏎     eg    2 − 2k = 10 and −1 + k = − (from MP 1st)                   M1 dep M3 "
+    },
+    {
+     "chunk_id": "50731da6-4881-4956-8882-6cb0d236ac73",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2HR NOV 2020",
+     "doc": "MS",
+     "page_start": 21,
+     "page_end": 21,
+     "hits_in_chunk": 18,
+     "context": "                                 uuur⏎     eg    2 − 2k = 10 and −1 + k = − (from MP 1st)                   M1 dep M3 "
+    },
+    {
+     "chunk_id": "3a3f153f-8e9c-4291-b29f-48dc9acf3d78",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1H JUN 2025",
+     "doc": "MS",
+     "page_start": 21,
+     "page_end": 21,
+     "hits_in_chunk": 4,
+     "context": "= ) − 12a + nb                        or AQ⏎           PQ =  PR eg −6a + nb =  (\"− 30a + 24b \")                       "
+    }
+   ]
+  },
+  "U+F0D7": {
+   "wired_count": 8,
+   "chunk_count": 4,
+   "papers": [
+    "4MA1/1FR JUN 2026",
+    "4MA1/1HR JUN 2026",
+    "4MA1/2F JUN 2026",
+    "4MA1/2H JUN 2026"
+   ],
+   "samples": [
+    {
+     "chunk_id": "9c254cf5-d996-4960-b64b-78f69fbdfdf9",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H JUN 2026",
+     "doc": "MS",
+     "page_start": 5,
+     "page_end": 5,
+     "hits_in_chunk": 2,
+     "context": "          A1    dep on M1, may be in any order and allow 22  32  53⏎                                                  "
+    },
+    {
+     "chunk_id": "019e6737-9360-41e7-93ff-3209d1344b50",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1HR JUN 2026",
+     "doc": "MS",
+     "page_start": 6,
+     "page_end": 6,
+     "hits_in_chunk": 2,
+     "context": "  7       A1   dep on M2, may be in any order and allow 23  32  7⏎                                                   "
+    },
+    {
+     "chunk_id": "1e7ba931-a6f7-48af-be13-4b4b867bbf62",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/1FR JUN 2026",
+     "doc": "MS",
+     "page_start": 18,
+     "page_end": 18,
+     "hits_in_chunk": 2,
+     "context": "  7       A1   dep on M2, may be in any order and allow 23  32  7⏎                                                   "
+    },
+    {
+     "chunk_id": "fcbe7d8f-4c6d-439f-a032-9f4254c292c5",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2F JUN 2026",
+     "doc": "MS",
+     "page_start": 20,
+     "page_end": 20,
+     "hits_in_chunk": 2,
+     "context": "2 × 53       A1 dep on M1, may be in any order and allow 22  32  53⏎                                                  "
+    }
+   ]
+  },
+  "U+F0B6": {
+   "wired_count": 1,
+   "chunk_count": 1,
+   "papers": [
+    "4CH0/1C JUN 2017"
+   ],
+   "samples": [
+    {
+     "chunk_id": "c279e434-22ea-47d4-92f8-393984f8b96c",
+     "kind": "QUESTION_PAPER",
+     "paper": "4CH0/1C JUN 2017",
+     "doc": "QP",
+     "page_start": 22,
+     "page_end": 23,
+     "hits_in_chunk": 1,
+     "context": " can be manufactured from its elements using this reaction.⏎ 2HI(g) ΔH = –9 kJ/mol⏎H2(g) + I2(g) ⏎A temperature of 500"
+    }
+   ]
+  },
+  "U+F0BC": {
+   "wired_count": 2,
+   "chunk_count": 2,
+   "papers": [
+    "4MA1/2F NOV 2025",
+    "4MA1/2H NOV 2025"
+   ],
+   "samples": [
+    {
+     "chunk_id": "85363e99-adfb-49d0-84df-40565fd91ad7",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2H NOV 2025",
+     "doc": "MS",
+     "page_start": 9,
+     "page_end": 9,
+     "hits_in_chunk": 1,
+     "context": "7      42    1⏎    18 ÷ 6 (= 3) or 6 ÷ 18  = = 0.33 ( 333.)  oe 18 : 6 oe or 6 : 18 oe                        =   "
+    },
+    {
+     "chunk_id": "e5b2e915-1f3d-41b7-af47-09da132f1bcb",
+     "kind": "MARK_SCHEME",
+     "paper": "4MA1/2F NOV 2025",
+     "doc": "MS",
+     "page_start": 17,
+     "page_end": 17,
+     "hits_in_chunk": 1,
+     "context": "     42    1⏎     18 ÷ 6 (= 3) or 6 ÷ 18  = 1 = 0.33 ( 333.)  oe 18 : 6 oe or 6 : 18           NB           =     ="
+    }
+   ]
+  },
+  "U+F061": {
+   "wired_count": 20,
+   "chunk_count": 6,
+   "papers": [
+    "4MA1/1H JUN 2022",
+    "4MA1/1H JUN 2024",
+    "4MA1/1HR JUN 2020",
+    "4MA1/1HR NOV 2020",
+    "4MA1/2H JAN 2022",
+    "4MA1/2H NOV 2023"
+   ],
+   "samples": [
+    {
+     "chunk_id": "eeaf076e-68b4-45a1-94c8-9fd7de0d4420",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1H JUN 2022",
+     "doc": "QP",
+     "page_start": 14,
+     "page_end": 14,
+     "hits_in_chunk": 3,
+     "context": "             2x⏎                                        f:x            x ≠ 6⏎                                          "
+    },
+    {
+     "chunk_id": "21220866-784e-4bc3-b11b-d98c1101acfa",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1HR JUN 2020",
+     "doc": "QP",
+     "page_start": 15,
+     "page_end": 15,
+     "hits_in_chunk": 4,
+     "context": "fined as⏎                                             f : x  5x – 7⏎                                                   "
+    },
+    {
+     "chunk_id": "69177806-75cf-4262-8fbd-65914dbdb48e",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1HR NOV 2020",
+     "doc": "QP",
+     "page_start": 15,
+     "page_end": 15,
+     "hits_in_chunk": 4,
+     "context": "fined as⏎                                             f : x  5x – 7⏎                                                   "
+    },
+    {
+     "chunk_id": "d1219674-2fcc-44f6-970f-30602576842f",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1H JUN 2024",
+     "doc": "QP",
+     "page_start": 15,
+     "page_end": 15,
+     "hits_in_chunk": 1,
+     "context": " \u001f 1⏎                                                   f:x ⏎                                                          "
+    }
+   ]
+  },
+  "U+F06F": {
+   "wired_count": 2,
+   "chunk_count": 2,
+   "papers": [
+    "4MA1/1H NOV 2023",
+    "4MA1/2H JUN 2026"
+   ],
+   "samples": [
+    {
+     "chunk_id": "320bb263-1028-4c1d-a958-a06a036d407d",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/2H JUN 2026",
+     "doc": "QP",
+     "page_start": 15,
+     "page_end": 15,
+     "hits_in_chunk": 1,
+     "context": "    O⏎      OA⏎      = OC⏎         = r cm     angle AOC = 80⏎      The area of the sector OABC is 32π cm 2⏎      Work o"
+    },
+    {
+     "chunk_id": "fab8052d-f595-480f-95de-c38cd47aa8ba",
+     "kind": "QUESTION_PAPER",
+     "paper": "4MA1/1H NOV 2023",
+     "doc": "QP",
+     "page_start": 27,
+     "page_end": 27,
+     "hits_in_chunk": 1,
+     "context": "                 (2)⏎                                       ⏎      The graph of y \u001f p cos \u001d x \u001e q \u001c for 0  x  360 is "
+    }
+   ]
+  },
+  "U+F097": {
+   "wired_count": 2,
+   "chunk_count": 1,
+   "papers": [
+    "4CH1/2CR JAN 2021"
+   ],
+   "samples": [
+    {
+     "chunk_id": "704921d8-a137-44df-b3ec-15b40c1bf87d",
+     "kind": "QUESTION_PAPER",
+     "paper": "4CH1/2CR JAN 2021",
+     "doc": "QP",
+     "page_start": 12,
+     "page_end": 15,
+     "hits_in_chunk": 2,
+     "context": "gram, draw and label the reaction profiles for the reaction⏎ without a catalyst⏎ with a catalyst⏎2H2O2⏎Energy⏎2H2O + O"
+    }
+   ]
+  },
+  "U+F0A6": {
+   "wired_count": 0,
+   "chunk_count": 0,
+   "papers": [],
+   "samples": []
+  }
+ }
+}
