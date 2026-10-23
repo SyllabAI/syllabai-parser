@@ -70,3 +70,26 @@ adjudication contact sheets) + `evidence/T-MIG-141/crops/<CP>_representative.png
   `run002b/` (contexts, run patterns, render manifest, probes, validation).
 - Sequence-rule consumption EXACT: SEQ-A1 ×15, SEQ-A2 ×30, SEQ-A3 ×1, SEQ-B4 ×7, SEQ-B5 ×2;
   C7 deletion disclosure: 165 chars collapsed across 55 runs + drop class 5,146.
+
+## run-004 (2026-10-24) — operator ruling: U+F0CF resolved, register EMPTY
+
+- **Ruling of record (trace 1a169e3fdeaecd11)**: `U+F0CF → U+2209` (NOT AN ELEMENT OF),
+  map class. Table now: **84 entries, 5 sequence rules; pending register EMPTY**.
+- **Decisive evidence (300dpi, both MuPDF and poppler)**: the glyph renders as a visible
+  element-of-with-slash in the Answer column of the 4MA1 JUN 2025 1FR (p15) / 1HR (p8)
+  marks grids, each row `… ∉ … 1 B1` — a markable **set-notation answer**, sibling to the
+  landed family F0C6=∅, F0C7=∩, F0C8=∪, F0D0=∠ (same SymbolMT plane; F0CE=∈ has zero bank
+  instances). Grayscale tight-box ink min=0, mean ~219 (≈ empty-set control ~218).
+- **Operator's offered option set refuted**: map-as-space (blanks a markable answer),
+  Phase-C re-parse (disproportionate — text layer repairable in place; ADR-037 authorship
+  risk for zero gain), leave (rests on the overturned no-ink premise).
+- **run-002b "no-ink @300dpi" verdict = probe crop-placement artifact** (both renderers
+  draw the glyph at the correct pdftotext bbox); disclosed, unreconstructible; the
+  run-002b register note ("spacer or unattributable arc") is OVERTURNED.
+- **Full-bank re-simulation vs the ruled table (zero DB writes)**: residual PUA = **ZERO**
+  (wired-bank coverage **25,399/25,399, 100%**); G-B 0 violations; G-D 2,949/2,949 rows
+  artifact-free; G-C EXACT (subs 20,033 = run-003 pin 20,031 + F0CF 2, drop 5,146, seq
+  15/30/1/7/2, ctl 2,000, len_delta −5,311); idempotence green; C9 id-set sha256 and the
+  200-row control group identical to the run-003 pins (bank undrifted).
+- Evidence: `crops-run004-f0cf/` (tight/band/gridblock renders both papers + poppler
+  cross-render + probe JSON). Receipt: syllabai-v2 `.syllabai/receipts/T-MIG-141/run-004/`.

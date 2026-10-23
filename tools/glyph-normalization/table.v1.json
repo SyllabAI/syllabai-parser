@@ -16,7 +16,8 @@
    "source_receipt": "syllabai-v2 .syllabai/receipts/T-MIG-141/run-001-claim-census-reverify.json"
   },
   "evidence_standard": "F48 transposed (SPEC-T-MIG-141 §3.3): rendered proof @150dpi + census match + canary pin + wrong-map disproof (disproof runs at Phase-B dry-run, run-003)",
-  "run002b": "pending-register resolution pass: 22 new single entries + 5 sequence rules; register 21 items -> 1 (F0CF fail-closed, no-ink glyph, 2 inst) + F0A6 closed-zero; V1 HOLE DISCLOSED: the v1 register listed 774 unmapped instances but the true unmapped set was 1,691 - run-002b's census-match law found 917 further instances in 5 CPs (F084 520 / F0B1 392 / F033 2 / F050 1 / F0CF 2) with NO entry AND NO register item; 915 now mapped, F0CF fail-closed; F084 spec-sqrt hypothesis OVERTURNED by evidence (<= proven, complementary pair with F085>=); post-state wired-bank PUA coverage: 25,397/25,399 mapped-or-dropped (99.99%), residual = U+F0CF x2 fail-closed; evidence: sheetB1-B5 + crops-run002b/ (~75 crops @150dpi) + phase-A crops for the hole CPs; oeq-donor corroboration: F0E0/F0E5/F8E7 confirmed, F8EE-F8F0/F8F9-F8FB upheld on donor+census+family-convergence (pieces edge-thin in renders, disclosed)"
+  "run002b": "pending-register resolution pass: 22 new single entries + 5 sequence rules; register 21 items -> 1 (F0CF fail-closed, no-ink glyph, 2 inst) + F0A6 closed-zero; V1 HOLE DISCLOSED: the v1 register listed 774 unmapped instances but the true unmapped set was 1,691 - run-002b's census-match law found 917 further instances in 5 CPs (F084 520 / F0B1 392 / F033 2 / F050 1 / F0CF 2) with NO entry AND NO register item; 915 now mapped, F0CF fail-closed; F084 spec-sqrt hypothesis OVERTURNED by evidence (<= proven, complementary pair with F085>=); post-state wired-bank PUA coverage: 25,397/25,399 mapped-or-dropped (99.99%), residual = U+F0CF x2 fail-closed; evidence: sheetB1-B5 + crops-run002b/ (~75 crops @150dpi) + phase-A crops for the hole CPs; oeq-donor corroboration: F0E0/F0E5/F8E7 confirmed, F8EE-F8F0/F8F9-F8FB upheld on donor+census+family-convergence (pieces edge-thin in renders, disclosed)",
+  "run004": "2026-10-24 operator ruling trace 1a169e3fdeaecd11: U+F0CF -> U+2209 (2 inst) landed from decisive 300dpi renders + set-notation family scaffold; pending register empty; wired-bank post-state 25,399/25,399 (100%)"
  },
  "ordering_law": "single left-to-right pass; sequence_rules matched FIRST (longest sequence wins), then 1:1 single entries; all targets non-PUA; DROP class deletes the char (C7 exception, disclosed per-row); sequence collapse deletes (len-1) chars per run (C7 disclosed: 165 chars across 55 runs); idempotence normalize(normalize(x))==normalize(x)",
  "entries": [
@@ -1286,18 +1287,33 @@
    },
    "canary": "C-Glyph-F050",
    "note": "tick in instruction parens: 'Add ticks (✓) to the table' (4CH1/2CR QP); converges with landed F0FC->U+2713"
+  },
+  {
+   "from": "U+F0CF",
+   "to": "U+2209",
+   "count": 2,
+   "origin": "our-render+context-scaffold",
+   "evidence": {
+    "source": "run-004 operator-ruling adjudication 2026-10-24 (300dpi MuPDF + poppler renders, CROP-REVIEW pattern): both carrier instances render a VISIBLE element-of-with-slash glyph in the Answer column of the marks grid, each followed by '1 B1' marks cells",
+    "render_ref": "crops-run004-f0cf/ (4MA1-1FR_f0cf0_tight.png / 4MA1-1HR_f0cf0_tight.png / 4MA1-1FR_f0cf0_band120.png / 4MA1-1FR_f0cf0_gridblock.png / poppler cross-render poppler_1fr_p15-15.png)",
+    "carriers": [
+     "chunk e2a2b4c2-ef7b-4756-820a-e7978dba76b5 (4MA1/1FR JUN 2025 MS, page 15, atom 20)",
+     "chunk 9cba1315-c47a-48f4-a0c8-cdd673e5463a (4MA1/1HR JUN 2025 MS, page 8, atom 5)"
+    ],
+    "geometry": "SymbolMT CID TrueType (no ToUnicode, T-MIG-138 class); bbox 5.1x15.8pt at size 9.61/8.73pt, vertically overlapping the sibling U+F0C6 (empty-set) box above by design of the grid rows",
+    "ink": "grayscale tight-box min=0 mean=218.9 (1FR) / 215.9 (1HR) vs empty-set control mean 217.9/217.6 - ink present, glyph visible in BOTH MuPDF and poppler renderers",
+    "context": "sets-question Answer column: '1, 2, 4, 5, 7, 8, 10, 11' / U+2205 / U+2209 rows, each '1 B1' - set-notation answer family in the same SymbolMT plane as landed F0C6=U+2205, F0C7=U+2229, F0C8=U+222A, F0D0=U+2220; F0CE (unslashed element-of) has ZERO bank instances (census), so the slashed U+2209 is the only consistent name",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, chat 1f3003b6)",
+    "verified_at": "2026-10-24",
+    "order_trace": "operator ruling trace 1a169e3fdeaecd11 (run-004)"
+   },
+   "canary": "C-Glyph-F0CF",
+   "note": "OPERATOR-RULING RUN-004 (trace 1a169e3fdeaecd11): offered option set {map-as-space, Phase-C re-parse, leave} ALL REFUTED by render evidence - the glyph is a markable set-notation answer (not a spacer), the text layer is repairable in place (re-parse disproportionate, ADR-037 authorship-risk), and 'leave' rests on the overturned no-ink premise. run-002b 'no-ink @300dpi' verdict = probe crop-placement artifact (both MuPDF and poppler draw the glyph at the correct pdftotext bbox); disclosed. run-002b register note ('spacer or unattributable arc') OVERTURNED. Count 2 = census EXACT."
   }
  ],
  "pending_register": {
-  "note": "run-002b (2026-10-24): register 21 items resolved (18 mapped via new entries/sequence rules, F0A6 closed-zero, F072 split) - RE-CARRYING U+F0CF (v1 hole CP, fail-closed, 2 inst); any FUTURE unmapped PUA re-registers here fail-closed (born-clean law)",
-  "items": [
-   {
-    "from": "U+F0CF",
-    "count": 2,
-    "reason": "no-ink glyph at evidence standard; marks-grid spacer or unattributable arc - not nameable; 2 inst in 4MA1 JUN 2025 1FR/1HR marks grids",
-    "origin": "run-002b-v1-hole"
-   }
-  ]
+  "note": "run-004 (2026-10-24): U+F0CF resolved by operator ruling -> U+2209 (map-to-real-char, render-evidenced 300dpi, offered options map-as-space/Phase-C/leave all refuted) - PENDING REGISTER IS NOW EMPTY; any FUTURE unmapped PUA re-registers here fail-closed (born-clean law). run-002b: register 21 items resolved (18 mapped via new entries/sequence rules, F0A6 closed-zero, F072 split); v1 hole CPs F084/F0B1/F033/F050 mapped, F0CF resolved at run-004.",
+  "items": []
  },
  "control_char_policy": "control chars (C0 class, 2,000 wired instances / 26 distinct per run-001) resolve per SPEC §3.4 in the run-002 evidence pass; unmapped ones fall back to single-space INSIDE scoped rows only, logged per-instance",
  "sequence_rules": [
@@ -1551,6 +1567,12 @@
    "registered_count": 2,
    "wired_count": 2,
    "disposition": "NEW-REGISTER (run-002b): v1 hole CP - glyph renders NO INK at its word box (300dpi render, 4MA1-1FR ms p1 box [430,85,435,101]) while the phase-A crop shows an unattributable arc from neighboring content; not nameable at the F48 standard -> stays FAIL-CLOSED (2 inst, both '(ii) F0CF 1 B1' marks-grid lines in 4MA1 JUN 2025 1FR/1HR); the 2 carrier rows are Phase-B scope exclusions or operator-ruling candidates"
+  },
+  {
+   "from": "U+F0CF",
+   "registered_count": 2,
+   "wired_count": 2,
+   "disposition": "RESOLVED-MAPPED (run-004 operator ruling): -> U+2209 not-an-element-of, render-evidenced at 300dpi (MuPDF + poppler) in the 4MA1 JUN 2025 1FR/1HR marks-grid Answer columns; offered options map-as-space/Phase-C/leave all refuted; run-002b no-ink verdict = probe artifact"
   }
  ]
 }
