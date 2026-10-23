@@ -1,0 +1,1070 @@
+{
+ "schema": "syllabai.glyph-normalization-table/1.0",
+ "id": "table.v1",
+ "task": "T-MIG-141",
+ "generated_utc": "2026-10-23T12:40:00Z",
+ "generated_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+ "provenance": {
+  "audit": "trace 1a16504bce9a8a0d (quality audit) -> SPEC-T-MIG-141 (v2 edd5a91d)",
+  "donor_base": "syllabai-resources Official-ExamQuestion PUA_MAP @ 1ef9d5b8 (scripts/official_examq_extract.py sha b114f47a), imported per spec §3.1 precedence 1; donor repo NOT an edit surface",
+  "census_pin": {
+   "scope": "wired exam-paper plane (chunks -> documents.document_row_id=documents.id -> exam_papers via documents.document_id)",
+   "chunks": 2765,
+   "pua_instances": 25399,
+   "distinct": 85,
+   "sha256": "5c18c01e15e918cb36a8609a2c2ae6dbdb806ad3a5738822299c3c070c8c63d2",
+   "source_receipt": "syllabai-v2 .syllabai/receipts/T-MIG-141/run-001-claim-census-reverify.json"
+  },
+  "evidence_standard": "F48 transposed (SPEC-T-MIG-141 §3.3): rendered proof @150dpi + census match + canary pin + wrong-map disproof (disproof runs at Phase-B dry-run, run-003)"
+ },
+ "ordering_law": "single left-to-right pass; 1:1 substitution (all targets non-PUA); DROP class deletes the char (C7 exception, disclosed per-row); idempotence normalize(normalize(x))==normalize(x)",
+ "entries": [
+  {
+   "from": "U+F02D",
+   "to": "U+2212",
+   "count": 991,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F02D adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F02D",
+   "note": "minus; charge/subtraction/bond"
+  },
+  {
+   "from": "U+F044",
+   "to": "U+0394",
+   "count": 2,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F044 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F044",
+   "note": "Symbol Delta (DeltaH)"
+  },
+  {
+   "from": "U+F083",
+   "to": "U+21CC",
+   "count": 37,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F083 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F083",
+   "note": "equilibrium arrow"
+  },
+  {
+   "from": "U+F0B4",
+   "to": "U+00D7",
+   "count": 4263,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0B4 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B4",
+   "note": "multiply"
+  },
+  {
+   "from": "U+F0B7",
+   "to": "U+2022",
+   "count": 96,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0B7 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B7",
+   "note": "MS list bullet"
+  },
+  {
+   "from": "U+F0B8",
+   "to": "U+00F7",
+   "count": 283,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0B8 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B8",
+   "note": "divide"
+  },
+  {
+   "from": "U+F09F",
+   "to": "U+2022",
+   "count": 20,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F09F adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F09F",
+   "note": "method-list bullet"
+  },
+  {
+   "from": "U+F0FC",
+   "to": "U+2713",
+   "count": 47,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0FC adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0FC",
+   "note": "Wingdings check"
+  },
+  {
+   "from": "U+F0AD",
+   "to": "U+2191",
+   "count": 1,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0AD adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0AD",
+   "note": "up arrow (energy axis)"
+  },
+  {
+   "from": "U+F0AE",
+   "to": "U+2192",
+   "count": 17,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0AE adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0AE",
+   "note": "long arrowright"
+  },
+  {
+   "from": "U+F0B0",
+   "to": "U+00B0",
+   "count": 31,
+   "origin": "oeq-base+our-render",
+   "evidence": {
+    "source": "sheet-F0B0 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B0",
+   "note": "degree"
+  },
+  {
+   "from": "U+F02B",
+   "to": "U+002B",
+   "count": 624,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F02B adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F02B",
+   "note": "plus"
+  },
+  {
+   "from": "U+F03D",
+   "to": "U+003D",
+   "count": 819,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F03D adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F03D",
+   "note": "equals"
+  },
+  {
+   "from": "U+F03C",
+   "to": "U+003C",
+   "count": 99,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F03C adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F03C",
+   "note": "less-than"
+  },
+  {
+   "from": "U+F03E",
+   "to": "U+003E",
+   "count": 55,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F03E adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F03E",
+   "note": "greater-than"
+  },
+  {
+   "from": "U+F053",
+   "to": "U+03A3",
+   "count": 1,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F053 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F053",
+   "note": "Sigma (bond-energy sums)"
+  },
+  {
+   "from": "U+F070",
+   "to": "U+03C0",
+   "count": 569,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F070 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F070",
+   "note": "pi"
+  },
+  {
+   "from": "U+F071",
+   "to": "U+03B8",
+   "count": 3,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F071 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F071",
+   "note": "theta"
+  },
+  {
+   "from": "U+F077",
+   "to": "U+03C9",
+   "count": 2,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F077 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F077",
+   "note": "omega"
+  },
+  {
+   "from": "U+F06D",
+   "to": "U+03BC",
+   "count": 74,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F06D adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F06D",
+   "note": "mu"
+  },
+  {
+   "from": "U+F085",
+   "to": "U+2265",
+   "count": 34,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F085 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F085",
+   "note": "geq (Symbol 0x85 slot)"
+  },
+  {
+   "from": "U+F0B3",
+   "to": "U+2265",
+   "count": 51,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0B3 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B3",
+   "note": "geq (Symbol 0xB3 duplicate slot)"
+  },
+  {
+   "from": "U+F0A3",
+   "to": "U+2264",
+   "count": 127,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0A3 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0A3",
+   "note": "leq"
+  },
+  {
+   "from": "U+F0B9",
+   "to": "U+2260",
+   "count": 13,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0B9 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B9",
+   "note": "not-equal"
+  },
+  {
+   "from": "U+F0B5",
+   "to": "U+221D",
+   "count": 13,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0B5 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0B5",
+   "note": "proportional to"
+  },
+  {
+   "from": "U+F0C6",
+   "to": "U+2205",
+   "count": 2,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0C6 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0C6",
+   "note": "empty set"
+  },
+  {
+   "from": "U+F0C7",
+   "to": "U+2229",
+   "count": 26,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0C7 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0C7",
+   "note": "intersection"
+  },
+  {
+   "from": "U+F0C8",
+   "to": "U+222A",
+   "count": 3,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0C8 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0C8",
+   "note": "union"
+  },
+  {
+   "from": "U+F0D0",
+   "to": "U+2220",
+   "count": 31,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0D0 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0D0",
+   "note": "angle"
+  },
+  {
+   "from": "U+F0A5",
+   "to": "U+221E",
+   "count": 11,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0A5 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0A5",
+   "note": "infinity"
+  },
+  {
+   "from": "U+F0DE",
+   "to": "U+21D2",
+   "count": 11,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0DE adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0DE",
+   "note": "implied double arrow"
+  },
+  {
+   "from": "U+F0DB",
+   "to": "U+25CA",
+   "count": 1,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F0DB adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0DB",
+   "note": "lozenge"
+  },
+  {
+   "from": "U+F05B",
+   "to": "U+005B",
+   "count": 51,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F05B adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F05B",
+   "note": "left bracket"
+  },
+  {
+   "from": "U+F05D",
+   "to": "U+005D",
+   "count": 51,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F05D adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F05D",
+   "note": "right bracket"
+  },
+  {
+   "from": "U+F07B",
+   "to": "U+007B",
+   "count": 6,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F07B adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F07B",
+   "note": "left brace"
+  },
+  {
+   "from": "U+F07D",
+   "to": "U+007D",
+   "count": 6,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F07D adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F07D",
+   "note": "right brace"
+  },
+  {
+   "from": "U+F028",
+   "to": "U+0028",
+   "count": 242,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F028 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F028",
+   "note": "left paren (small class; big scaffolds = F0E6-family)"
+  },
+  {
+   "from": "U+F029",
+   "to": "U+0029",
+   "count": 242,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F029 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F029",
+   "note": "right paren (small class)"
+  },
+  {
+   "from": "U+F022",
+   "to": "U+2192",
+   "count": 56,
+   "origin": "our-render",
+   "evidence": {
+    "source": "sheet-F022 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F022",
+   "note": "Wingdings3 equation arrow"
+  },
+  {
+   "from": "U+F0E6",
+   "to": "U+239B",
+   "count": 1432,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0E6 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E6",
+   "note": "big-paren LEFT top (59 top-votes)"
+  },
+  {
+   "from": "U+F0E7",
+   "to": "U+239C",
+   "count": 1496,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0E7 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E7",
+   "note": "big-paren LEFT extension (71 mid-votes)"
+  },
+  {
+   "from": "U+F0E8",
+   "to": "U+239D",
+   "count": 1436,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0E8 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E8",
+   "note": "big-paren LEFT bottom (58 bottom-votes)"
+  },
+  {
+   "from": "U+F0F6",
+   "to": "U+239E",
+   "count": 1432,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0F6 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0F6",
+   "note": "big-paren RIGHT top"
+  },
+  {
+   "from": "U+F0F7",
+   "to": "U+239F",
+   "count": 1498,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0F7 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0F7",
+   "note": "big-paren RIGHT extension"
+  },
+  {
+   "from": "U+F0F8",
+   "to": "U+23A0",
+   "count": 1437,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0F8 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0F8",
+   "note": "big-paren RIGHT bottom"
+  },
+  {
+   "from": "U+F0E9",
+   "to": "U+23A1",
+   "count": 135,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0E9 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E9",
+   "note": "big-bracket LEFT top (converges with OEQ F8EE target)"
+  },
+  {
+   "from": "U+F0EA",
+   "to": "U+23A2",
+   "count": 94,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0EA adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0EA",
+   "note": "big-bracket LEFT extension"
+  },
+  {
+   "from": "U+F0EB",
+   "to": "U+23A3",
+   "count": 135,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0EB adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0EB",
+   "note": "big-bracket LEFT bottom"
+  },
+  {
+   "from": "U+F0F9",
+   "to": "U+23A4",
+   "count": 135,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0F9 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0F9",
+   "note": "big-bracket RIGHT top (converges with OEQ F8F9 target)"
+  },
+  {
+   "from": "U+F0FA",
+   "to": "U+23A5",
+   "count": 94,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0FA adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0FA",
+   "note": "big-bracket RIGHT extension"
+  },
+  {
+   "from": "U+F0FB",
+   "to": "U+23A6",
+   "count": 135,
+   "origin": "positional-law",
+   "evidence": {
+    "source": "sheet-F0FB adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet2.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0FB",
+   "note": "big-bracket RIGHT bottom"
+  },
+  {
+   "from": "U+F0A2",
+   "to": "DROP",
+   "count": 5146,
+   "origin": "drop-class",
+   "evidence": {
+    "source": "sheet-F0A2 adjudication 2026-10-23 (150dpi render, CROP-REVIEW pattern); see evidence/T-MIG-141/",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet1.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0A2",
+   "note": "answer-line rule / page furniture (OEQ evidence + our 2 renders + position census); C7 exception: deletions disclosed per-row"
+  },
+  {
+   "from": "U+F0E0",
+   "to": "U+2192",
+   "count": 26,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet5.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E0",
+   "note": "Wingdings word-equation arrow; donor render + census context; our render pending"
+  },
+  {
+   "from": "U+F0E5",
+   "to": "U+03A3",
+   "count": 9,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet5.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F0E5",
+   "note": "CID Sigma; donor render; our render pending"
+  },
+  {
+   "from": "U+F8E7",
+   "to": "U+2500",
+   "count": 13,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet5.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8E7",
+   "note": "bond-rule light horizontal; donor render + our context crop"
+  },
+  {
+   "from": "U+F8EE",
+   "to": "U+23A1",
+   "count": 4,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet5.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8EE",
+   "note": "Symbol big-bracket L-top (OEQ 1CR render); our positional corroboration pending"
+  },
+  {
+   "from": "U+F8EF",
+   "to": "U+23A2",
+   "count": 20,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet5.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8EF",
+   "note": "Symbol big-bracket L-ext (OEQ 1CR render)"
+  },
+  {
+   "from": "U+F8F0",
+   "to": "U+23A3",
+   "count": 4,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet6.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8F0",
+   "note": "Symbol big-bracket L-bot (OEQ 1CR render)"
+  },
+  {
+   "from": "U+F8F9",
+   "to": "U+23A4",
+   "count": 2,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet6.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8F9",
+   "note": "Symbol big-bracket R-top (OEQ 2CR render)"
+  },
+  {
+   "from": "U+F8FA",
+   "to": "U+23A5",
+   "count": 12,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet6.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8FA",
+   "note": "Symbol big-bracket R-ext (OEQ 2CR render)"
+  },
+  {
+   "from": "U+F8FB",
+   "to": "U+23A6",
+   "count": 2,
+   "origin": "oeq-donor",
+   "evidence": {
+    "source": "OEQ normalize_pua base @ resources 1ef9d5b8 converter b114f47a (their 1CR/2CR 150dpi renders) + our census/context corroboration; our-render corroboration pending run-002",
+    "render_ref": "evidence/T-MIG-141/sheets/sheet6.png",
+    "verified_by": "r7a (Super Z, session web-da4ab8b1, trace 1a1686907a2d0855)",
+    "verified_at": "2026-10-23",
+    "crop_index": "evidence/T-MIG-141/crops/"
+   },
+   "canary": "C-Glyph-F8FB",
+   "note": "Symbol big-bracket R-bot (OEQ 2CR render)"
+  }
+ ],
+ "pending_register": {
+  "note": "NOT mapped in v1 (fail-closed: unmapped PUA never silently served); run-002 must evidence these before Phase B includes their rows",
+  "items": [
+   {
+    "from": "U+F072",
+    "count": 22,
+    "reason": "OEQ=Wingdings3 Delta vs OUR renders=vector over-arrow; held for composed-arrow study",
+    "origin": "CONFLICT"
+   },
+   {
+    "from": "U+F8EB",
+    "count": 32,
+    "reason": "suspected big-brace LEFT pieces (exact L/R pairing F8EB/F8F6 x46, F8EC/F8F7 x44, F8ED/F8F8 x44); anchor render missed scaffold",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F8EC",
+    "count": 32,
+    "reason": "see F8EB",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F8ED",
+    "count": 32,
+    "reason": "see F8EB",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F8F6",
+    "count": 32,
+    "reason": "see F8EB",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F8F7",
+    "count": 32,
+    "reason": "see F8EB",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F8F8",
+    "count": 32,
+    "reason": "see F8EB",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F026",
+    "count": 95,
+    "reason": "composed long-arrow runs (shaft/head: words are pure F075xF3+F072 runs); needs sequence-rule design before mapping",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F067",
+    "count": 41,
+    "reason": "composed long-arrow runs",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F072",
+    "count": 22,
+    "reason": "composed long-arrow runs + OEQ Delta conflict (their font prints Delta at this slot; ours prints the over-arrow)",
+    "origin": "CONFLICT"
+   },
+   {
+    "from": "U+F075",
+    "count": 173,
+    "reason": "composed long-arrow runs",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F02F",
+    "count": 55,
+    "reason": "render ambiguous (acute-like marks over digits); tight-crop pass pending",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F041",
+    "count": 1,
+    "reason": "render ambiguous (A + overline class)",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F06C",
+    "count": 160,
+    "reason": "render ambiguous (bar/lambda contexts); tight-crop pass pending",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F0D7",
+    "count": 8,
+    "reason": "render ambiguous",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F0B6",
+    "count": 1,
+    "reason": "single instance; render ambiguous",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F0BC",
+    "count": 2,
+    "reason": "dots class (ellipsis vs therefore)",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F061",
+    "count": 20,
+    "reason": "anchor render missed glyph (glm-ocr-origin chunk)",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F06F",
+    "count": 2,
+    "reason": "anchor render missed glyph",
+    "origin": "our-render"
+   },
+   {
+    "from": "U+F097",
+    "count": 2,
+    "reason": "anchor render missed glyph (OEQ donor says Wingdings2 bullet -> U+2022)",
+    "origin": "oeq-donor"
+   },
+   {
+    "from": "U+F0A6",
+    "count": 0,
+    "reason": "anchor render missed glyph",
+    "origin": "our-render"
+   }
+  ]
+ },
+ "control_char_policy": "control chars (C0 class, 2,000 wired instances / 26 distinct per run-001) resolve per SPEC §3.4 in the run-002 evidence pass; unmapped ones fall back to single-space INSIDE scoped rows only, logged per-instance"
+}
