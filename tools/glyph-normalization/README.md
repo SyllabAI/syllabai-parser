@@ -93,3 +93,29 @@ adjudication contact sheets) + `evidence/T-MIG-141/crops/<CP>_representative.png
   200-row control group identical to the run-003 pins (bank undrifted).
 - Evidence: `crops-run004-f0cf/` (tight/band/gridblock renders both papers + poppler
   cross-render + probe JSON). Receipt: syllabai-v2 `.syllabai/receipts/T-MIG-141/run-004/`.
+
+## run-005 — Phase-B real-write driver of record (`phase_b_apply.py`)
+
+The operator's "Go" (trace `1a169fc63e946759`) fired the Phase-B real write via the
+CI gate. This directory now carries the **frozen deterministic driver** mandated by
+spec §4.2 (no LLM, ADR-037):
+
+- **`phase_b_apply.py`** (sha256 `6b66bf2f0103ab5a1881a540187f102b172e9036772a04fa0e30b09ef0f37f72`,
+  pinned in the v2 workflow) — modes `verify` (read-only pre-gates + in-memory
+  simulation) and `apply` (ONE transaction per paper-batch with per-batch
+  post-gates before commit; fail-closed restore from before-images on any gate
+  failure, spec §4.3).
+- **Pins inside the driver (all hard-fail)**: table sha256 `1fdd4b4a…2094a` (this
+  repo @ `d9c1511`), C9 id-set sha `4014404b…c037`, before-images uncompressed sha
+  `9d9d84c6…84e3b` + the run-003 `.gz` artifact sha `a542c75e…4aafb`, control-group
+  file sha `a05652a9…300d`, embed pre-state `{2: 2949 / no_vec 273}`, G-C accounting
+  EXACT (subs 20,033 / F0CF 2, drop 5,146, seq 15/30/1/7/2 = 220 chars, ctl 2,000,
+  len_delta −5,311, insertions 0), idempotence 0.
+- **Lane-side verify preflight (2026-10-24, zero writes, t0_readonly)**: ALL GREEN —
+  scope 2,949 rows, C9 pin-exact, before-images pin-exact, control group identical,
+  G-C simulation EXACT. Receipt: lane scratch `run005-verify/verify-receipt.json`.
+- **Runner of record**: syllabai-v2 `.github/workflows/t-mig-141-phase-b.yml` —
+  job 1 COW-branch proof (apply + full post-gates + DROP + 404-verify, `if: always()`),
+  job 2 prod-apply behind `needs: cow-proof` green. Patch law: `content` ← mapped
+  text, `embed_rev` ← 1 stale marker (vectors KEPT serving; Phase D restores 2),
+  `content_tsv` GENERATED ALWAYS auto-refresh asserted post-write.
