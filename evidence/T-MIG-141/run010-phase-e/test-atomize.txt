@@ -1,0 +1,22 @@
+test_ms_suffix (__main__.LabelNormalizationTests.test_ms_suffix) ... ok
+test_qp_suffix (__main__.LabelNormalizationTests.test_qp_suffix) ... ok
+test_stem_chain (__main__.LabelNormalizationTests.test_stem_chain) ... ok
+test_entries_grouped_by_number (__main__.PairingLogicTests.test_entries_grouped_by_number) ... ok
+test_ms_view_is_null_safe (__main__.PairingLogicTests.test_ms_view_is_null_safe) ... ok
+test_suffix_index_and_lookup (__main__.PairingLogicTests.test_suffix_index_and_lookup) ... ok
+test_empty_slices_dropped (__main__.PromptAssemblyTests.test_empty_slices_dropped) ... ok
+test_inheritance_joins_verbatim_slices (__main__.PromptAssemblyTests.test_inheritance_joins_verbatim_slices) ... ok
+test_atomize_parsed_matches_atomize (__main__.RealPairIntegrationTests.test_atomize_parsed_matches_atomize)
+atomize() == atomize_parsed() over the same parsed documents — ... ok
+test_cli_writes_file_and_compact (__main__.RealPairIntegrationTests.test_cli_writes_file_and_compact) ... ok
+test_determinism_byte_identical (__main__.RealPairIntegrationTests.test_determinism_byte_identical) ... ok
+test_mcq_pairs_with_bare_number_entry (__main__.RealPairIntegrationTests.test_mcq_pairs_with_bare_number_entry) ... ok
+test_structured_parts_carry_inherited_stem_and_markscheme (__main__.RealPairIntegrationTests.test_structured_parts_carry_inherited_stem_and_markscheme) ... ok
+test_top_level_honesty (__main__.RealPairIntegrationTests.test_top_level_honesty) ... ok
+test_totals_block (__main__.RealPairIntegrationTests.test_totals_block) ... ok
+test_unmatched_parts_are_reported_not_guessed (__main__.RealPairIntegrationTests.test_unmatched_parts_are_reported_not_guessed) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.029s
+
+OK

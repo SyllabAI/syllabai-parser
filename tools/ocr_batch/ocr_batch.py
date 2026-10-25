@@ -38,9 +38,15 @@ the role token). Unpaired PDFs are reported and skipped, never guessed.
 
 Design rules inherited from the parser repo:
 
-  * Markdown bytes are saved exactly as received (byte-faithful); the
-    downstream documentId is SHA-256(checksum + engine + engineVersion), so
-    this tool never reflows, renormalizes or rewraps content.
+  * Markdown bytes are saved byte-faithful to WHAT IS SAVED; the downstream
+    documentId is SHA-256(checksum + engine + engineVersion), so this tool
+    never reflows, rewraps or otherwise edits content — with ONE law-gated
+    exception since v1.2.0: the T-MIG-141 Phase E intake law normalizes
+    PUA/control-char artifacts at intake through the canonical table
+    (tools/glyph-normalization/table.v1.json — the single map home), and the
+    born-clean gate (C-intake-zero-pua) FAILS the batch when any artifact
+    survives normalization (review, never silent serve). Character-level
+    map only: no reflow, no rewrap, no editorial change.
   * Images are downloaded THE SAME SECOND they are referenced. Signed crop
     URLs expire (the current GLM-markdown-sample corpus lost every image to
     expiry); saving at export time is the documented mandatory lesson.
@@ -48,8 +54,9 @@ Design rules inherited from the parser repo:
     the run) with a clear error — nothing is silently fabricated.
   * Honesty sidecars: manifest.json maps every markdown image reference to a
     local asset (or records why it could not be fetched); provenance.json
-    records engine, model, endpoint, request id, token usage and timings.
-    Secrets are never written to disk.
+    records engine, model, endpoint, request id, token usage and timings —
+    plus the glyph-normalization census (pre/post) per document. Secrets are
+    never written to disk.
 
 The manually-OCRed website workflow remains fully supported and unchanged;
 this tool is additive content-operations tooling.
@@ -80,7 +87,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 TOOL_NAME = "syllabai-parser ocr-batch"
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "1.2.0"  # 1.2.0: T-MIG-141 Phase E intake law (glyph normalization + born-clean gate)
 
 DEFAULT_API_URL = "https://api.z.ai/api/paas/v4/layout_parsing"
 DEFAULT_MODEL_API = "glm-ocr"
@@ -119,6 +126,57 @@ MAGIC = (
 
 class PaperError(Exception):
     """Per-paper failure (fail-loud, recorded in manifest + summary)."""
+
+
+# ---- T-MIG-141 Phase E intake law (single map home, no second map) --------
+_TOOLS_DIR = Path(__file__).resolve().parent.parent
+if str(_TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(_TOOLS_DIR))
+
+_INTAKE_CACHE: dict = {}
+
+
+def _intake_law():
+    """Compile the canonical table once per process (fail-closed load)."""
+    if "ct" not in _INTAKE_CACHE:
+        from glmocr import normalize_pua as _np
+        table = _np.load_table()
+        _INTAKE_CACHE["np"] = _np
+        _INTAKE_CACHE["ct"] = _np.compile_table(table)
+        _INTAKE_CACHE["sha"] = hashlib.sha256(_np.DEFAULT_TABLE.read_bytes()).hexdigest()
+    return _INTAKE_CACHE
+
+
+def _normalize_at_intake(text: str, label: str) -> tuple[str, dict]:
+    """T-MIG-141 Phase E law: normalize PUA/C0 artifacts at intake through
+    tools/glyph-normalization/table.v1.json (the single map home) and run
+    the born-clean gate. Raises PaperError when any artifact survives
+    normalization (C-intake-zero-pua FAIL — review, never silent serve).
+    Character-level map only: no reflow, no rewrap, no editorial change."""
+    law = _intake_law()
+    ct, np_mod = law["ct"], law["np"]
+    pre = ct.census(text)
+    normalized = ct.normalize(text)
+    post = ct.census(normalized)
+    ok = not post["unmapped_pua_instances"] and not post["c0_outside_mapped_instances"]
+    meta = {
+        "law": "T-MIG-141 Phase E intake law",
+        "canary": np_mod.INTAKE_CANARY,
+        "table": "tools/glyph-normalization/table.v1.json",
+        "tableSha256": law["sha"],
+        "artifact": label,
+        "censusPre": pre,
+        "censusPost": post,
+        "gate": "PASS" if ok else "FAIL",
+    }
+    if not ok:
+        raise PaperError(
+            f"{np_mod.INTAKE_CANARY} FAIL on {label} (born-clean law): "
+            f"{post['unmapped_pua_instances']} unmapped PUA instance(s) "
+            f"{post['unmapped_pua_distinct']} + "
+            f"{post['c0_outside_mapped_instances']} C0 survived normalization "
+            f"— review, never silent serve")
+    return normalized, meta
 
 
 def warn(msg: str) -> None:
@@ -779,6 +837,15 @@ def ocr_document(pdf_path: Path, cfg: Config, *,
             result = run_ollama_backend(pdf_path, cfg)
         timings["ocrSeconds"] = round(time.time() - t0, 2)
 
+        # ---- glyph normalization at intake (T-MIG-141 Phase E law) --------
+        t2 = time.time()
+        result.markdown, law_meta = _normalize_at_intake(result.markdown, "document")
+        if result.page_markdowns:
+            for i, piece in enumerate(result.page_markdowns):
+                result.page_markdowns[i], _pmeta = _normalize_at_intake(
+                    piece, f"page_{i + 1:03d}")
+        timings["intakeLawSeconds"] = round(time.time() - t2, 2)
+
         # ---- outputs ------------------------------------------------------
         out_dir.mkdir(parents=True, exist_ok=True)
         md_path = out_dir / f"{stem}.md"
@@ -810,8 +877,10 @@ def ocr_document(pdf_path: Path, cfg: Config, *,
             "fileName": md_path.name,
             "sha256": sha256_hex(md_bytes),
             "bytes": len(md_bytes),
-            "origin": ("md_results-as-received" if cfg.backend == "api"
-                       else "ollama /api/generate per-page, joined"),
+            "origin": (("md_results-as-received, glyph-normalized at intake"
+                        " (T-MIG-141 Phase E)") if cfg.backend == "api"
+                       else "ollama /api/generate per-page, joined, glyph-normalized"
+                            " at intake (T-MIG-141 Phase E)"),
             "pageCount": (len(result.page_markdowns)
                           if result.page_markdowns else 1),
             "pagesDir": (f"pages/{role}/" if role else "pages/")
@@ -836,11 +905,13 @@ def ocr_document(pdf_path: Path, cfg: Config, *,
                     "bytes": len(data),
                 },
                 "markdown": markdown_section,
+                "glyphNormalization": law_meta,
                 "assets": assets,
                 "unfetchedAssets": unfetched,
                 "warnings": result.warnings,
                 "timings": timings,
-                "note": ("markdown bytes are saved exactly as received; the "
+                "note": ("markdown bytes are saved exactly as normalized at intake"
+                         " (T-MIG-141 Phase E law, C-intake-zero-pua gate); the "
                          "parser derives documentId from SHA-256(bytes)+engine+"
                          "engineVersion, so this file is the identity anchor"),
             }
@@ -877,6 +948,7 @@ def ocr_document(pdf_path: Path, cfg: Config, *,
             "source": {"fileName": pdf_path.name, "sha256": source_sha,
                        "bytes": len(data)},
             "markdown": markdown_section,
+            "glyphNormalization": law_meta,
             "assets": assets,
             "unfetchedAssets": unfetched,
             "warnings": result.warnings,

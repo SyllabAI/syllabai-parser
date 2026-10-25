@@ -1,0 +1,32 @@
+test_canary_name_pinned (__main__.TestBornCleanGate.test_canary_name_pinned) ... ok
+test_gate_fails_on_unmapped_artifact (__main__.TestBornCleanGate.test_gate_fails_on_unmapped_artifact) ... ok
+test_gate_passes_on_mapped_text (__main__.TestBornCleanGate.test_gate_passes_on_mapped_text) ... ok
+test_bank_sample_replay (__main__.TestFrozenDriverEquivalence.test_bank_sample_replay)
+A real run-002b context string replays to the live bank bytes. ... ok
+test_byte_equivalence_on_fuzz_battery (__main__.TestFrozenDriverEquivalence.test_byte_equivalence_on_fuzz_battery)
+normalize_pua must replay the frozen Phase-B driver byte-exactly. ... /home/z/my-project/repos/syllabai-parser/tools/glyph-normalization/phase_b_apply.py:100: ResourceWarning: unclosed file <_io.BufferedReader name='/home/z/my-project/repos/syllabai-parser/tools/glyph-normalization/table.v1.json'>
+  raw = open(path, "rb").read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_frozen_boundary_indexerror_documented (__main__.TestFrozenDriverEquivalence.test_frozen_boundary_indexerror_documented)
+The frozen driver IndexErrors on an end-of-string partial run; ... /home/z/my-project/repos/syllabai-parser/tools/glyph-normalization/phase_b_apply.py:100: ResourceWarning: unclosed file <_io.BufferedReader name='/home/z/my-project/repos/syllabai-parser/tools/glyph-normalization/table.v1.json'>
+  raw = open(path, "rb").read()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_idempotent_on_mixed_input (__main__.TestIdempotence.test_idempotent_on_mixed_input) ... ok
+test_all_five_sequence_rules (__main__.TestSequences.test_all_five_sequence_rules) ... ok
+test_end_of_string_partial_run_no_crash (__main__.TestSequences.test_end_of_string_partial_run_no_crash) ... ok
+test_longest_sequence_wins (__main__.TestSequences.test_longest_sequence_wins) ... ok
+test_unobserved_run_length_fail_closed (__main__.TestSequences.test_unobserved_run_length_fail_closed) ... ok
+test_ctl_space_fallback_and_whitespace_trio (__main__.TestSingles.test_ctl_space_fallback_and_whitespace_trio) ... ok
+test_drop_class_deletes (__main__.TestSingles.test_drop_class_deletes) ... ok
+test_every_mapped_single_translates (__main__.TestSingles.test_every_mapped_single_translates) ... ok
+test_unmapped_pua_passes_through (__main__.TestSingles.test_unmapped_pua_passes_through) ... ok
+test_malformed_table_fails_closed (__main__.TestTableShape.test_malformed_table_fails_closed) ... ok
+test_real_table_loads_and_pins (__main__.TestTableShape.test_real_table_loads_and_pins) ... ok
+test_sha_pin_fail_closed (__main__.TestTableShape.test_sha_pin_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.123s
+
+OK

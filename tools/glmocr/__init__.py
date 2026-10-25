@@ -26,6 +26,7 @@ __all__ = [
     "canonical",
     "question_extractor",
     "markscheme_extractor",
+    "normalize_pua",
     "ENGINE_NAME",
     "ENGINE_VERSION",
 ]

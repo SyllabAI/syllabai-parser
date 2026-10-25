@@ -643,5 +643,64 @@ class PairModeTests(unittest.TestCase):
         self.assertFalse((self.tmp / "out").exists())
 
 
+class IntakeLawTests(unittest.TestCase):
+    """T-MIG-141 Phase E intake law (v1.2.0): glyph normalization at intake
+    through the canonical table + the C-intake-zero-pua born-clean gate."""
+
+    def test_normalized_at_intake_mapped_pua(self):
+        out, meta = ob._normalize_at_intake("84 \uF02D 69 \uF0B4 2", "document")
+        self.assertEqual(out, "84 \u2212 69 \u00D7 2")
+        self.assertEqual(meta["canary"], "C-intake-zero-pua")
+        self.assertEqual(meta["gate"], "PASS")
+        self.assertEqual(meta["censusPre"]["unmapped_pua_instances"], 0)
+        self.assertIn("tableSha256", meta)
+
+    def test_ctl_spaced_at_intake(self):
+        out, meta = ob._normalize_at_intake("a\x03b", "document")
+        self.assertEqual(out, "a b")
+        self.assertEqual(meta["gate"], "PASS")
+
+    def test_born_clean_gate_fails_loud_on_unmapped(self):
+        with self.assertRaises(ob.PaperError) as ctx:
+            ob._normalize_at_intake("dirty \uF0FF tail", "page_007")
+        self.assertIn("C-intake-zero-pua FAIL", str(ctx.exception))
+        self.assertIn("U+F0FF", str(ctx.exception))
+
+    def test_document_and_page_pieces_all_normalized(self):
+        """ocr_document normalizes the document AND every page piece; the
+        manifest carries the glyphNormalization section with gate=PASS."""
+        import tempfile
+        calls = {"pages": None}
+
+        def fake_backend(pdf_path, cfg):
+            res = ob.BackendResult(
+                markdown="84 \uF02D 69\n\nresidual",
+                page_markdowns=["84 \uF02D 69", "\uF0B4 marks"],
+                engine_name="mock", engine_variant="mock",
+                response_meta={}, crop_urls=[])
+            calls["pages"] = res.page_markdowns
+            return res
+
+        orig = ob.run_api_backend
+        ob.run_api_backend = fake_backend
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                pdf = Path(tmp) / "mock.pdf"
+                pdf.write_bytes(b"%PDF-1.4 mock")
+                cfg = ob.Config(backend="api", out_dir=Path(tmp) / "out")
+                ok, row, doc = ob.ocr_document(pdf, cfg)
+                self.assertTrue(ok)
+                md = (Path(tmp) / "out" / "mock" / "mock.md").read_text(encoding="utf-8")
+                self.assertIn("\u2212", md)          # F02D normalized
+                self.assertEqual(calls["pages"], ["84 \u2212 69", "\u00D7 marks"])
+                manifest = json.loads(
+                    (Path(tmp) / "out" / "mock" / "manifest.json").read_text())
+                self.assertEqual(manifest["glyphNormalization"]["gate"], "PASS")
+                self.assertEqual(manifest["glyphNormalization"]["canary"],
+                                 "C-intake-zero-pua")
+        finally:
+            ob.run_api_backend = orig
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

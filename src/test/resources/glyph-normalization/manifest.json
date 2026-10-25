@@ -1,0 +1,730 @@
+{
+  "schema": "syllabai.glyph-conformance-fixtures/1.0",
+  "task": "T-MIG-141",
+  "run": "run-010-phase-e-intake-law",
+  "canary": "C-intake-zero-pua",
+  "orderingLaw": "sequence rules longest-first, then 1:1 singles; unmapped PUA and unobserved sequence lengths pass through (born-clean census sees them)",
+  "table": {
+    "path": "tools/glyph-normalization/table.v1.json",
+    "sha256": "1fdd4b4a5ebede2e437473e55a2786dea1a9755d03b68d1eea78a39364e2094a"
+  },
+  "classes": [
+    {
+      "id": "class-01-ascii-operators",
+      "title": "ASCII operators and ASCII-output brackets",
+      "gate": "PASS",
+      "files": {
+        "class-01-ascii-operators-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n1 Write down the value of + 5 when a = 3.\n\n2 Solve x < 4 and y > 9 for the set with [ 0 ] range.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-01-ascii-operators-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nP1: sees + sign A accepted\n\nA1: 8 with ( full method ) shown, brace form { 3, 5 } optional\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-02-minus-cancel",
+      "title": "minus and combining cancel stroke",
+      "gate": "PASS",
+      "files": {
+        "class-02-minus-cancel-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n3 Show that 84 − 69 = 15.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-02-minus-cancel-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: 84 − 69 seen; the ̸ stroke may cancel the 7\n\nA1: 15\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-03-multiply-divide",
+      "title": "multiplication and division signs",
+      "gate": "PASS",
+      "files": {
+        "class-03-multiply-divide-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n4 Work out 2.8 × 80 OR 0.035 ÷ 4.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-03-multiply-divide-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: 2.8 × 80 or 224 seen\n\nA1: 224\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-04-plus-minus",
+      "title": "plus-minus",
+      "gate": "PASS",
+      "files": {
+        "class-04-plus-minus-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n5 The error bound is 0.266 ± 0.002 mol.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-04-plus-minus-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: 0.266 ± 0.002 accepted\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-05-greek-lower",
+      "title": "greek lowercase",
+      "gate": "PASS",
+      "files": {
+        "class-05-greek-lower-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n6 The volume is π r squared h and the angle is 2 λ radians.\n\n7 Use θ = 1.5 and ω = 0.8 with mass rate μ.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-05-greek-lower-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: π r^2 h used\n\nA1: λ or θ/ω substitution correct with μ\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-06-greek-upper",
+      "title": "greek uppercase (Delta, Sigma)",
+      "gate": "PASS",
+      "files": {
+        "class-06-greek-upper-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n8 The enthalpy change is written ΔH and the sum is Σ of terms.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-06-greek-upper-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: ΔH = Σ bonds broken − Σ bonds formed\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-07-relational",
+      "title": "relational operators (le ge ne proportional)",
+      "gate": "PASS",
+      "files": {
+        "class-07-relational-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n9 Shade the region where 0.25 ≤ x ≥ 8 and y ≠ 3, with 1 ≤ p ≤ 5 and z ∝ k.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-07-relational-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: 0.25 ≤ x, x ≥ 8 with ≠ 3 excluded\n\nA1: region complete; ≥ accepts reversed\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-08-sets-geometry",
+      "title": "set notation and geometry symbols",
+      "gate": "PASS",
+      "files": {
+        "class-08-sets-geometry-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n10 Given A ∩ B and the angle ∠ ABC, list elements of A ∪ B; is x ∉ A?\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-08-sets-geometry-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: ∅ accepted for the empty answer; ∉ used correctly\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-09-arrows-simple",
+      "title": "simple arrows and maps-to",
+      "gate": "PASS",
+      "files": {
+        "class-09-arrows-simple-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n11 Complete: C2H5OH → C2H4; 2Li → 2LiF; the plan → works; step ↑ up.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-09-arrows-simple-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: N2O4 ⇌ 2NO2 equilibrium seen (F083 plane); B1: N2 ⇌ 2NH3 equilibrium seen (F0B6 plane)\n\nB1: f: x ↦ 2x ⇒ 2x squared; → marks the vector\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-10-arrows-composed",
+      "title": "composed over-arrow runs (sequence rules)",
+      "gate": "PASS",
+      "files": {
+        "class-10-arrows-composed-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n12 The vector over BC: → (three shafts and a head).\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-10-arrows-composed-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: → over P accepted (A2)\n\nA1: → (A3, single 8-shaft run); → (B5) and → (B4) over AC\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-11-bracket-pieces",
+      "title": "tall delimiter pieces (both planes)",
+      "gate": "PASS",
+      "files": {
+        "class-11-bracket-pieces-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n13 Evaluate the column vector with pieces ⎛ ⎜ ⎝ ... ⎞ ⎟ ⎠ and bracket ⎡ ⎢ ⎣ ... ⎤ ⎥ ⎦.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-11-bracket-pieces-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nM1: ─ rule line ⎛ ⎜ ⎝ ... ⎞ ⎟ ⎠ and ⎡ ⎢ ⎣ ... ⎤ ⎥ ⎦ accepted\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-12-ticks-bullets",
+      "title": "ticks and bullets",
+      "gate": "PASS",
+      "files": {
+        "class-12-ticks-bullets-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n14 Add ticks (✓) to the table; one row is ✓-correct; the ✓ form is fine.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-12-ticks-bullets-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: list • item one • item two • item three · note … and so on\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-13-degree-misc",
+      "title": "degree, lozenge, infinity, dot-above",
+      "gate": "PASS",
+      "files": {
+        "class-13-degree-misc-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n15 The angle is 48.64° and the set is unbounded (∞); mark the point ̇; see ◊.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-13-degree-misc-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: 48.64° or ° accepted\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-14-drop-class",
+      "title": "F0A2 answer-line furniture (DROP)",
+      "gate": "PASS",
+      "files": {
+        "class-14-drop-class-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n16 Find x.\n\n*P68726A0328*\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-14-drop-class-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: 2.5 (furniture deleted, text preserved)\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-15-control-chars",
+      "title": "C0 control chars -> single space",
+      "gate": "PASS",
+      "files": {
+        "class-15-control-chars-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n17 Complete the table.  Rows  are  marked  when  found.  Soft  break.  End.\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 8,
+            "c0_distinct": [
+              "U+0002",
+              "U+0003",
+              "U+0008",
+              "U+000B",
+              "U+000C",
+              "U+001D",
+              "U+001E",
+              "U+001F"
+            ]
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        },
+        "class-15-control-chars-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: tabs\tand\nnewlines\rand returns preserved\n",
+          "censusPre": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 0,
+            "unmapped_pua_distinct": [],
+            "unmapped_pua_counts": {},
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "PASS"
+        }
+      }
+    },
+    {
+      "id": "class-16-born-clean-failclosed",
+      "title": "born-clean law fires (unmapped PUA + unobserved run length)",
+      "gate": "FAIL",
+      "files": {
+        "class-16-born-clean-failclosed-qp.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock (glyph fixture)\nengine: glm-ocr-markdown\n---\n\n18 This document carries an unmapped artifact  and an unobserved shaft run → (five shafts: no rule).\n",
+          "censusPre": {
+            "unmapped_pua_instances": 2,
+            "unmapped_pua_distinct": [
+              "U+F075",
+              "U+F0FF"
+            ],
+            "unmapped_pua_counts": {
+              "U+F075": 1,
+              "U+F0FF": 1
+            },
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 2,
+            "unmapped_pua_distinct": [
+              "U+F075",
+              "U+F0FF"
+            ],
+            "unmapped_pua_counts": {
+              "U+F075": 1,
+              "U+F0FF": 1
+            },
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "FAIL"
+        },
+        "class-16-born-clean-failclosed-ms.md": {
+          "expectedNormalized": "---\ndocument: 4MA1/1H mock MS (glyph fixture)\nengine: glm-ocr-markdown\n---\n\nB1: an unmapped artifact  plus an unobserved →→ run (three pieces: B5 needs two, B4 needs four) — the intake gate MUST fail this batch (C-intake-zero-pua) — review, never silent serve\n",
+          "censusPre": {
+            "unmapped_pua_instances": 1,
+            "unmapped_pua_distinct": [
+              "U+F0FE"
+            ],
+            "unmapped_pua_counts": {
+              "U+F0FE": 1
+            },
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "censusPost": {
+            "unmapped_pua_instances": 1,
+            "unmapped_pua_distinct": [
+              "U+F0FE"
+            ],
+            "unmapped_pua_counts": {
+              "U+F0FE": 1
+            },
+            "c0_outside_mapped_instances": 0,
+            "c0_distinct": []
+          },
+          "gate": "FAIL"
+        }
+      }
+    }
+  ]
+}

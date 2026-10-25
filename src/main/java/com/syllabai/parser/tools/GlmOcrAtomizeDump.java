@@ -5,6 +5,7 @@ import com.syllabai.parser.canonical.CanonicalDocument;
 import com.syllabai.parser.engine.glmocr.GlmOcrMarkdownParser;
 import com.syllabai.parser.structure.dto.GlmOcrPaperExport;
 import com.syllabai.parser.structure.glmocr.GlmOcrPaperAtomizer;
+import com.syllabai.parser.structure.glmocr.PuaNormalizer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -40,9 +41,9 @@ public final class GlmOcrAtomizeDump {
 
         GlmOcrMarkdownParser parser = new GlmOcrMarkdownParser();
         CanonicalDocument qpDoc = parser.parseWithFixedIdentity(
-                Files.readAllBytes(qpFile), qpUri, EPOCH);
+                PuaNormalizer.normalizeAtIntake(Files.readAllBytes(qpFile)), qpUri, EPOCH);
         CanonicalDocument msDoc = parser.parseWithFixedIdentity(
-                Files.readAllBytes(msFile), msUri, EPOCH);
+                PuaNormalizer.normalizeAtIntake(Files.readAllBytes(msFile)), msUri, EPOCH);
 
         GlmOcrPaperExport export =
                 new GlmOcrPaperAtomizer().atomize(qpDoc, msDoc, qpUri, msUri);

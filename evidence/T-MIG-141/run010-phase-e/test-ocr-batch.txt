@@ -1,0 +1,164 @@
+test_empty_md_fails_loud (__main__.ApiBackendTests.test_empty_md_fails_loud) ... ok
+test_list_md_results_joined_with_pages (__main__.ApiBackendTests.test_list_md_results_joined_with_pages) ... ok
+test_missing_md_results_fails_loud (__main__.ApiBackendTests.test_missing_md_results_fails_loud) ... ok
+test_no_md_written_on_failure (__main__.ApiBackendTests.test_no_md_written_on_failure) ... ok
+test_page_range_passes_params (__main__.ApiBackendTests.test_page_range_passes_params) ... ok
+test_retry_on_500_then_success (__main__.ApiBackendTests.test_retry_on_500_then_success) ... [warn] HTTP 500 (attempt 1/2), retrying in 0.0s
+ok
+test_string_md_saved_byte_exact_with_assets (__main__.ApiBackendTests.test_string_md_saved_byte_exact_with_assets) ... ok
+test_unfetched_asset_recorded_not_fatal (__main__.ApiBackendTests.test_unfetched_asset_recorded_not_fatal) ... [warn] could not fetch https://expired.invalid/crop_9.png: image download failed after 3 attempts: network error: <urlopen error [Errno -2] Name or service not known> (https://expired.invalid/crop_9.png)
+ok
+test_collect_inputs_dedup_sorted (__main__.HelperTests.test_collect_inputs_dedup_sorted) ... ok
+test_extract_crop_urls_dedup (__main__.HelperTests.test_extract_crop_urls_dedup) ... ok
+test_png_dims (__main__.HelperTests.test_png_dims) ... ok
+test_png_encode_roundtrip (__main__.HelperTests.test_png_encode_roundtrip) ... ok
+test_resolve_api_key_env_precedence (__main__.HelperTests.test_resolve_api_key_env_precedence) ... ok
+test_safe_remote_name (__main__.HelperTests.test_safe_remote_name) ... ok
+test_sniff_mime (__main__.HelperTests.test_sniff_mime) ... ok
+test_born_clean_gate_fails_loud_on_unmapped (__main__.IntakeLawTests.test_born_clean_gate_fails_loud_on_unmapped) ... ok
+test_ctl_spaced_at_intake (__main__.IntakeLawTests.test_ctl_spaced_at_intake) ... ok
+test_document_and_page_pieces_all_normalized (__main__.IntakeLawTests.test_document_and_page_pieces_all_normalized)
+ocr_document normalizes the document AND every page piece; the ... ok
+test_normalized_at_intake_mapped_pua (__main__.IntakeLawTests.test_normalized_at_intake_mapped_pua) ... ok
+test_empty_page_output_fails_with_ctx_hint (__main__.OllamaBackendTests.test_empty_page_output_fails_with_ctx_hint) ... ok
+test_two_pages_ocr_joined (__main__.OllamaBackendTests.test_two_pages_ocr_joined) ... ok
+test_pair_both_fail_leaves_failed_provenance (__main__.PairModeTests.test_pair_both_fail_leaves_failed_provenance) ... syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmpx__t866g/out
+[1/1] pair January 2012 Unit 4 Edexcel Physics A-level
+    FAILED [QP]: response has no md_results — endpoint/model mismatch? response keys: ['nope']
+    FAILED [MS]: response has no md_results — endpoint/model mismatch? response keys: ['nope']
+
+==============================================================================
+FAILED  January 2012 QP - Unit 4 Edexcel Physics A-level.pdf
+        response has no md_results — endpoint/model mismatch? response keys: ['nope']
+FAILED  January 2012 MS - Unit 4 Edexcel Physics A-level.pdf
+        response has no md_results — endpoint/model mismatch? response keys: ['nope']
+==============================================================================
+ok
+test_pair_directory_autopair_with_unpaired (__main__.PairModeTests.test_pair_directory_autopair_with_unpaired) ... syllabai-parser ocr-batch 1.2.0: 2 pair(s), backend=api, out=/tmp/tmpgofv1ek7/out
+[1/2] pair January 2012 Unit 4 Edexcel Physics A-level
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+[2/2] pair June 2013 Unit 4 Edexcel Physics A-level
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+[warn] unpaired (no matching QP/MS): orphan QP - loose.pdf — skipped
+
+==============================================================================
+OK      [QP] January 2012 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpgofv1ek7/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=99 (0.0s)
+OK      [MS] January 2012 MS - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpgofv1ek7/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+OK      [QP] June 2013 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpgofv1ek7/out/June 2013 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=99 (0.0s)
+OK      [MS] June 2013 MS - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpgofv1ek7/out/June 2013 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_pair_dry_run_needs_no_key (__main__.PairModeTests.test_pair_dry_run_needs_no_key) ... dry run — 1 pair(s), backend=api:
+  January 2012 Unit 4 Edexcel Physics A-level
+    QP: /tmp/tmpbaxfqa6m/January 2012 QP - Unit 4 Edexcel Physics A-level.pdf
+    MS: /tmp/tmpbaxfqa6m/January 2012 MS - Unit 4 Edexcel Physics A-level.pdf
+ok
+test_pair_ms_failure_partial_manifest (__main__.PairModeTests.test_pair_ms_failure_partial_manifest) ... syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmp47_u0qav/out
+[1/1] pair January 2012 Unit 4 Edexcel Physics A-level
+    ok [QP] pages=1 assets=0 unfetched=0 (0.0s)
+    FAILED [MS]: response has no md_results — endpoint/model mismatch? response keys: ['unexpected']
+
+==============================================================================
+OK      [QP] January 2012 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmp47_u0qav/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=0 unfetched=0 mdBytes=16 (0.0s)
+FAILED  January 2012 MS - Unit 4 Edexcel Physics A-level.pdf
+        response has no md_results — endpoint/model mismatch? response keys: ['unexpected']
+==============================================================================
+ok
+test_pair_out_name_override (__main__.PairModeTests.test_pair_out_name_override) ... syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmp85t_t38a/out
+[1/1] pair Unit4-Jan2012
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+
+==============================================================================
+OK      [QP] January 2012 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmp85t_t38a/out/Unit4-Jan2012
+        pages=1 assets=1 unfetched=0 mdBytes=99 (0.0s)
+OK      [MS] January 2012 MS - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmp85t_t38a/out/Unit4-Jan2012
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_pair_reversed_input_order_roles_from_filenames (__main__.PairModeTests.test_pair_reversed_input_order_roles_from_filenames) ... [warn] input order looks reversed (mark scheme given first) — QP/MS assigned from the filenames
+syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmpxnma1wfb/out
+[1/1] pair January 2012 Unit 4 Edexcel Physics A-level
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+
+==============================================================================
+OK      [QP] January 2012 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpxnma1wfb/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=99 (0.0s)
+OK      [MS] January 2012 MS - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpxnma1wfb/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_pair_single_file_exits_two (__main__.PairModeTests.test_pair_single_file_exits_two) ... error: --pair with files needs exactly two PDFs (QP + MS); pass directory(ies) for auto-pairing
+ok
+test_pair_two_files_layout_manifest_assets (__main__.PairModeTests.test_pair_two_files_layout_manifest_assets) ... syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmpmfk3nzk5/out
+[1/1] pair January 2012 Unit 4 Edexcel Physics A-level
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+
+==============================================================================
+OK      [QP] January 2012 QP - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpmfk3nzk5/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=99 (0.0s)
+OK      [MS] January 2012 MS - Unit 4 Edexcel Physics A-level.pdf  ->  /tmp/tmpmfk3nzk5/out/January 2012 Unit 4 Edexcel Physics A-level
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_pair_unpaired_only_exits_two (__main__.PairModeTests.test_pair_unpaired_only_exits_two) ... error: no QP/MS pairs found
+  unpaired: /tmp/tmpl2l5xj2i/lonely/orphan QP.pdf
+ok
+test_scan_pairs_ambiguous_group_skipped_not_guessed (__main__.PairModeTests.test_scan_pairs_ambiguous_group_skipped_not_guessed) ... [warn] ambiguous fingerprint 'm1/june 2014' (2 distinct QP, 2 distinct MS) — NOT auto-paired; pass the files explicitly:  --pair <qp.pdf> <ms.pdf>
+error: no QP/MS pairs found
+  unpaired: /tmp/tmpofwaqjy9/corpus/M1/June 2014 QP.pdf
+  unpaired: /tmp/tmpofwaqjy9/corpus/M1/June 2014 QP_2.pdf
+  unpaired: /tmp/tmpofwaqjy9/corpus/M1/June 2014 MS.pdf
+  unpaired: /tmp/tmpofwaqjy9/corpus/M1/June 2014 MS_2.pdf
+ok
+test_scan_pairs_duplicate_names_get_folder_prefix (__main__.PairModeTests.test_scan_pairs_duplicate_names_get_folder_prefix) ... [warn] multiple pairs named 'January 2005' — prefixed with their folder names
+syllabai-parser ocr-batch 1.2.0: 2 pair(s), backend=api, out=/tmp/tmpxu600ci9/out
+[1/2] pair C1 January 2005
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+[2/2] pair C12 January 2005
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+
+==============================================================================
+OK      [QP] January 2005 QP.pdf  ->  /tmp/tmpxu600ci9/out/C1 January 2005
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+OK      [MS] January 2005 MS.pdf  ->  /tmp/tmpxu600ci9/out/C1 January 2005
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+OK      [QP] January 2005 QP.pdf  ->  /tmp/tmpxu600ci9/out/C12 January 2005
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+OK      [MS] January 2005 MS.pdf  ->  /tmp/tmpxu600ci9/out/C12 January 2005
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_scan_pairs_never_crosses_directories (__main__.PairModeTests.test_scan_pairs_never_crosses_directories) ... syllabai-parser ocr-batch 1.2.0: 1 pair(s), backend=api, out=/tmp/tmpyh6142vq/out
+[1/1] pair January 2002
+    ok [QP] pages=1 assets=1 unfetched=0 (0.0s)
+    ok [MS] pages=1 assets=1 unfetched=0 (0.0s)
+[warn] unpaired (no matching QP/MS): January 2002 QP.pdf — skipped
+[warn] unpaired (no matching QP/MS): June 2002 MS.pdf — skipped
+
+==============================================================================
+OK      [QP] January 2002 QP.pdf  ->  /tmp/tmpyh6142vq/out/January 2002
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+OK      [MS] January 2002 MS_2.pdf  ->  /tmp/tmpyh6142vq/out/January 2002
+        pages=1 assets=1 unfetched=0 mdBytes=96 (0.0s)
+==============================================================================
+ok
+test_fingerprint_matches_pairs_not_papers (__main__.RoleDetectionTests.test_fingerprint_matches_pairs_not_papers) ... ok
+test_official_corpus_names (__main__.RoleDetectionTests.test_official_corpus_names) ... ok
+test_pair_dir_name_strips_role_token (__main__.RoleDetectionTests.test_pair_dir_name_strips_role_token) ... ok
+
+----------------------------------------------------------------------
+Ran 36 tests in 21.651s
+
+OK

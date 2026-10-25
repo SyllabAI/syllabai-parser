@@ -1,0 +1,203 @@
+test_local_asset_present_ok (__main__.AssetTests.test_local_asset_present_ok) ... ok
+test_manifest_listed_but_missing_fails (__main__.AssetTests.test_manifest_listed_but_missing_fails) ... ok
+test_signed_url_without_local_is_review (__main__.AssetTests.test_signed_url_without_local_is_review) ... ok
+test_explicit_and_ambiguous_pairing (__main__.PairingTests.test_explicit_and_ambiguous_pairing) ... ok
+test_role_tokens (__main__.PairingTests.test_role_tokens) ... ok
+test_complete_mapping_ok (__main__.PaperMappingTests.test_complete_mapping_ok) ... ok
+test_unmatched_both_directions_review (__main__.PaperMappingTests.test_unmatched_both_directions_review) ... ok
+test_consistent_totals_ok (__main__.PaperTotalTests.test_consistent_totals_ok) ... ok
+test_cover_vs_question_sum_conflict_fails (__main__.PaperTotalTests.test_cover_vs_question_sum_conflict_fails) ... ok
+test_missing_cover_is_review (__main__.PaperTotalTests.test_missing_cover_is_review) ... ok
+test_qp_ms_cover_conflict_fails (__main__.PaperTotalTests.test_qp_ms_cover_conflict_fails) ... ok
+test_agreeing_totals_ok (__main__.QpMsTotalsTests.test_agreeing_totals_ok) ... ok
+test_mismatch_fails (__main__.QpMsTotalsTests.test_mismatch_fails) ... ok
+test_missing_on_one_side_is_review (__main__.QpMsTotalsTests.test_missing_on_one_side_is_review) ... ok
+test_clean_pair_is_ok (__main__.QuestionMarkSumTests.test_clean_pair_is_ok) ... ok
+test_mcq_without_parts_is_ok (__main__.QuestionMarkSumTests.test_mcq_without_parts_is_ok) ... ok
+test_part_sum_conflict_fails (__main__.QuestionMarkSumTests.test_part_sum_conflict_fails) ... ok
+test_unknown_part_marks_is_review (__main__.QuestionMarkSumTests.test_unknown_part_marks_is_review) ... ok
+test_cli_clean_exit_on_pass_only (__main__.RealFixtureTests.test_cli_clean_exit_on_pass_only) ... {
+  "pairs": [
+    {
+      "checks": {
+        "assets": {
+          "hasAssetsDir": false,
+          "hasManifest": false,
+          "knownUnavailable": 75,
+          "missing": [],
+          "note": "no manifest.json \u2014 md\u2194asset map unverified (gap #9 tooling exists: tools/ocr_batch)",
+          "status": "review"
+        },
+        "paperMapping": {
+          "status": "ok",
+          "unmatchedMs": [],
+          "unmatchedQp": []
+        },
+        "paperTotal": {
+          "mismatches": [
+            {
+              "qp": 80,
+              "sumOfQuestionTotals": 70
+            }
+          ],
+          "ms": 80,
+          "qp": 80,
+          "status": "fail",
+          "sumOfQuestionTotals": 70
+        },
+        "qpMsTotals": {
+          "mismatches": [],
+          "missingOnOneSide": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            10,
+            12,
+            15,
+            17
+          ],
+          "status": "review"
+        },
+        "questionMarkSums": {
+          "findings": [
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 2,
+              "partsWithMarks": 0,
+              "printedTotal": null,
+              "question": 12,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 2,
+              "partsWithMarks": 0,
+              "printedTotal": null,
+              "question": 15,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 3,
+              "partsWithMarks": 0,
+              "printedTotal": 7,
+              "question": 16,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 2,
+              "partsWithMarks": 0,
+              "printedTotal": 9,
+              "question": 17,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 3,
+              "partsWithMarks": 1,
+              "printedTotal": 11,
+              "question": 18,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 4,
+              "partsWithMarks": 2,
+              "printedTotal": 9,
+              "question": 19,
+              "status": "review"
+            },
+            {
+              "note": "some part marks unknown",
+              "partsTotal": 4,
+              "partsWithMarks": 0,
+              "printedTotal": 15,
+              "question": 20,
+              "status": "review"
+            }
+          ],
+          "status": "review"
+        }
+      },
+      "counts": {
+        "msEntries": 31,
+        "questions": 20
+      },
+      "identity": {
+        "msDocumentId": "ad36a5a5-6c32-5487-a56a-9eeeeb3cc110",
+        "qpDocumentId": "567dc75d-8dce-5cff-a7f6-cc1688da02e2"
+      },
+      "ms": "/home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-ms.md",
+      "paper": {
+        "logNumber": null,
+        "paperReference": null,
+        "publicationCode": null,
+        "session": null
+      },
+      "qp": "/home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-qp.md",
+      "status": "fail",
+      "warnings": {
+        "ms": [
+          "1 figure reference(s) in the mark-scheme markdown are not represented in the structured entries; preserved in figureRefs"
+        ],
+        "qp": [
+          "unclassified heading: Information:",
+          "figure attribution Q17: (Source: $ \\textcircled{c} $ bob_sato_1973/Getty Images)",
+          "figure attribution Q18: (Source: $ \\textcircled{c} $f9photos/Getty Images)",
+          "Q6: detached option letters without option text",
+          "Q15: incomplete MCQ option set folded into stem",
+          "Q19: incomplete MCQ option set folded into stem"
+        ]
+      }
+    }
+  ],
+  "schemaVersion": "1.0",
+  "skipped": [],
+  "summary": {
+    "fail": 1,
+    "pairs": 1,
+    "pass": 0,
+    "review": 0
+  },
+  "tool": "glmocr-health"
+}
+ok
+test_cli_exit_codes_and_determinism (__main__.RealFixtureTests.test_cli_exit_codes_and_determinism) ... [FAIL] /home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-qp.md
+      ms: /home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-ms.md  (20 questions, 31 ms entries)
+      questionMarkSums:  REVIEW
+        findings: [{"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": null, "question": 12, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": null, "question": 15, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 3, "partsWithMarks": 0, "printedTotal": 7, "question": 16, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": 9, "question": 17, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 3, "partsWithMarks": 1, "printedTotal": 11, "question": 18, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 4, "partsWithMarks": 2, "printedTotal": 9, "question": 19, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 4, "partsWithMarks": 0, "printedTotal": 15, "question": 20, "status": "review"}]
+      qpMsTotals:        REVIEW
+        missingOnOneSide: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 15, 17]
+      paperTotal:        FAIL
+        mismatches: [{"qp": 80, "sumOfQuestionTotals": 70}]
+      assets:            REVIEW
+        note: no manifest.json — md↔asset map unverified (gap #9 tooling exists: tools/ocr_batch)
+pairs: 1  pass: 0  review: 0  fail: 1
+[FAIL] /home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-qp.md
+      ms: /home/z/my-project/repos/syllabai-parser/src/test/resources/glm-ocr/june-2025-wph11-01-ms.md  (20 questions, 31 ms entries)
+      questionMarkSums:  REVIEW
+        findings: [{"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": null, "question": 12, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": null, "question": 15, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 3, "partsWithMarks": 0, "printedTotal": 7, "question": 16, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 2, "partsWithMarks": 0, "printedTotal": 9, "question": 17, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 3, "partsWithMarks": 1, "printedTotal": 11, "question": 18, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 4, "partsWithMarks": 2, "printedTotal": 9, "question": 19, "status": "review"}, {"note": "some part marks unknown", "partsTotal": 4, "partsWithMarks": 0, "printedTotal": 15, "question": 20, "status": "review"}]
+      qpMsTotals:        REVIEW
+        missingOnOneSide: [1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 15, 17]
+      paperTotal:        FAIL
+        mismatches: [{"qp": 80, "sumOfQuestionTotals": 70}]
+      assets:            REVIEW
+        note: no manifest.json — md↔asset map unverified (gap #9 tooling exists: tools/ocr_batch)
+pairs: 1  pass: 0  review: 0  fail: 1
+ok
+test_june_pair_assets_known_unavailable (__main__.RealFixtureTests.test_june_pair_assets_known_unavailable) ... ok
+test_june_pair_counts (__main__.RealFixtureTests.test_june_pair_counts) ... ok
+test_june_pair_mapping_complete_but_draft_marks_reviewed (__main__.RealFixtureTests.test_june_pair_mapping_complete_but_draft_marks_reviewed) ... ok
+test_june_pair_paper_total_conflict_is_fail (__main__.RealFixtureTests.test_june_pair_paper_total_conflict_is_fail) ... ok
+test_pathological_pair_flags_conflict (__main__.RealFixtureTests.test_pathological_pair_flags_conflict) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.032s
+
+OK

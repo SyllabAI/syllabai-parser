@@ -168,3 +168,36 @@ rollback unit + the pre-flight census artifacts of record
   — job 1 verify (read-only pins), job 2 apply behind job-1 green. Secrets of
   record: `T138_PROD_DATABASE_URL` (proven run-005) + `T138_GEMINI_KEY`
   (operator pool key #1). Region law: apply runs in CI only.
+
+## run-010 — Phase E intake law EXECUTED (spec §7)
+
+The map is now LAW in code — every future OCR / extraction batch normalizes at
+intake and the born-clean gate fails any batch whose post-normalization census
+still holds artifacts (review, never silent serve):
+
+- **Python reference impl** `tools/glmocr/normalize_pua.py` — `normalize_pua(text,
+  table)` (name-aligned with the OEQ donor), `load_table` (sha-pin fail-closed),
+  `CompiledTable.normalize/census`, `intake_gate` — a byte-exact port of the
+  frozen Phase-B driver semantics (`phase_b_apply.py normalize_factory`), with
+  ONE disclosed improvement: slice-matching replaces the driver's index probe,
+  which IndexErrors on an end-of-string partial run (the equivalence test proves
+  byte-equality on a 400-trial deterministic battery + documents the boundary).
+- **ocr_batch v1.2.0** consumes the impl at intake (`_normalize_at_intake`): the
+  document and every page piece are normalized through `table.v1.json`; the
+  manifest/provenance carry the `glyphNormalization` census (pre/post) + gate;
+  `C-intake-zero-pua` FAILS the paper on any surviving artifact.
+- **Java consumer** `com.syllabai.parser.structure.glmocr.PuaNormalizer` reads
+  the SAME `table.v1.json` (no second map) and is wired into the canonical
+  pipeline entry points (`GlmOcrConformanceDump` / `GlmOcrAtomizeDump` —
+  `PuaNormalizer.normalizeAtIntake` before parse; identity on artifact-free
+  input); `GlmOcrGlyphDump` is the conformance CLI.
+- **Conformance 16/16-class green**: `tools/glmocr/conformance.py` gained the
+  glyph leg — 16 fixture classes (`src/test/resources/glyph-normalization/`,
+  32 files + `manifest.json` with expectedNormalized + census pins) covering
+  ALL 84 single entries + all 5 sequence rules + the C0 policy + the DROP class
+  + the born-clean fail-closed law. Python and Java must agree byte-exactly or
+  CI fails on drift. Evidence: `evidence/T-MIG-141/run010-phase-e/`
+  (conformance-full.txt 57 PASS + test suites 18/36/25/16 OK).
+- **Canary pinned**: `C-intake-zero-pua` — enforced in ocr_batch (batch gate),
+  in the conformance harness (PASS classes must census ZERO post-normalization;
+  the FAIL class must fire), and as the named constant of record.

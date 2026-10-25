@@ -7,6 +7,7 @@ import com.syllabai.parser.engine.glmocr.GlmOcrMarkdownParser;
 import com.syllabai.parser.structure.dto.GlmOcrMarkSchemeDraft;
 import com.syllabai.parser.structure.dto.GlmOcrPaperDraft;
 import com.syllabai.parser.structure.glmocr.GlmOcrMarkSchemeExtractor;
+import com.syllabai.parser.structure.glmocr.PuaNormalizer;
 import com.syllabai.parser.structure.glmocr.GlmOcrQuestionExtractor;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public final class GlmOcrConformanceDump {
             System.err.println("usage: GlmOcrConformanceDump <markdown-file> <doc|qp|ms>");
             System.exit(2);
         }
-        byte[] source = Files.readAllBytes(Path.of(args[0]));
+        byte[] source = PuaNormalizer.normalizeAtIntake(Files.readAllBytes(Path.of(args[0])));
         String mode = args[1];
         String uri = "corpus/" + Path.of(args[0]).getFileName();
 
