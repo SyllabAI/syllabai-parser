@@ -63,6 +63,12 @@ Region law: the Gemini embedding API is IP-region-gated — apply runs where
 egress is supported (GitHub Actions), never the sandbox. verify never calls
 the API.
 
+run-008 FIX (loop-1 forensics): the embed phase is DB-silent and can exceed
+the Neon serverless TLS idle cutoff (~25-30 min) — loop 1 lost a 981-row
+tranche at the post-embed phases with zero writes. Every post-embed DB touch
+now liveness-checks the socket and reconnects once (ensure_conn). No change
+to the write law, gates, pacing, or pins.
+
 Secrets: SYLLABAI_EMBEDDING_GEMINI_API_KEY (apply; never printed).
 Usage:
   phase_d_reembed.py verify --db-file F --manifest M --selector-ids S --receipt R
@@ -174,6 +180,30 @@ def cosine(a, b):
 def connect_ro(db_url):
     conn = psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
     return conn
+
+
+def ensure_conn(conn, db_url):
+    """Liveness gate for every POST-EMBED DB touch (run-008 fix).
+
+    The embed phase is a long DB-silent stretch; the Neon serverless TLS
+    socket idles out (~25-30 min, loop-1 forensics: a 981-row embed phase of
+    1,576s killed the connection before the neighbor-Jaccard report, losing
+    the whole tranche with zero writes). Liveness-check with SELECT 1, end
+    the implicit txn so later SET TRANSACTION statements stay legal, and
+    reconnect once on a dead socket. Semantics unchanged: same guarded write
+    law, same gates — only the socket is guaranteed to be alive."""
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        conn.rollback()
+        return conn
+    except psycopg2.OperationalError:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        log("DB connection idled out during the embed phase — reconnecting")
+        return psycopg2.connect(db_url, connect_timeout=30, sslmode="require")
 
 
 def verify_block(conn, manifest, pinned_sel_ids, receipt):
@@ -474,6 +504,7 @@ def main():
             log("drift gate vacuous (n=0, no old-vector rows in tranche)")
 
         # soft neighbor-Jaccard report on the serving plane (up to N rows)
+        conn = ensure_conn(conn, db_url)  # run-008 fix: socket may have idled out
         jac_rows = [(cid, vec, old_vec) for cid, vec, old_vec, _ in embedded
                     if old_vec is not None][:args.jaccard_rows]
         jac_stats = {"n": len(jac_rows)}
@@ -502,6 +533,7 @@ def main():
                 f"min {jac_stats['min']}")
 
         # ONE transaction of guarded updates
+        conn = ensure_conn(conn, db_url)  # run-008 fix: socket may have idled out
         cur = conn.cursor()
         cur.execute("SET TRANSACTION READ WRITE")
         written = 0
@@ -520,6 +552,7 @@ def main():
         log(f"txn committed: {written} rows -> embed_rev=2")
 
         # post-txn verify
+        conn = ensure_conn(conn, db_url)  # run-008 fix: never a dishonest red after a durable commit
         cur = conn.cursor()
         cur.execute("SET TRANSACTION READ ONLY")
         cur.execute("""SELECT count(*) FILTER (WHERE embed_rev <> 2 OR embedding IS NULL
